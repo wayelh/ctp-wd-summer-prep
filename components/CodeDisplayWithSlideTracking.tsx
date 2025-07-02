@@ -35,7 +35,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   children
 }) => {
   const monaco = useMonaco()
-  const slideContext = useContext(SlideContext)
+  const slideContext = useContext(SlideContext);
   
   // Parse multiple code snippets separated by ---
   const codeSnippets = children.split(/\n\/\/ ---\s?\n/).map(s => s.trim());
@@ -50,32 +50,83 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   const [isRunning, setIsRunning] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const diffContainerRef = useRef<HTMLDivElement>(null);
+  const modelRef = useRef<any>(null);
+  const editorIdRef = useRef(getURI());
 
+  // Track slide state
+  const { isSlideActive, slideId } = slideContext;
+  const wasActiveRef = useRef(isSlideActive);
+  const lastSlideIdRef = useRef(slideId);
+
+  // Dispose editor model when slide becomes inactive
+  useEffect(() => {
+    // Check if slide changed or became inactive
+    const slideChanged = slideId !== lastSlideIdRef.current;
+    const becameInactive = wasActiveRef.current && !isSlideActive;
+    
+    if (slideChanged || becameInactive) {
+      console.log(`[CodeDisplay ${editorIdRef.current}] Slide changed or became inactive. Disposing resources...`);
+      
+      // Dispose the model
+      if (modelRef.current && monaco) {
+        try {
+          modelRef.current.dispose();
+          modelRef.current = null;
+          console.log(`[CodeDisplay ${editorIdRef.current}] Model disposed successfully`);
+        } catch (e) {
+          console.warn(`[CodeDisplay ${editorIdRef.current}] Error disposing model:`, e);
+        }
+      }
+
+      // Dispose diff editor if it exists
+      if (diffEditor) {
+        try {
+          const originalModel = diffEditor.getModel()?.original;
+          const modifiedModel = diffEditor.getModel()?.modified;
+          
+          if (originalModel) originalModel.dispose();
+          if (modifiedModel) modifiedModel.dispose();
+          diffEditor.dispose();
+          
+          setDiffEditor(null);
+          console.log(`[CodeDisplay ${editorIdRef.current}] Diff editor disposed successfully`);
+        } catch (e) {
+          console.warn(`[CodeDisplay ${editorIdRef.current}] Error disposing diff editor:`, e);
+        }
+      }
+
+      // Clear editor reference when slide becomes inactive
+      if (becameInactive && editor) {
+        setEditor(null);
+      }
+    }
+
+    // Update refs
+    wasActiveRef.current = isSlideActive;
+    lastSlideIdRef.current = slideId;
+  }, [isSlideActive, slideId, monaco, diffEditor, editor]);
 
   const handleEditorChange = (newValue: string | undefined) => {
     setValue(newValue || '');
     onChange?.(newValue);
   };
 
-  // Update editor value when children prop changes
+  // Update editor value when children prop changes or slide becomes active
   useEffect(() => {
-    // Only update if slide is active (or not in a presentation)
-    const isActive = !slideContext || slideContext.isSlideActive;
-    
-    if (editor && monaco && isActive) {
+    if (editor && monaco && isSlideActive) {
       try {
-        const currentModel = editor.getModel();
+        let currentModel = modelRef.current;
         
-        if (currentModel) {
-          // Always update the existing model value
-          if (currentModel.getValue() !== value) {
-            currentModel.setValue(value);
-          }
-        } else {
-          // Create a new model if none exists
-          const uri = monaco.Uri.parse(`inmemory://model/${getURI()}`);
-          const newModel = monaco.editor.createModel(value, language, uri);
-          editor.setModel(newModel);
+        if (!currentModel || currentModel.isDisposed()) {
+          // Create a new model if none exists or if it was disposed
+          const uri = monaco.Uri.parse(`inmemory://model/${editorIdRef.current}`);
+          currentModel = monaco.editor.createModel(value, language, uri);
+          modelRef.current = currentModel;
+          editor.setModel(currentModel);
+          console.log(`[CodeDisplay ${editorIdRef.current}] Created new model for active slide`);
+        } else if (currentModel.getValue() !== value) {
+          // Update existing model value
+          currentModel.setValue(value);
         }
         
         // Ensure proper layout after value change
@@ -87,7 +138,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         }
       }
     }
-  }, [editor, monaco, value, language, slideContext?.isSlideActive]);
+  }, [editor, monaco, value, language, isSlideActive]);
 
   // Handle snippet navigation
   const navigateToSnippet = (index: number) => {
@@ -116,7 +167,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
 
   // Create diff editor when monaco is available and showDiff is true
   useEffect(() => {
-    if (monaco && diffContainerRef.current && showDiff && previousValue !== null) {
+    if (monaco && diffContainerRef.current && showDiff && previousValue !== null && isSlideActive) {
       try {
         // Create diff editor
         const diffEditorInstance = monaco.editor.createDiffEditor(diffContainerRef.current, {
@@ -155,7 +206,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         setShowDiff(false);
       }
     }
-  }, [monaco, showDiff, previousValue, value, language, theme]);
+  }, [monaco, showDiff, previousValue, value, language, theme, isSlideActive]);
 
   const clearConsole = () => {
     setConsoleOutput([]);
@@ -180,13 +231,6 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       throw new Error(`TypeScript compilation error: ${error}`);
     }
   };
-
-  // Ensure iframe exists when component mounts
-  useEffect(() => {
-    if (!iframeRef.current) {
-      console.error('Iframe ref not initialized');
-    }
-  }, []);
 
   const runCode = useCallback(async () => {
     setIsRunning(true);
@@ -307,9 +351,6 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       // Set up message listener before setting iframe content
       let executionComplete = false;
       const messageHandler = (event: MessageEvent) => {
-        // Debug: log all messages
-        console.log('Received message:', event.data);
-        
         if (!event.data || event.data.executionId !== executionId) {
           return;
         }
@@ -333,7 +374,6 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       
       // Create or update iframe
       if (iframeRef.current) {
-        console.log('Setting iframe content');
         // Clear previous content first
         iframeRef.current.srcdoc = '';
         
@@ -341,7 +381,6 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         setTimeout(() => {
           if (iframeRef.current) {
             iframeRef.current.srcdoc = iframeContent;
-            console.log('Iframe content set');
           }
         }, 10);
       } else {
@@ -366,64 +405,20 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     }
   }, [value, language]);
 
-  // Track slide visibility and manage models
-  useEffect(() => {
-    if (!slideContext) return; // Not in a Spectacle presentation
-    
-    const isSlideActive = slideContext.isSlideActive;
-    
-    if (!isSlideActive && editor) {
-      // Slide is no longer active, dispose models to save memory
-      console.log('Slide inactive, disposing models');
-      try {
-        const model = editor.getModel();
-        if (model) {
-          editor.setModel(null);
-          model.dispose();
-        }
-        
-        // Also dispose diff editor models if they exist
-        if (diffEditor) {
-          const diffModel = diffEditor.getModel();
-          if (diffModel) {
-            if (diffModel.original) diffModel.original.dispose();
-            if (diffModel.modified) diffModel.modified.dispose();
-          }
-          diffEditor.dispose();
-          setDiffEditor(null);
-        }
-      } catch (e) {
-        console.warn('Error disposing models on slide change:', e);
-      }
-    } else if (isSlideActive && editor && !editor.getModel()) {
-      // Slide became active and we need to recreate the model
-      console.log('Slide active, creating model');
-      try {
-        const uri = monaco.Uri.parse(`inmemory://model/${getURI()}`);
-        const model = monaco.editor.createModel(value, language, uri);
-        editor.setModel(model);
-      } catch (e) {
-        console.warn('Error creating model on slide activation:', e);
-      }
-    }
-  }, [slideContext?.isSlideActive, editor, diffEditor, monaco, value, language])
-  
   // Clean up on unmount
   useEffect(() => {
     return () => {
       // Clean up the model on unmount
-      if (editor) {
+      if (modelRef.current && monaco) {
         try {
-          const model = editor.getModel();
-          if (model) {
-            model.dispose();
-          }
+          modelRef.current.dispose();
+          modelRef.current = null;
         } catch (e) {
           console.warn('Error during cleanup:', e);
         }
       }
     }
-  }, [editor])
+  }, [monaco])
 
   const defaultOptions = {
     minimap: { enabled: true },
@@ -436,6 +431,27 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     padding: { top: 10, bottom: 10 },
     ...options
   };
+
+  // Only render the editor when the slide is active
+  if (!isSlideActive) {
+    return (
+      <div className="code-display-container" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="macos-window" style={{ minHeight: height }}>
+          <div className="macos-titlebar">
+            <div className="macos-controls">
+              <div className="macos-control macos-close"></div>
+              <div className="macos-control macos-minimize"></div>
+              <div className="macos-control macos-maximize"></div>
+            </div>
+            <div className="macos-title">{fileName}</div>
+          </div>
+          <div className="window-content" style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ color: '#666', fontStyle: 'italic' }}>Editor will load when slide is active</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="code-display-container" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
@@ -507,9 +523,12 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
               setEditor(editorInstance);
               // Ensure the editor has a model
               if (!editorInstance.getModel() && monacoInstance) {
-                const uri = monacoInstance.Uri.parse(`inmemory://model/${getURI()}`);
+                const uri = monacoInstance.Uri.parse(`inmemory://model/${editorIdRef.current}`);
                 const model = monacoInstance.editor.createModel(value, language, uri);
+                modelRef.current = model;
                 editorInstance.setModel(model);
+              } else {
+                modelRef.current = editorInstance.getModel();
               }
             }}
             beforeMount={(monaco) => {

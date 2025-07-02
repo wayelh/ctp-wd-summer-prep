@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { CodeSpan, Deck, DefaultTemplate, Heading, ListItem, MarkdownSlideSet, OrderedList, Text, UnorderedList } from 'spectacle';
 import Slides from './slides.mdx';
-import CodeDisplay from './components/CodeDisplay';
+import CodeDisplay from './components/CodeDisplayWithSlideTracking';
 
 const Presentation = () => (
   <Deck template={() => <DefaultTemplate />}>
