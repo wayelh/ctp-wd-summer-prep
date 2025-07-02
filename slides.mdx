@@ -1,0 +1,112 @@
+import { SlideLayout, Image, FlexBox } from 'spectacle'
+
+<SlideLayout.Center>
+  ## What is TypeScript
+  - TypeScript is an extension of the JavaScript language
+  - It adds annotations that describe what "type" we expect values to be
+  - The TypeScript compiler checks these annotations and ensures they match
+  - It also removes them during compilation to output pure JavaScript
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## What's a Type?
+
+- Types are shapes: a set of properties and methods we expect values to implement
+- Strings, Numbers, Objects...even `undefined` and `null` values all have corresponding types
+- In JavaScript, references to values in variables, arguments, and return types can be anything
+- TypeScript has the `any` type, which describes JavaScripts built in type system (i.e. none)
+- TypeScript defines what shapes each value should be, and checks that we keep that contract
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## TypeScript is a Cool Toy
+
+<video muted data-autoplay src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/playskool-shape-toy.mp4">
+</video>
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## JavaScript's Type Problem
+
+<FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+
+What's wrong with this picture?
+
+```typescript
+function calculateDiscount(price, discount) {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, 0.2));
+console.log(calculateDiscount(100, "20%")); // Oops!
+```
+</FlexBox>
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## The Price is `NaN`, Bob
+
+<FlexBox alignItems="center" justifyContent="center">
+
+<Image src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHAxempuYnNlc29zbnQ0NHBmd2lwdjhjdnpqYnZwdGhmZ2NjeXJieCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fpFPWzrXhLOo6uFXGg/giphy.gif"
+  width="80vh" />
+  </FlexBox>
+
+and just like on TV, we wouldn't bet told until after the fact
+
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## TypeScript can predict the future
+
+- On the other hand, TypeScript can tell us about this mistake beforehand
+- If we say its a number, TypeScript will complain if we try to give a string
+- These bugs happen all the time in JavaScript, as we pass values around
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## With TypeScript...
+
+```typescript
+function calculateDiscount(price: number, discount: number): number {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, 0.2));
+console.log(calculateDiscount(100, "20%"));
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## A Silver Bullet in a Foot Gun
+
+- TypeScript guarantees the values ***you assign*** will be of the expected type
+- However, values ***you don't assign***, like those that come from API's and users may be incorrect
+- Understanding this loophole is important to knowing where to validate, or check data
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## The Type Layer
+- TypeScript is really two languages in one file
+- There's JavaScript, this describes what does happen at runtime
+- There's TypeScript, this annotates the JavaScript, describes what should happen at runtime
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## The Power of Intellisense
+
+- Even before we compile the code, well before we run it, TypeScript tells us there may be a problem
+- As you're typing `'20%'`, VSCode will check the types in real time, and give you the error inline
+- TypeScript gives your editor additional super-powers, like:
+  - Finding all references to a value
+  - Seeing what properties an object has
+  - Renaming a property across the entire codebase
+- All of which are very tough for humans to do, and error prone, in JavaScript
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Types of Types
+
+- Primitive Types
+- 
+</SlideLayout.Center>
