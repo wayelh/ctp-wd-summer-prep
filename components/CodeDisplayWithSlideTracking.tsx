@@ -44,6 +44,9 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   const [previousValue, setPreviousValue] = useState<string | null>(null);
   const [showDiff, setShowDiff] = useState(false);
   
+  // Store edited versions of each snippet
+  const [editedSnippets, setEditedSnippets] = useState<Record<number, string>>({});
+  
   const [editor, setEditor] = useState<Parameters<Required<EditorProps>["onMount"]>[0] | null>(null)
   const [diffEditor, setDiffEditor] = useState<any>(null);
   const [consoleOutput, setConsoleOutput] = useState<ConsoleOutput[]>([]);
@@ -52,6 +55,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   const diffContainerRef = useRef<HTMLDivElement>(null);
   const modelRef = useRef<any>(null);
   const editorIdRef = useRef(getURI());
+  const errorDecorationsRef = useRef<string[]>([]);
 
   // Track slide state
   const { isSlideActive, slideId } = slideContext;
@@ -66,6 +70,9 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     
     if (slideChanged || becameInactive) {
       console.log(`[CodeDisplay ${editorIdRef.current}] Slide changed or became inactive. Disposing resources...`);
+      
+      // Clear edited snippets when slide changes
+      setEditedSnippets({});
       
       // Dispose the model
       if (modelRef.current && monaco) {
@@ -109,6 +116,16 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   const handleEditorChange = (newValue: string | undefined) => {
     setValue(newValue || '');
     onChange?.(newValue);
+    // Clear error highlights when code changes
+    clearErrorHighlights();
+    
+    // Store the edited version if it differs from the original
+    if (newValue !== codeSnippets[currentSnippetIndex]) {
+      setEditedSnippets(prev => ({
+        ...prev,
+        [currentSnippetIndex]: newValue || ''
+      }));
+    }
   };
 
   // Update editor value when children prop changes or slide becomes active
@@ -143,7 +160,8 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   // Handle snippet navigation
   const navigateToSnippet = (index: number) => {
     if (index >= 0 && index < codeSnippets.length) {
-      const newValue = codeSnippets[index];
+      // Use edited version if available, otherwise use original
+      const newValue = editedSnippets[index] || codeSnippets[index];
       
       // Store the current value as previous before switching
       if (index !== currentSnippetIndex) {
@@ -154,6 +172,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       setCurrentSnippetIndex(index);
       setValue(newValue);
       clearConsole();
+      clearErrorHighlights();
     }
   };
 
@@ -163,6 +182,19 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
 
   const previousSnippet = () => {
     navigateToSnippet(currentSnippetIndex - 1);
+  };
+  
+  const resetCurrentSnippet = () => {
+    const originalValue = codeSnippets[currentSnippetIndex];
+    setValue(originalValue);
+    // Remove the edited version
+    setEditedSnippets(prev => {
+      const newEdited = { ...prev };
+      delete newEdited[currentSnippetIndex];
+      return newEdited;
+    });
+    clearConsole();
+    clearErrorHighlights();
   };
 
   // Create diff editor when monaco is available and showDiff is true
@@ -214,19 +246,116 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
 
   const addConsoleOutput = (type: ConsoleOutput['type'], message: string) => {
     setConsoleOutput(prev => [...prev, { type, message, timestamp: new Date() }]);
+    
+    // If it's an error, try to highlight the line in the editor
+    if (type === 'error' && editor && monaco) {
+      highlightErrorInEditor(message);
+    }
+  };
+  
+  const highlightErrorInEditor = (errorMessage: string) => {
+    if (!editor || !monaco) return;
+    
+    // Parse error stack to find line numbers
+    // Match patterns like:
+    // - at code.js:15:11
+    // - at Object.<anonymous> (code.js:15:11)
+    // - Error: message\n    at code.js:15:11
+    const patterns = [
+      /at\s+(?:.*?\s+)?(?:\()?code\.[jt]s:(\d+):(\d+)/,
+      /at\s+code\.[jt]s:(\d+):(\d+)/,
+      /\(code\.[jt]s:(\d+):(\d+)\)/,
+      /code\.[jt]s:(\d+):(\d+)/,
+      /Error:.*\n\s*at\s+.*?code\.[jt]s:(\d+):(\d+)/s,
+      /^\s*at\s+.*?:(\d+):(\d+)/m
+    ];
+    
+    let lineMatch = null;
+    for (const pattern of patterns) {
+      lineMatch = errorMessage.match(pattern);
+      if (lineMatch) break;
+    }
+    
+    if (!lineMatch) {
+      // Try a more general pattern as fallback
+      lineMatch = errorMessage.match(/:(\d+):(\d+)/);
+      if (!lineMatch) return;
+    }
+    
+    const lineNumber = parseInt(lineMatch[1], 10);
+    const columnNumber = parseInt(lineMatch[2], 10);
+    
+    // Check if this is in the test section
+    const codeLines = value.split('\n');
+    const testSeparatorIndex = codeLines.findIndex(line => line.trim() === '// ***');
+    const isTestError = testSeparatorIndex !== -1 && lineNumber > testSeparatorIndex;
+    
+    // Create decorations for the error line
+    const decorations = [
+      {
+        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+        options: {
+          isWholeLine: true,
+          className: 'error-line-highlight',
+          glyphMarginClassName: 'error-glyph',
+          glyphMarginHoverMessage: { value: errorMessage },
+          hoverMessage: { value: errorMessage },
+          overviewRuler: {
+            color: '#ff0000',
+            position: monaco.editor.OverviewRulerLane.Right
+          }
+        }
+      }
+    ];
+    
+    // Add inline error message decoration
+    if (columnNumber > 0) {
+      decorations.push({
+        range: new monaco.Range(lineNumber, columnNumber, lineNumber, columnNumber + 1),
+        options: {
+          className: 'error-squiggle',
+          hoverMessage: { value: errorMessage },
+          inlineClassName: 'error-inline'
+        }
+      });
+    }
+    
+    // Apply decorations
+    const newDecorations = editor.deltaDecorations(errorDecorationsRef.current, decorations);
+    errorDecorationsRef.current = newDecorations;
+  };
+  
+  const clearErrorHighlights = () => {
+    if (editor && errorDecorationsRef.current.length > 0) {
+      errorDecorationsRef.current = editor.deltaDecorations(errorDecorationsRef.current, []);
+    }
   };
 
-  const compileTypeScript = (code: string): string => {
+  const compileTypeScript = (code: string, fileName: string = 'code.ts'): { code: string; sourceMap?: string } => {
     try {
       const result = ts.transpileModule(code, {
         compilerOptions: {
           module: ts.ModuleKind.CommonJS,
           target: ts.ScriptTarget.ES2015,
           jsx: ts.JsxEmit.React,
-          esModuleInterop: true
-        }
+          esModuleInterop: true,
+          sourceMap: true,
+          inlineSourceMap: false
+        },
+        fileName: fileName
       });
-      return result.outputText;
+      
+      // Extract source map from output
+      const sourceMapMatch = result.outputText.match(/\/\/# sourceMappingURL=(.+)$/m);
+      if (sourceMapMatch && result.sourceMapText) {
+        const cleanCode = result.outputText.replace(/\/\/# sourceMappingURL=.+$/m, '');
+        return {
+          code: cleanCode,
+          sourceMap: result.sourceMapText
+        };
+      }
+      
+      return { code: result.outputText };
     } catch (error) {
       throw new Error(`TypeScript compilation error: ${error}`);
     }
@@ -235,13 +364,38 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
   const runCode = useCallback(async () => {
     setIsRunning(true);
     clearConsole();
+    clearErrorHighlights();
     
     try {
+      // Split code into main code and test code
+      const codeLines = value.split('\n');
+      const testSeparatorIndex = codeLines.findIndex(line => line.trim() === '// ***');
+      
+      let mainCode = value;
+      let testCode = '';
+      
+      if (testSeparatorIndex !== -1) {
+        mainCode = codeLines.slice(0, testSeparatorIndex).join('\n');
+        testCode = codeLines.slice(testSeparatorIndex + 1).join('\n').trim();
+      }
+      
       // Compile TypeScript if needed
-      let codeToRun = value;
+      let codeToRun = mainCode;
+      let testCodeToRun = testCode;
+      let mainSourceMap: string | undefined;
+      let testSourceMap: string | undefined;
+      
       if (language === 'typescript' || language === 'tsx') {
         try {
-          codeToRun = compileTypeScript(value);
+          const mainResult = compileTypeScript(mainCode, 'main.ts');
+          codeToRun = mainResult.code;
+          mainSourceMap = mainResult.sourceMap;
+          
+          if (testCode) {
+            const testResult = compileTypeScript(testCode, 'test.ts');
+            testCodeToRun = testResult.code;
+            testSourceMap = testResult.sourceMap;
+          }
         } catch (error: any) {
           addConsoleOutput('error', error.message);
           setIsRunning(false);
@@ -252,13 +406,109 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       // Generate unique ID for this execution
       const executionId = Date.now().toString();
       
-      // Create iframe content
+      // Determine the filename for stack traces
+      const fileName = language === 'typescript' || language === 'tsx' ? 'code.ts' : 'code.js';
+      
+      // Create a single module with both main and test code
+      // This preserves variable scope while maintaining accurate line numbers
+      let fullModule = codeToRun;
+      
+      if (testCodeToRun) {
+        // Add the test separator and test code
+        fullModule += '\n// ***\n' + testCodeToRun;
+      }
+      
+      // Add source map if available
+      if (mainSourceMap) {
+        fullModule += `\n//# sourceMappingURL=data:application/json;base64,${btoa(mainSourceMap)}`;
+      }
+      
+      // Create blob URL for the module
+      const moduleBlob = new Blob([fullModule], { type: 'application/javascript' });
+      const moduleUrl = URL.createObjectURL(moduleBlob);
+      
+      // Create runner script that imports and executes the module
+      const runnerScript = `
+// Get executionId from window
+const executionId = window.executionId || '${executionId}';
+
+// Override error handler to clean up blob URLs in stack traces
+const originalConsoleError = console.error;
+console.error = function(...args) {
+  // Clean up stack traces in error messages
+  const cleanedArgs = args.map(arg => {
+    if (typeof arg === 'string') {
+      // Replace blob URLs with just the filename
+      // Handles formats like: blob:http://localhost:5173/uuid:line:col
+      return arg.replace(/blob:[^:]+:\\/\\/[^/]+\\/[^:]+/g, '${fileName}');
+    }
+    return arg;
+  });
+  originalConsoleError.apply(console, cleanedArgs);
+};
+
+window.addEventListener('error', (event) => {
+  if (event.error && event.error.stack) {
+    event.error.stack = event.error.stack.replace(/blob:[^:]+:\\/\\/[^/]+\\/[^:]+/g, '${fileName}');
+  }
+});
+
+let __testSeparatorLine = -1;
+let __mainExecutionSuccess = true;
+
+try {
+  // Import the module
+  await import('${moduleUrl}');
+} catch (error) {
+  // Check if error is in main code or test code
+  const errorLine = error.stack?.match(/:(\d+):\d+/)?.[1];
+  if (errorLine && __testSeparatorLine > 0 && parseInt(errorLine) > __testSeparatorLine) {
+    // This is a test error
+    console.log('\\n--- Running Tests ---');
+    if (error.stack) {
+      error.stack = error.stack.replace(/blob:[^:]+:\\/\\/[^/]+\\/[^:]+/g, '${fileName}');
+    }
+    console.error(error.stack || error.message || error.toString());
+    console.log('✗ Test failed');
+  } else {
+    // This is a main code error
+    __mainExecutionSuccess = false;
+    if (error.stack) {
+      error.stack = error.stack.replace(/blob:[^:]+:\\/\\/[^/]+\\/[^:]+/g, '${fileName}');
+    }
+    console.error(error.stack || error.message || error.toString());
+  }
+}
+
+${testCodeToRun ? `
+// If we have test code and main succeeded, show success
+if (__mainExecutionSuccess) {
+  // Find the test separator line
+  const moduleText = await fetch('${moduleUrl}').then(r => r.text());
+  const lines = moduleText.split('\\n');
+  __testSeparatorLine = lines.findIndex(line => line.trim() === '// ***') + 1;
+  
+  // If no error was thrown, tests passed
+  console.log('\\n--- Running Tests ---');
+  console.log('✓ All tests passed');
+}
+` : ''}
+
+// Clean up blob URL
+URL.revokeObjectURL('${moduleUrl}');
+`;
+
+      const runnerBlob = new Blob([runnerScript], { type: 'application/javascript' });
+      const runnerUrl = URL.createObjectURL(runnerBlob);
+      
+      // Create iframe content with script tags pointing to blob URLs
       const iframeContent = `
         <!DOCTYPE html>
         <html>
         <head>
           <script>
             const executionId = '${executionId}';
+            window.executionId = executionId; // Make it available globally
             
             // Override console methods to send messages to parent
             const originalConsole = {
@@ -274,7 +524,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
                 try {
                   window.parent.postMessage({
                     type: 'console',
-                    executionId: executionId,
+                    executionId: window.executionId,
                     method: method,
                     args: args.map(arg => {
                       try {
@@ -302,16 +552,28 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
             // Notify parent that console is ready
             window.parent.postMessage({
               type: 'console-ready',
-              executionId: executionId
+              executionId: window.executionId
             }, '*');
             
-            // Catch errors
+            // Catch errors with better stack traces
             window.addEventListener('error', (event) => {
+              let errorMsg = event.message;
+              
+              // Clean up the error message and stack trace
+              if (event.error && event.error.stack) {
+                // Replace blob URL with readable filename
+                event.error.stack = event.error.stack.replace(/blob:[^:]+:\\/\\/[^/]+\\/[^:]+/g, '${fileName}');
+                errorMsg = event.error.stack;
+              } else if (event.filename && event.filename.includes('blob:')) {
+                // If no stack trace, at least show line info
+                errorMsg += ' (at ${fileName}:' + event.lineno + ':' + event.colno + ')';
+              }
+              
               window.parent.postMessage({
                 type: 'console',
-                executionId: executionId,
+                executionId: window.executionId,
                 method: 'error',
-                args: [event.message + ' (at line ' + event.lineno + ':' + event.colno + ')']
+                args: [errorMsg]
               }, '*');
               event.preventDefault();
             });
@@ -319,7 +581,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
             window.addEventListener('unhandledrejection', (event) => {
               window.parent.postMessage({
                 type: 'console',
-                executionId: executionId,
+                executionId: window.executionId,
                 method: 'error',
                 args: ['Unhandled Promise Rejection: ' + String(event.reason)]
               }, '*');
@@ -328,21 +590,23 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
           </script>
         </head>
         <body>
-          <script>
-            // Wait a bit to ensure console overrides are in place
-            setTimeout(() => {
-              try {
-                ${codeToRun}
-              } catch (error) {
-                console.error(error.stack || error.message || error.toString());
-              }
-              
-              // Notify completion
+          <script type="module">
+            // Import and run the runner module
+            import('${runnerUrl}').then(() => {
+              // Notify completion after script execution
+              setTimeout(() => {
+                window.parent.postMessage({
+                  type: 'execution-complete',
+                  executionId: window.executionId
+                }, '*');
+              }, 50);
+            }).catch(error => {
+              console.error('Failed to run code:', error);
               window.parent.postMessage({
                 type: 'execution-complete',
-                executionId: executionId
+                executionId: window.executionId
               }, '*');
-            }, 0);
+            });
           </script>
         </body>
         </html>
@@ -366,6 +630,9 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
           setTimeout(() => {
             window.removeEventListener('message', messageHandler);
             setIsRunning(false);
+            // Clean up blob URLs
+            URL.revokeObjectURL(runnerUrl);
+            // Main and test URLs are cleaned up in the runner script
           }, 100);
         }
       };
@@ -403,7 +670,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       addConsoleOutput('error', `Runtime error: ${error.message}`);
       setIsRunning(false);
     }
-  }, [value, language]);
+  }, [value, language, clearErrorHighlights]);
 
   // Clean up on unmount
   useEffect(() => {
@@ -492,6 +759,15 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
                     title="Hide diff"
                   >
                     Hide Diff
+                  </button>
+                )}
+                {editedSnippets[currentSnippetIndex] && (
+                  <button 
+                    className="action-button reset-button" 
+                    onClick={resetCurrentSnippet}
+                    title="Reset to original code"
+                  >
+                    Reset
                   </button>
                 )}
               </>
@@ -585,14 +861,25 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
               {consoleOutput.length === 0 ? (
                 <div className="console-empty">Click Run to execute code</div>
               ) : (
-                consoleOutput.map((output, index) => (
-                  <div key={index} className={`console-line console-${output.type}`}>
-                    <span className="console-timestamp">
-                      {output.timestamp.toLocaleTimeString()}
-                    </span>
-                    <span className="console-message">{output.message}</span>
-                  </div>
-                ))
+                consoleOutput.map((output, index) => {
+                  const isTestSeparator = output.message.includes('--- Running Tests ---');
+                  const isTestPass = output.message.includes('✓ All tests passed');
+                  const isTestFail = output.message.includes('✗ Test failed:');
+                  
+                  let className = `console-line console-${output.type}`;
+                  if (isTestSeparator) className += ' console-test-separator';
+                  if (isTestPass) className += ' console-test-pass';
+                  if (isTestFail) className += ' console-test-fail';
+                  
+                  return (
+                    <div key={index} className={className}>
+                      <span className="console-timestamp">
+                        {output.timestamp.toLocaleTimeString()}
+                      </span>
+                      <span className="console-message">{output.message}</span>
+                    </div>
+                  );
+                })
               )}
             </div>
           </div>
@@ -602,6 +889,38 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       <style>{`
         .code-display-container {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* Error highlighting styles */
+        .error-line-highlight {
+          background-color: rgba(255, 0, 0, 0.1);
+          border-left: 3px solid #ff0000;
+        }
+        
+        .error-glyph {
+          background-color: #ff0000;
+          color: white;
+          border-radius: 50%;
+          width: 12px !important;
+          height: 12px !important;
+          margin: 6px;
+        }
+        
+        .error-glyph::before {
+          content: '!';
+          position: absolute;
+          left: 4px;
+          top: -2px;
+          font-size: 10px;
+          font-weight: bold;
+        }
+        
+        .error-squiggle {
+          text-decoration: underline wavy #ff0000;
+        }
+        
+        .error-inline {
+          border-bottom: 2px solid #ff0000;
         }
 
         .window-content {
@@ -688,6 +1007,27 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
           color: #6bcfff;
         }
 
+        .console-test-separator {
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid #333;
+        }
+
+        .console-test-separator .console-message {
+          color: #a78bfa;
+          font-weight: 600;
+        }
+
+        .console-test-pass .console-message {
+          color: #4ade80;
+          font-weight: 600;
+        }
+
+        .console-test-fail .console-message {
+          color: #ff6b6b;
+          font-weight: 600;
+        }
+
         .macos-window {
           background: #1e1e1e;
           border-radius: 8px;
@@ -755,6 +1095,17 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
         .run-button:hover:not(:disabled) {
           background: #218838;
           border-color: #1e7e34;
+        }
+        
+        .reset-button {
+          background: #dc3545;
+          border-color: #dc3545;
+          color: white;
+        }
+        
+        .reset-button:hover:not(:disabled) {
+          background: #c82333;
+          border-color: #bd2130;
         }
 
         .snippet-indicator {

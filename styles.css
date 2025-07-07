@@ -1,18 +1,3 @@
-.slide-background-content {
-  background-image: url(https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTBuM3NwMjJyNjUycW9mNWpiMTFseHd6amVrbWQ2MDBrZGw3N2pydSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/qgQUggAC3Pfv687qPC/giphy.gif);
-  background-repeat: no-repeat;
-  background-size: 480px 360px !important;
-  background-position: calc(100vw - 480px) calc(100vh - 315px) !important;
-  background-color: white;
-}
-
-section {
-  background-color: rgba(255, 255, 255, 0.8);
-}
-
-audio {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, calc(100% + 10px));
+[font-family="header"] {
+  filter: drop-shadow(2px 4px 4px rgb(0, 0, 0));
 }
