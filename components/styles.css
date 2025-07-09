@@ -1,0 +1,236 @@
+ .code-display-container {
+   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+ }
+
+ .window-content {
+   display: flex;
+   flex: 1;
+   overflow: visible;
+ }
+
+ .editor-pane {
+   flex: 1;
+   border-right: 1px solid #2d2d2d;
+   overflow: visible;
+   display: flex;
+   flex-direction: column;
+   align-items: stretch;
+   justify-content: stretch;
+ }
+
+ .console-pane {
+   width: 350px;
+   display: flex;
+   flex-direction: column;
+   background: #1a1a1a;
+ }
+
+ .console-header {
+   background: #252526;
+   padding: 10px 15px;
+   border-bottom: 1px solid #2d2d2d;
+ }
+
+ .console-title {
+   color: #cccccc;
+   font-size: 12px;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+ }
+
+ .console-output {
+   flex: 1;
+   padding: 10px;
+   overflow-y: auto;
+   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+ }
+
+ .console-empty {
+   color: #666;
+   font-style: italic;
+   font-size: 13px;
+ }
+
+ .console-line {
+   font-size: 12px;
+   line-height: 1.6;
+   margin-bottom: 4px;
+   display: flex;
+   gap: 8px;
+ }
+
+ .console-timestamp {
+   color: #666;
+   font-size: 11px;
+   min-width: 65px;
+ }
+
+ .console-message {
+   flex: 1;
+   word-break: break-word;
+   white-space: pre-wrap;
+ }
+
+ .console-log .console-message {
+   color: #cccccc;
+ }
+
+ .console-error .console-message {
+   color: #ff6b6b;
+ }
+
+ .console-warn .console-message {
+   color: #ffd93d;
+ }
+
+ .console-info .console-message {
+   color: #6bcfff;
+ }
+
+ .macos-window {
+   display: flex;
+   flex-direction: column;
+   background: #1e1e1e;
+   border-radius: 8px;
+   box-shadow: 0 22px 70px 4px rgba(0, 0, 0, 0.56);
+   overflow: visible;
+   border: 1px solid #444;
+   flex: 1;
+   width: 100%;
+   max-width: 1200px;
+   min-width: 1000px;
+ }
+
+ .macos-titlebar {
+   background: #323233;
+   height: 38px;
+   display: flex;
+   align-items: center;
+   padding: 0 20px;
+   position: relative;
+   user-select: none;
+ }
+
+ .macos-controls {
+   display: flex;
+   gap: 8px;
+   position: absolute;
+   left: 20px;
+ }
+
+ .macos-actions {
+   position: absolute;
+   right: 20px;
+   display: flex;
+   gap: 8px;
+ }
+
+ .action-button {
+   background: #404040;
+   border: 1px solid #555;
+   color: #cccccc;
+   padding: 4px 12px;
+   border-radius: 4px;
+   font-size: 11px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all 0.15s;
+ }
+
+ .action-button:hover:not(:disabled) {
+   background: #4a4a4a;
+   border-color: #666;
+ }
+
+ .action-button:disabled {
+   opacity: 0.5;
+   cursor: not-allowed;
+ }
+
+ .run-button {
+   background: #28a745;
+   border-color: #28a745;
+   color: white;
+ }
+
+ .run-button:hover:not(:disabled) {
+   background: #218838;
+   border-color: #1e7e34;
+ }
+
+ .snippet-indicator {
+   color: #cccccc;
+   font-size: 11px;
+   padding: 0 8px;
+   display: flex;
+   align-items: center;
+ }
+
+ .diff-editor-container {
+   border-top: 1px solid #2d2d2d;
+   background: #1a1a1a;
+   flex: 1 1;
+   display: flex;
+   flex-direction: column;
+   flex-basis: max-content;
+   position: relative;
+ }
+
+ .diff-header {
+   background: #252526;
+   padding: 8px 15px;
+   height: 1.5rem;
+   border-bottom: 1px solid #2d2d2d;
+ }
+
+ .diff-title {
+   color: #cccccc;
+   font-size: 11px;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+ }
+
+ .diff-editor {
+   width: 100%;
+   flex: 1;
+ }
+
+ .macos-control {
+   width: 12px;
+   height: 12px;
+   border-radius: 50%;
+   transition: opacity 0.15s;
+ }
+
+ .macos-control:hover {
+   opacity: 0.8;
+ }
+
+ .macos-close {
+   background: #ff5f57;
+   border: 1px solid #e0443e;
+ }
+
+ .macos-minimize {
+   background: #ffbd2e;
+   border: 1px solid #dea123;
+ }
+
+ .macos-maximize {
+   background: #28c940;
+   border: 1px solid #14aa2f;
+ }
+
+ .macos-title {
+   flex: 1;
+   text-align: center;
+   color: #cccccc;
+   font-size: 13px;
+   font-weight: 500;
+ }
+
+ .editor-container {
+   border-top: 1px solid #2d2d2d;
+ }
