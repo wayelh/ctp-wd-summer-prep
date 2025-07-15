@@ -1,0 +1,161 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Migrating from JavaScript to TypeScript
+
+- Start gradually, not all at once
+- Use `.ts` files alongside `.js` files
+- Enable `allowJs` in tsconfig.json
+- Convert file by file
+
+```json
+// tsconfig.json for migration
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "strict": false, // Start loose, tighten over time
+    "noImplicitAny": false,
+    "strictNullChecks": false
+  }
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Migration Steps
+
+1. **Setup TypeScript** - Install and configure
+2. **Rename files** - `.js` → `.ts` (or `.jsx` → `.tsx`)
+3. **Add basic types** - Start with function parameters
+4. **Fix errors** - Address type errors one by one
+5. **Improve types** - Refine and add more specific types
+6. **Enable strict mode** - Gradually enable strict checks
+
+```typescript
+// Before (JavaScript)
+function calculateTotal(items) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+// After (TypeScript)
+interface Item {
+  name: string;
+  price: number;
+}
+
+function calculateTotal(items: Item[]): number {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Dealing with Third-Party Libraries
+
+```typescript
+// 1. Check if types exist
+npm install --save-dev @types/lodash
+
+// 2. If no types exist, declare module
+declare module 'some-untyped-library' {
+  export function doSomething(value: string): void;
+  export const config: {
+    timeout: number;
+    retries: number;
+  };
+}
+
+// 3. Use any as escape hatch (temporarily)
+const untypedLib: any = require('untyped-lib');
+
+// 4. Create your own types
+interface UntypedLibAPI {
+  init(config: Config): void;
+  process(data: unknown): Promise<Result>;
+}
+const lib = untypedLib as UntypedLibAPI;
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Common Migration Patterns
+
+```typescript
+// Pattern 1: Start with JSDoc
+/**
+ * @param {string} name
+ * @param {number} age
+ * @returns {string}
+ */
+function greet(name, age) {
+  return `Hello ${name}, you are ${age} years old`;
+}
+
+// Pattern 2: Gradual typing
+function processData(data: any): any { // Start with any
+  // Implementation
+}
+
+// Later, refine the types
+interface InputData {
+  id: string;
+  values: number[];
+}
+
+interface OutputData {
+  id: string;
+  result: number;
+}
+
+function processData(data: InputData): OutputData {
+  // Implementation with proper types
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## TypeScript Strict Mode
+
+```typescript
+// Start with loose config
+{
+  "compilerOptions": {
+    "strict": false
+  }
+}
+
+// Gradually enable strict checks
+{
+  "compilerOptions": {
+    "noImplicitAny": true,      // Phase 1
+    "strictNullChecks": true,   // Phase 2
+    "strictFunctionTypes": true, // Phase 3
+    "strict": true              // Final: All strict checks
+  }
+}
+
+// Fix issues as you enable each option
+// Before: function might return undefined
+function findUser(id) {
+  return users.find(u => u.id === id);
+}
+
+// After: Explicit about possible undefined
+function findUser(id: string): User | undefined {
+  return users.find(u => u.id === id);
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.VerticalImage
+  title="TypeScript Migration Tips"
+  src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExczVmdGI2aDhpY3Bha2NqOWdwODl6Y3I5YnI2d2NrZ3VjNmlqcThvNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCws8nOsE/giphy.gif"
+  listItems={[
+    'Start with critical paths first',
+    'Use TypeScript for new code immediately',
+    'Set up pre-commit hooks for type checking',
+    'Document type decisions for the team',
+    'Celebrate small wins along the way!'
+  ]}
+/>

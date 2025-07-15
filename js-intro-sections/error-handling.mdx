@@ -1,0 +1,278 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Error Handling Deep Dive
+
+```javascript
+// Basic error handling
+try {
+  riskyOperation();
+} catch (error) {
+  console.error('Operation failed:', error.message);
+} finally {
+  cleanup(); // Always runs
+}
+
+// Throwing custom errors
+function validateAge(age) {
+  if (age < 0) {
+    throw new Error('Age cannot be negative');
+  }
+  if (age > 150) {
+    throw new RangeError('Age seems unrealistic');
+  }
+  return age;
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Custom Error Classes
+
+```javascript
+// Create custom error classes for a user authentication system
+class AuthError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
+
+// TODO: Create specific error classes
+class InvalidCredentialsError extends AuthError {
+  // Your code here
+}
+
+class SessionExpiredError extends AuthError {
+  // Your code here
+}
+
+function login(username, password) {
+  // Simulate authentication
+  if (!username || !password) {
+    throw new InvalidCredentialsError('Username and password required');
+  }
+  if (username !== 'admin' || password !== 'secret') {
+    throw new InvalidCredentialsError('Invalid username or password');
+  }
+  return { token: 'abc123', expiresIn: 3600 };
+}
+
+// ***
+describe('Custom Error Classes - Initial Implementation', () => {
+  it('should throw InvalidCredentialsError for empty credentials', () => {
+    expect(() => login('', '')).to.throw(InvalidCredentialsError);
+  });
+  
+  it('should have correct error name', () => {
+    try {
+      login('', '');
+    } catch (error) {
+      expect(error.name).to.equal('InvalidCredentialsError');
+    }
+  });
+});
+// ---
+// Step 1: Implement InvalidCredentialsError
+class AuthError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
+
+class InvalidCredentialsError extends AuthError {
+  constructor(message) {
+    super(message);
+    this.name = 'InvalidCredentialsError';
+  }
+}
+
+class SessionExpiredError extends AuthError {
+  constructor(message) {
+    super(message);
+    this.name = 'SessionExpiredError';
+  }
+}
+
+function login(username, password) {
+  if (!username || !password) {
+    throw new InvalidCredentialsError('Username and password required');
+  }
+  if (username !== 'admin' || password !== 'secret') {
+    throw new InvalidCredentialsError('Invalid username or password');
+  }
+  return { token: 'abc123', expiresIn: 3600 };
+}
+
+// ***
+describe('Custom Error Classes - Step 1: Inheritance', () => {
+  it('should inherit from Error', () => {
+    const error = new InvalidCredentialsError('Test message');
+    expect(error).to.be.instanceof(Error);
+  });
+  
+  it('should inherit from AuthError', () => {
+    const error = new InvalidCredentialsError('Test message');
+    expect(error).to.be.instanceof(AuthError);
+  });
+  
+  it('should preserve error message', () => {
+    const error = new InvalidCredentialsError('Test message');
+    expect(error.message).to.equal('Test message');
+  });
+});
+// ---
+// Step 2: Add error codes and metadata
+class AuthError extends Error {
+  constructor(message, code) {
+    super(message);
+    this.name = 'AuthError';
+    this.code = code;
+    this.timestamp = new Date();
+  }
+}
+
+class InvalidCredentialsError extends AuthError {
+  constructor(message) {
+    super(message, 'INVALID_CREDENTIALS');
+    this.name = 'InvalidCredentialsError';
+  }
+}
+
+class SessionExpiredError extends AuthError {
+  constructor(message, expiredAt) {
+    super(message, 'SESSION_EXPIRED');
+    this.name = 'SessionExpiredError';
+    this.expiredAt = expiredAt;
+  }
+}
+
+function checkSession(session) {
+  if (!session || !session.token) {
+    throw new SessionExpiredError('No active session', null);
+  }
+  if (Date.now() > session.expiresAt) {
+    throw new SessionExpiredError('Session has expired', session.expiresAt);
+  }
+  return true;
+}
+
+// ***
+describe('Custom Error Classes - Step 2: Error codes and metadata', () => {
+  it('should have correct error code for InvalidCredentialsError', () => {
+    const credError = new InvalidCredentialsError('Bad login');
+    expect(credError.code).to.equal('INVALID_CREDENTIALS');
+  });
+  
+  it('should have timestamp property', () => {
+    const credError = new InvalidCredentialsError('Bad login');
+    expect(credError.timestamp).to.be.instanceof(Date);
+  });
+  
+  it('should have correct error code for SessionExpiredError', () => {
+    const sessionError = new SessionExpiredError('Expired', new Date());
+    expect(sessionError.code).to.equal('SESSION_EXPIRED');
+  });
+  
+  it('should have expiredAt property', () => {
+    const sessionError = new SessionExpiredError('Expired', new Date());
+    expect(sessionError.expiredAt).to.exist;
+  });
+});
+// ---
+// Step 3: Error recovery strategies
+class AuthError extends Error {
+  constructor(message, code, recoverable = false) {
+    super(message);
+    this.name = 'AuthError';
+    this.code = code;
+    this.timestamp = new Date();
+    this.recoverable = recoverable;
+  }
+}
+
+class InvalidCredentialsError extends AuthError {
+  constructor(message, attempts = 0) {
+    super(message, 'INVALID_CREDENTIALS', attempts < 3);
+    this.name = 'InvalidCredentialsError';
+    this.attempts = attempts;
+  }
+}
+
+class NetworkError extends AuthError {
+  constructor(message, retryAfter = 1000) {
+    super(message, 'NETWORK_ERROR', true);
+    this.name = 'NetworkError';
+    this.retryAfter = retryAfter;
+  }
+}
+
+async function authenticateWithRetry(username, password, maxAttempts = 3) {
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    try {
+      // Simulate network request
+      if (Math.random() < 0.3) {
+        throw new NetworkError('Connection failed', 2000);
+      }
+      
+      if (username !== 'admin' || password !== 'secret') {
+        throw new InvalidCredentialsError('Invalid credentials', attempts + 1);
+      }
+      
+      return { token: 'abc123', user: username };
+    } catch (error) {
+      attempts++;
+      
+      if (error instanceof NetworkError && error.recoverable) {
+        console.log(`Network error, retrying in ${error.retryAfter}ms...`);
+        await new Promise(resolve => setTimeout(resolve, error.retryAfter));
+      } else if (error instanceof InvalidCredentialsError && !error.recoverable) {
+        throw error; // Max attempts reached
+      } else {
+        throw error;
+      }
+    }
+  }
+  
+  throw new InvalidCredentialsError('Max attempts exceeded', attempts);
+}
+
+// ***
+describe('Custom Error Classes - Step 3: Error recovery', () => {
+  it('should mark NetworkError as recoverable', () => {
+    const netError = new NetworkError('Failed');
+    expect(netError.recoverable).to.be.true;
+  });
+  
+  it('should have default retryAfter value', () => {
+    const netError = new NetworkError('Failed');
+    expect(netError.retryAfter).to.equal(1000);
+  });
+  
+  it('should not be recoverable after 3 attempts', () => {
+    const credError3 = new InvalidCredentialsError('Failed', 3);
+    expect(credError3.recoverable).to.be.false;
+  });
+  
+  it('should authenticate successfully with correct credentials', async () => {
+    const result = await authenticateWithRetry('admin', 'secret');
+    expect(result.token).to.exist;
+  });
+});
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Error Handling Best Practices
+
+- Always handle errors at the appropriate level
+- Create meaningful error messages for debugging
+- Use custom error classes for different error types
+- Log errors but don't expose sensitive information
+- Implement retry logic for recoverable errors
+- Use error boundaries in UI frameworks
+- Monitor and track errors in production
+</SlideLayout.Center>

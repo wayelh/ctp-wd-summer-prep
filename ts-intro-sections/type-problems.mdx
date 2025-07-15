@@ -1,0 +1,196 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## JavaScript's Type Problem
+
+<FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+
+What's wrong with this picture?
+
+```javascript
+function calculateDiscount(price, discount) {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, "20%")); // Oops!
+// ---
+function calculateDiscount(price, discount) {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, 0.2));
+```
+</FlexBox>
+</SlideLayout.Center>
+
+<SlideLayout.VerticalImage
+  title="The Price is NaN, Bob"
+  src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHAxempuYnNlc29zbnQ0NHBmd2lwdjhjdnpqYnZwdGhmZ2NjeXJieCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fpFPWzrXhLOo6uFXGg/giphy.gif"
+  listItems={[
+    'In JavaScript, we can pass any value to a function',
+    'JavaScript will try to do the non-sensical math',
+    'This results in `NaN` (Not a Number)',
+    'This bug that can be hard to find',
+  ]}
+/>
+
+<SlideLayout.Center>
+## TypeScript can predict the future
+
+- On the other hand, TypeScript can tell us about this mistake beforehand
+- If we say its a number, TypeScript will complain if we try to give a string
+- These bugs happen all the time in JavaScript, as we pass values around
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## With TypeScript...
+
+```typescript
+function calculateDiscount(price: number, discount: number): number {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, "20%"));
+// ---
+function calculateDiscount(price: number, discount: number): number {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, "20%"));
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## A Silver Bullet in a Foot Gun
+
+- TypeScript guarantees the values ***you assign*** will be of the expected type
+- However, values ***you don't assign***, like those that come from API's and users may be incorrect
+- Understanding this loophole is important to knowing where to validate, or check data
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## The Type Layer
+- TypeScript is really two languages in one file
+- There's JavaScript, this describes what does happen at runtime
+- There's TypeScript, this annotates the JavaScript, describes what should happen at runtime
+</SlideLayout.Center>
+
+<SlideLayout.Full>
+## JavaScript vs. TypeScript
+```typescript
+// JavaScript
+function calculateDiscount(price, discount) {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, "20%"));
+// ---
+// TypeScript
+function calculateDiscount(price: number, discount: number): number {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, "20%"));
+```
+</SlideLayout.Full>
+
+<SlideLayout.Center>
+## Exercise: Fix the Type Errors
+
+```typescript
+// Fix the type errors in this code
+function processOrder(order) {
+  const tax = order.total * 0.08;
+  const shipping = order.express ? 15 : 5;
+  return order.total + tax + shipping;
+}
+
+const myOrder = {
+  items: ["shirt", "pants"],
+  total: "50", // Oops, this is a string!
+  express: "yes" // This should be boolean
+};
+
+console.log(processOrder(myOrder));
+
+// ***
+// Test: This will fail until types are added
+const testOrder = {
+  items: ["test"],
+  total: "100",
+  express: "true"
+};
+const result = processOrder(testOrder);
+if (typeof result !== 'number') {
+  throw new Error('processOrder should return a number');
+}
+// ---
+// Step 1: Add type annotations
+interface Order {
+  items: string[];
+  total: number;
+  express: boolean;
+}
+
+function processOrder(order: Order): number {
+  const tax = order.total * 0.08;
+  const shipping = order.express ? 15 : 5;
+  return order.total + tax + shipping;
+}
+
+// This will now show type errors!
+const myOrder = {
+  items: ["shirt", "pants"],
+  total: "50", // Error: Type 'string' is not assignable to type 'number'
+  express: "yes" // Error: Type 'string' is not assignable to type 'boolean'
+};
+
+// ***
+// Test: Type errors should be caught
+try {
+  // @ts-expect-error
+  processOrder(myOrder);
+} catch (e) {
+  // TypeScript prevents this at compile time
+}
+// ---
+// Step 2: Fix the data
+interface Order {
+  items: string[];
+  total: number;
+  express: boolean;
+}
+
+function processOrder(order: Order): number {
+  const tax = order.total * 0.08;
+  const shipping = order.express ? 15 : 5;
+  return order.total + tax + shipping;
+}
+
+const myOrder: Order = {
+  items: ["shirt", "pants"],
+  total: 50, // Now it's a number
+  express: true // Now it's a boolean
+};
+
+console.log(processOrder(myOrder)); // 59
+
+// ***
+// Test: Correct implementation
+const result = processOrder(myOrder);
+if (result !== 59) {
+  throw new Error(`Expected 59, got ${result}`);
+}
+
+// Test with different values
+const order2: Order = {
+  items: ["book"],
+  total: 100,
+  express: false
+};
+const result2 = processOrder(order2);
+if (result2 !== 113) {
+  throw new Error(`Expected 113 (100 + 8 + 5), got ${result2}`);
+}
+```
+</SlideLayout.Center>

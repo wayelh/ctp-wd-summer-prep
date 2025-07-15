@@ -1,0 +1,385 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Classes in TypeScript
+
+- TypeScript enhances JavaScript classes with types
+- Access modifiers: public, private, protected
+- Abstract classes and methods
+- Interfaces for class contracts
+
+```typescript
+class Animal {
+  protected name: string;
+  
+  constructor(name: string) {
+    this.name = name;
+  }
+  
+  move(distance: number = 0) {
+    console.log(`${this.name} moved ${distance}m`);
+  }
+}
+
+class Dog extends Animal {
+  bark() {
+    console.log('Woof! Woof!');
+  }
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Access Modifiers
+
+```typescript
+class BankAccount {
+  private balance: number = 0;
+  public accountNumber: string;
+  protected owner: string;
+  
+  constructor(accountNumber: string, owner: string) {
+    this.accountNumber = accountNumber;
+    this.owner = owner;
+  }
+  
+  public deposit(amount: number): void {
+    if (amount > 0) {
+      this.balance += amount;
+    }
+  }
+  
+  public getBalance(): number {
+    return this.balance;
+  }
+}
+
+const account = new BankAccount("123456", "John");
+account.deposit(100);
+// account.balance; // Error! Private property
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Build a Class Hierarchy
+
+```typescript
+// Test setup
+let logSpy: sinon.SinonSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+
+// ***
+// Create a vehicle class hierarchy with proper types
+
+// TODO: Create abstract Vehicle class
+abstract class Vehicle {
+  // Add properties and methods
+}
+
+// TODO: Create Car and Motorcycle classes
+class Car {
+  // Implement
+}
+
+class Motorcycle {
+  // Implement
+}
+
+// This should work when implemented correctly
+const car = new Car("Toyota", "Camry", 4);
+const bike = new Motorcycle("Harley", "Davidson", 2);
+
+car.start(); // "Toyota Camry engine started"
+car.honk(); // "Beep beep!"
+
+bike.start(); // "Harley Davidson engine started"
+bike.wheelie(); // "Doing a wheelie!"
+
+// ***
+describe('Vehicle Class Hierarchy', () => {
+  it('should create car and motorcycle instances', () => {
+    const testCar = new Car("Test", "Car", 4);
+    const testBike = new Motorcycle("Test", "Bike", 2);
+    
+    expect(testCar).to.be.instanceOf(Vehicle);
+    expect(testBike).to.be.instanceOf(Vehicle);
+  });
+  
+  it('should have correct wheel counts', () => {
+    const testCar = new Car("Test", "Car", 4);
+    expect(testCar.wheels).to.equal(4);
+  });
+});
+// ---
+// Test setup (reuse)
+let logSpy: sinon.SinonSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+
+// ***
+// Step 1: Create abstract base class
+abstract class Vehicle {
+  constructor(
+    protected make: string,
+    protected model: string,
+    public wheels: number
+  ) {}
+  
+  abstract start(): void;
+  
+  stop(): void {
+    console.log(`${this.make} ${this.model} stopped`);
+  }
+  
+  getInfo(): string {
+    return `${this.make} ${this.model} (${this.wheels} wheels)`;
+  }
+}
+
+class Car extends Vehicle {
+  constructor(make: string, model: string, wheels: number = 4) {
+    super(make, model, wheels);
+  }
+  
+  start(): void {
+    console.log(`${this.make} ${this.model} engine started`);
+  }
+  
+  honk(): void {
+    console.log("Beep beep!");
+  }
+}
+
+class Motorcycle extends Vehicle {
+  constructor(make: string, model: string, wheels: number = 2) {
+    super(make, model, wheels);
+  }
+  
+  start(): void {
+    console.log(`${this.make} ${this.model} engine started`);
+  }
+  
+  wheelie(): void {
+    console.log("Doing a wheelie!");
+  }
+}
+
+// Test polymorphism
+const vehicles: Vehicle[] = [
+  new Car("Toyota", "Camry"),
+  new Motorcycle("Harley", "Davidson")
+];
+
+vehicles.forEach(v => {
+  v.start();
+  if (v instanceof Car) {
+    v.honk();
+  } else if (v instanceof Motorcycle) {
+    v.wheelie();
+  }
+});
+
+// ***
+describe('Vehicle Implementation', () => {
+  it('should create and start vehicles', () => {
+    const car = new Car("Toyota", "Camry");
+    const bike = new Motorcycle("Harley", "Davidson");
+    
+    car.start();
+    bike.start();
+    
+    expect(logSpy.callCount).to.equal(2);
+    expect(logSpy.firstCall.args[0]).to.include("Toyota Camry engine started");
+    expect(logSpy.secondCall.args[0]).to.include("Harley Davidson engine started");
+  });
+  
+  it('should handle polymorphism correctly', () => {
+    logSpy.resetHistory();
+    vehicles.forEach(v => v.start());
+    expect(logSpy.callCount).to.equal(2);
+  });
+  
+  it('should have vehicle-specific methods', () => {
+    const car = new Car("Test", "Car");
+    const bike = new Motorcycle("Test", "Bike");
+    
+    logSpy.resetHistory();
+    car.honk();
+    bike.wheelie();
+    
+    expect(logSpy.firstCall.args[0]).to.equal("Beep beep!");
+    expect(logSpy.secondCall.args[0]).to.equal("Doing a wheelie!");
+  });
+});
+// ---
+// Test setup (reuse)
+let logSpy: sinon.SinonSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+
+// ***
+// Step 2: Add interfaces for capabilities
+interface Driveable {
+  speed: number;
+  accelerate(amount: number): void;
+  brake(): void;
+}
+
+interface HasRadio {
+  radioOn: boolean;
+  toggleRadio(): void;
+}
+
+abstract class Vehicle {
+  constructor(
+    protected make: string,
+    protected model: string,
+    public wheels: number
+  ) {}
+  
+  abstract start(): void;
+  stop(): void {
+    console.log(`${this.make} ${this.model} stopped`);
+  }
+}
+
+class Car extends Vehicle implements Driveable, HasRadio {
+  speed: number = 0;
+  radioOn: boolean = false;
+  
+  constructor(make: string, model: string) {
+    super(make, model, 4);
+  }
+  
+  start(): void {
+    console.log(`${this.make} ${this.model} engine started`);
+  }
+  
+  accelerate(amount: number): void {
+    this.speed += amount;
+    console.log(`Speed: ${this.speed} mph`);
+  }
+  
+  brake(): void {
+    this.speed = Math.max(0, this.speed - 10);
+    console.log(`Braking... Speed: ${this.speed} mph`);
+  }
+  
+  toggleRadio(): void {
+    this.radioOn = !this.radioOn;
+    console.log(`Radio ${this.radioOn ? 'on' : 'off'}`);
+  }
+}
+
+// Test interface implementation
+const myCar = new Car("Tesla", "Model 3");
+myCar.start();
+myCar.accelerate(30);
+myCar.brake();
+myCar.toggleRadio();
+
+// ***
+describe('Interface Implementation', () => {
+  it('should implement Driveable interface', () => {
+    const car = new Car("Test", "Car");
+    expect(car.speed).to.equal(0);
+    
+    car.accelerate(50);
+    expect(car.speed).to.equal(50);
+    
+    car.brake();
+    expect(car.speed).to.equal(40);
+    
+    car.brake();
+    car.brake();
+    car.brake();
+    car.brake();
+    expect(car.speed).to.equal(0); // Should not go negative
+  });
+  
+  it('should implement HasRadio interface', () => {
+    const car = new Car("Test", "Car");
+    expect(car.radioOn).to.be.false;
+    
+    car.toggleRadio();
+    expect(car.radioOn).to.be.true;
+    
+    car.toggleRadio();
+    expect(car.radioOn).to.be.false;
+  });
+  
+  it('should log speed changes', () => {
+    logSpy.resetHistory();
+    const car = new Car("Test", "Car");
+    
+    car.accelerate(30);
+    expect(logSpy.lastCall.args[0]).to.include("Speed: 30 mph");
+    
+    car.brake();
+    expect(logSpy.lastCall.args[0]).to.include("Speed: 20 mph");
+  });
+});
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Decorators (Experimental)
+
+```typescript
+// Enable experimentalDecorators in tsconfig.json
+
+function Logger(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  
+  descriptor.value = function(...args: any[]) {
+    console.log(`Calling ${propertyName} with args:`, args);
+    const result = originalMethod.apply(this, args);
+    console.log(`Result:`, result);
+    return result;
+  };
+}
+
+class Calculator {
+  @Logger
+  add(a: number, b: number): number {
+    return a + b;
+  }
+}
+
+const calc = new Calculator();
+calc.add(5, 3);
+// Logs: Calling add with args: [5, 3]
+// Logs: Result: 8
+```
+</SlideLayout.Center>

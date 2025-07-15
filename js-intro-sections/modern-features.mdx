@@ -1,0 +1,40 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Modern JavaScript Features
+
+```javascript
+// Template literals
+const greeting = `Hello, ${name}!`;
+
+// Optional chaining
+const city = user?.address?.city ?? "Unknown";
+
+// Nullish coalescing
+const port = process.env.PORT ?? 3000;
+
+// Dynamic imports
+const module = await import("./module.js");
+
+// Private class fields
+class User {
+  #password;  // Private field
+  
+  constructor(password) {
+    this.#password = password;
+  }
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## JavaScript Ecosystem
+
+- **Package Manager**: npm, yarn, pnpm
+- **Bundlers**: Webpack, Vite, Parcel, esbuild
+- **Frontend Frameworks**: React, Vue, Angular, Svelte
+- **Server Frameworks**: Express, Koa, Fastify, NextJS
+- **Runtime Environments**: Node.js, Deno, Bun
+- **Testing**: Jest, Mocha, Vitest
+- **Linting**: ESLint, Prettier
+</SlideLayout.Center>

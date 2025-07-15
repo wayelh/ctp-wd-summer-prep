@@ -1,0 +1,293 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.VerticalImage
+  title="Interfaces vs Types"
+  src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGo5NnJmMmt2dGp6cWNqeHF5Y3BwNnl0YjNkY2x3c3ZyZWRmMnFnZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7btPCcdNniyf0ArS/giphy.gif"
+  listItems={[
+    'Interfaces define object shapes',
+    'Types can define any type (objects, unions, primitives)',
+    'Interfaces can be extended and merged',
+    'Types are more flexible but cannot be reopened',
+  ]}
+/>
+
+<SlideLayout.Full>
+## Interface Example
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Admin extends User {
+  permissions: string[];
+}
+
+const admin: Admin = {
+  id: 1,
+  name: "Alice",
+  email: "alice@example.com",
+  permissions: ["read", "write", "delete"]
+};
+```
+</SlideLayout.Full>
+
+<SlideLayout.Center>
+## Optional Properties
+
+- Not all properties are required all the time
+- Use `?` to make a property optional
+- TypeScript will allow the property to be missing
+
+```typescript
+interface UserProfile {
+  name: string;
+  bio?: string;  // Optional
+  avatar?: string;  // Optional
+}
+
+const user1: UserProfile = { name: "Bob" }; // ✅
+const user2: UserProfile = { 
+  name: "Alice", 
+  bio: "TypeScript enthusiast" 
+}; // ✅
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Model a Blog System
+
+```typescript
+// Create interfaces for a blog system with posts, authors, and comments
+
+// TODO: Define these interfaces
+interface Author {
+  // Your code here
+}
+
+interface Comment {
+  // Your code here
+}
+
+interface BlogPost {
+  // Your code here
+}
+
+// This should work when interfaces are defined correctly
+const myBlog: BlogPost = {
+  id: 1,
+  title: "Learning TypeScript",
+  content: "TypeScript is amazing!",
+  author: {
+    id: 100,
+    name: "Jane Doe",
+    email: "jane@example.com"
+  },
+  publishedAt: new Date(),
+  tags: ["typescript", "programming"],
+  comments: [
+    {
+      id: 1,
+      content: "Great post!",
+      author: "John",
+      createdAt: new Date()
+    }
+  ]
+};
+
+//***
+describe('Blog System - Initial Implementation', () => {
+  it('should have properly structured author with valid email', () => {
+    expect(myBlog.author.email).to.include('@');
+  });
+  
+  it('should have at least one comment', () => {
+    expect(myBlog.comments).to.have.lengthOf.above(0);
+  });
+  
+  it('should include typescript tag', () => {
+    expect(myBlog.tags).to.include('typescript');
+  });
+});
+// ---
+// Step 1: Define the interfaces
+interface Author {
+  id: number;
+  name: string;
+  email: string;
+  bio?: string;
+}
+
+interface Comment {
+  id: number;
+  content: string;
+  author: string;
+  createdAt: Date;
+}
+
+interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  author: Author;
+  publishedAt: Date;
+  updatedAt?: Date;
+  tags: string[];
+  comments: Comment[];
+}
+
+const myBlog: BlogPost = {
+  id: 1,
+  title: "Learning TypeScript",
+  content: "TypeScript is amazing!",
+  author: {
+    id: 100,
+    name: "Jane Doe",
+    email: "jane@example.com"
+  },
+  publishedAt: new Date(),
+  tags: ["typescript", "programming"],
+  comments: [
+    {
+      id: 1,
+      content: "Great post!",
+      author: "John",
+      createdAt: new Date()
+    }
+  ]
+};
+
+//***
+describe('Blog System - Step 1: Properties', () => {
+  it('should have correct basic properties', () => {
+    expect(myBlog.id).to.equal(1);
+    expect(myBlog.title).to.equal("Learning TypeScript");
+  });
+  
+  it('should have properly nested author', () => {
+    expect(myBlog.author.id).to.equal(100);
+  });
+  
+  it('should have properly structured comments', () => {
+    expect(myBlog.comments[0].content).to.equal("Great post!");
+  });
+});
+// ---
+// Step 2: Add methods and readonly
+interface Author {
+  readonly id: number; // Can't be changed after creation
+  name: string;
+  email: string;
+  bio?: string;
+}
+
+interface BlogPost {
+  readonly id: number;
+  title: string;
+  content: string;
+  author: Author;
+  publishedAt: Date;
+  updatedAt?: Date;
+  tags: string[];
+  comments: Comment[];
+  
+  // Methods
+  addComment(comment: Omit<Comment, 'id' | 'createdAt'>): void;
+  updateContent(newContent: string): void;
+  publish(): void;
+}
+
+class BlogPostImpl implements BlogPost {
+  readonly id: number;
+  title: string;
+  content: string;
+  author: Author;
+  publishedAt: Date;
+  updatedAt?: Date;
+  tags: string[];
+  comments: Comment[] = [];
+  
+  constructor(data: Omit<BlogPost, 'addComment' | 'updateContent' | 'publish'>) {
+    Object.assign(this, data);
+  }
+  
+  addComment(comment: Omit<Comment, 'id' | 'createdAt'>) {
+    this.comments.push({
+      ...comment,
+      id: this.comments.length + 1,
+      createdAt: new Date()
+    });
+  }
+  
+  updateContent(newContent: string) {
+    this.content = newContent;
+    this.updatedAt = new Date();
+  }
+  
+  publish() {
+    this.publishedAt = new Date();
+  }
+}
+
+//***
+describe('Blog System - Step 2: Methods', () => {
+  let post;
+  
+  before(() => {
+    post = new BlogPostImpl({
+      id: 1,
+      title: "Test Post",
+      content: "Original content",
+      author: { id: 1, name: "Test", email: "test@test.com" },
+      publishedAt: new Date(),
+      tags: ["test"],
+      comments: []
+    });
+  });
+  
+  it('should add comments correctly', () => {
+    post.addComment({ content: "Nice!", author: "Commenter" });
+    expect(post.comments).to.have.lengthOf(1);
+    expect(post.comments[0].content).to.equal("Nice!");
+    expect(post.comments[0].author).to.equal("Commenter");
+  });
+  
+  it('should update content and set updatedAt', () => {
+    post.updateContent("Updated content");
+    expect(post.content).to.equal("Updated content");
+    expect(post.updatedAt).to.exist;
+    expect(post.updatedAt).to.be.instanceof(Date);
+  });
+});
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Interface Declaration Merging
+
+```typescript
+// Interfaces can be declared multiple times
+interface User {
+  name: string;
+}
+
+interface User {
+  age: number; // Added to the same interface
+}
+
+// Now User has both properties
+const user: User = {
+  name: "Alice",
+  age: 30
+};
+
+// This is useful for extending third-party types
+interface Window {
+  myCustomProperty: string;
+}
+
+window.myCustomProperty = "Hello!";
+```
+</SlideLayout.Center>

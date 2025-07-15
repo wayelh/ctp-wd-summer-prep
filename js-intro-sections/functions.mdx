@@ -1,0 +1,262 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Functions: The Heart of JavaScript
+
+```javascript
+// Function declaration
+function add(a, b) {
+  return a + b;
+}
+
+// Function expression
+const multiply = function(a, b) {
+  return a * b;
+};
+
+// Arrow function (ES6+)
+const divide = (a, b) => a / b;
+
+// Functions are first-class citizens
+const operation = add;
+console.log(operation(5, 3)); // 8
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Function Calculator
+
+```javascript
+// Test setup
+let logSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+
+//***
+// Create a calculator function that takes an operation and two numbers
+// calculator("add", 5, 3) should return 8
+// calculator("multiply", 4, 7) should return 28
+
+function calculator(operation, a, b) {
+  // Your code here
+}
+
+console.log(calculator("add", 5, 3));
+console.log(calculator("multiply", 4, 7));
+console.log(calculator("divide", 10, 2));
+
+//***
+describe('Calculator Function', () => {
+  it('should perform addition correctly', () => {
+    const result = calculator("add", 5, 3);
+    expect(result).to.equal(8);
+  });
+  
+  it('should perform multiplication correctly', () => {
+    const result = calculator("multiply", 4, 7);
+    expect(result).to.equal(28);
+  });
+  
+  it('should perform division correctly', () => {
+    const result = calculator("divide", 10, 2);
+    expect(result).to.equal(5);
+  });
+  
+  it('should log results to console', () => {
+    expect(logSpy.callCount).to.be.at.least(3);
+    expect(logSpy.getCall(0).args[0]).to.equal(8);
+    expect(logSpy.getCall(1).args[0]).to.equal(28);
+    expect(logSpy.getCall(2).args[0]).to.equal(5);
+  });
+});
+// ---
+// Test setup (reuse from previous)
+let logSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+
+//***
+// Step 1: Using if/else statements
+function calculator(operation, a, b) {
+  if (operation === "add") {
+    return a + b;
+  } else if (operation === "multiply") {
+    return a * b;
+  } else if (operation === "divide") {
+    return a / b;
+  } else if (operation === "subtract") {
+    return a - b;
+  }
+}
+
+console.log(calculator("add", 5, 3));      // 8
+console.log(calculator("multiply", 4, 7)); // 28
+console.log(calculator("divide", 10, 2));  // 5
+
+//***
+describe('Calculator with if/else', () => {
+  it('should handle basic arithmetic operations', () => {
+    expect(calculator("add", 5, 3)).to.equal(8);
+    expect(calculator("multiply", 4, 7)).to.equal(28);
+    expect(calculator("divide", 10, 2)).to.equal(5);
+    expect(calculator("subtract", 10, 3)).to.equal(7);
+  });
+  
+  it('should return undefined for unknown operations', () => {
+    const result = calculator("power", 2, 3);
+    expect(result).to.be.undefined;
+  });
+  
+  it('should log calculation results', () => {
+    expect(logSpy.callCount).to.be.at.least(3);
+    expect(logSpy.getCall(0).args[0]).to.equal(8);
+    expect(logSpy.getCall(1).args[0]).to.equal(28);
+    expect(logSpy.getCall(2).args[0]).to.equal(5);
+  });
+});
+// ---
+// Test setup (reuse)
+let logSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+
+//***
+// Step 2: Using an object to map operations
+function calculator(operation, a, b) {
+  const operations = {
+    add: (x, y) => x + y,
+    subtract: (x, y) => x - y,
+    multiply: (x, y) => x * y,
+    divide: (x, y) => x / y
+  };
+  
+  return operations[operation](a, b);
+}
+
+console.log(calculator("add", 5, 3));      // 8
+console.log(calculator("multiply", 4, 7)); // 28
+console.log(calculator("divide", 10, 2));  // 5
+
+//***
+describe('Calculator with object mapping', () => {
+  it('should handle basic operations using object methods', () => {
+    expect(calculator("add", 5, 3)).to.equal(8);
+    expect(calculator("multiply", 4, 7)).to.equal(28);
+    expect(calculator("divide", 10, 2)).to.equal(5);
+    expect(calculator("subtract", 10, 3)).to.equal(7);
+  });
+  
+  it('should throw an error for unknown operations', () => {
+    expect(() => calculator("power", 2, 3)).to.throw();
+  });
+  
+  it('should log calculation results', () => {
+    expect(logSpy.called).to.be.true;
+    const calls = logSpy.getCalls();
+    expect(calls.some(call => call.args[0] === 8)).to.be.true;
+    expect(calls.some(call => call.args[0] === 28)).to.be.true;
+    expect(calls.some(call => call.args[0] === 5)).to.be.true;
+  });
+});
+// ---
+// Test setup (reuse)
+let logSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+
+//***
+// Step 3: Add error handling
+function calculator(operation, a, b) {
+  const operations = {
+    add: (x, y) => x + y,
+    subtract: (x, y) => x - y,
+    multiply: (x, y) => x * y,
+    divide: (x, y) => y !== 0 ? x / y : "Cannot divide by zero"
+  };
+  
+  if (!operations[operation]) {
+    return "Invalid operation";
+  }
+  
+  return operations[operation](a, b);
+}
+
+console.log(calculator("add", 5, 3));       // 8
+console.log(calculator("divide", 10, 0));   // "Cannot divide by zero"
+console.log(calculator("power", 2, 3));     // "Invalid operation"
+
+//***
+describe('Calculator with error handling', () => {
+  it('should handle basic operations correctly', () => {
+    expect(calculator("add", 5, 3)).to.equal(8);
+    expect(calculator("subtract", 10, 3)).to.equal(7);
+    expect(calculator("multiply", 4, 7)).to.equal(28);
+    expect(calculator("divide", 10, 2)).to.equal(5);
+  });
+  
+  it('should handle division by zero gracefully', () => {
+    const result = calculator("divide", 10, 0);
+    expect(result).to.equal("Cannot divide by zero");
+  });
+  
+  it('should return error message for invalid operations', () => {
+    const result = calculator("power", 2, 3);
+    expect(result).to.equal("Invalid operation");
+  });
+  
+  it('should handle edge cases correctly', () => {
+    expect(calculator("add", -5, 3)).to.equal(-2);
+    expect(calculator("multiply", 0, 100)).to.equal(0);
+    expect(calculator("divide", 0, 5)).to.equal(0);
+  });
+  
+  it('should log all outputs including errors', () => {
+    expect(logSpy.callCount).to.be.at.least(3);
+    const loggedValues = logSpy.getCalls().map(call => call.args[0]);
+    expect(loggedValues).to.include(8);
+    expect(loggedValues).to.include("Cannot divide by zero");
+    expect(loggedValues).to.include("Invalid operation");
+  });
+});
+```
+</SlideLayout.Center>

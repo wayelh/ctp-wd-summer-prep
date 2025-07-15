@@ -1,0 +1,42 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.HorizontalImage title="Intro to TypeScript" src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXpqdm9hNHB2aHc2MnNhZm5hYXBlc2oxaG82NzhuYWNwYmtkNG84OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/pzmbXFDiRbEEk1vCtP/giphy.gif" />
+
+<SlideLayout.Center>
+  ## What is TypeScript
+  - TypeScript is an extension of the JavaScript language
+  - It adds annotations that describe what "type" we expect values to be
+  - The TypeScript compiler checks these annotations and ensures they match
+  - It also removes them during compilation to output pure JavaScript
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## What's a Type?
+
+- Types are shapes: a set of properties and methods we expect values to implement
+- Strings, Numbers, Objects...even `undefined` and `null` values all have corresponding types
+- In JavaScript, references to values in variables, arguments, and return types can be anything
+- TypeScript defines what shapes each value should be, and checks that we keep that contract
+</SlideLayout.Center>
+
+<SlideLayout.Full>
+## JavaScript is an Enigma
+<FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+  <video autoPlay style={{
+    height: 'calc(80vh / (1920 / 1080))',
+  }} muted data-autoplay src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/javascript-toy.mp4
+">
+  </video>
+</FlexBox>
+</SlideLayout.Full>
+
+https://ctp-presentation-media.s3.us-east-2.amazonaws.com/javascript-toy.mp4
+<SlideLayout.Full>
+## TypeScript is a Cool Toy
+<FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+  <video autoPlay style={{
+    height: 'calc(80vh / (1920 / 1080))',
+  }} muted data-autoplay src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/playskool-shape-toy.mp4">
+  </video>
+</FlexBox>
+</SlideLayout.Full>

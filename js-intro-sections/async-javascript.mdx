@@ -1,0 +1,426 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## JavaScript's Event Loop
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="row">
+    <Image src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmFqM2x1NW84NjcxaXczNHYzbjZwbm5mbTh3ZmIwMGg5MGo4bHJnaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CHtJn4SZurPa5LtV2w/giphy.gif" />
+    - JavaScript is single-threaded but non-blocking
+    - The event loop handles asynchronous operations
+    - Callbacks, promises, and async/await manage async code
+    - Understanding async is crucial for modern JavaScript
+    </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Center>
+## Asynchronous JavaScript
+
+```javascript
+// Callbacks (old way)
+setTimeout(() => {
+  console.log("After 1 second");
+}, 1000);
+
+// Promises
+fetch("/api/users")
+  .then(response => response.json())
+  .then(users => console.log(users))
+  .catch(error => console.error(error));
+
+// Async/Await (modern way)
+async function getUsers() {
+  try {
+    const response = await fetch("/api/users");
+    const users = await response.json();
+    console.log(users);
+  } catch (error) {
+    console.error(error);
+  }
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Promise Chain to Async/Await
+
+```javascript
+// Setup MSW and test utilities
+let worker;
+let logSpy;
+let errorSpy;
+
+before(async () => {
+  // Setup MSW
+  const { http, HttpResponse, setupWorker } = await window.setupMSW();
+  
+  worker = setupWorker(
+    http.get('/api/users/:userId', ({ params }) => {
+      const userId = parseInt(params.userId);
+      if (userId === 999) {
+        return HttpResponse.error();
+      }
+      return HttpResponse.json({ 
+        id: userId, 
+        name: `User ${userId}` 
+      });
+    }),
+    
+    http.get('/api/posts', ({ request }) => {
+      const url = new URL(request.url);
+      const userId = url.searchParams.get('userId');
+      return HttpResponse.json([
+        { id: 1, title: "Post 1", userId: parseInt(userId) },
+        { id: 2, title: "Post 2", userId: parseInt(userId) }
+      ]);
+    })
+  );
+  
+  await worker.start({ quiet: true });
+  
+  // Setup spies
+  logSpy = sinon.spy(console, 'log');
+  errorSpy = sinon.spy(console, 'error');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+  errorSpy.resetHistory();
+});
+
+after(() => {
+  worker?.stop();
+  logSpy.restore();
+  errorSpy.restore();
+});
+
+//***
+// Convert this promise chain to async/await
+function getUserData(userId) {
+  return fetch(`/api/users/${userId}`)
+    .then(response => response.json())
+    .then(user => {
+      return fetch(`/api/posts?userId=${user.id}`);
+    })
+    .then(response => response.json())
+    .then(posts => {
+      console.log(posts);
+      return posts;
+    })
+    .catch(error => {
+      console.error("Error:", error);
+    });
+}
+
+// Call the function
+const result = getUserData(1);
+
+//***
+describe('Promise Chain Exercise', () => {
+  it('should fetch user data and posts correctly', async () => {
+    const posts = await result;
+    
+    expect(posts).to.be.an('array');
+    expect(posts).to.have.lengthOf.at.least(1);
+    expect(posts[0]).to.have.property('title', 'Post 1');
+    expect(posts[0]).to.have.property('userId', 1);
+  });
+  
+  it('should log posts to console', () => {
+    expect(logSpy.calledOnce).to.be.true;
+    expect(logSpy.firstCall.args[0]).to.be.an('array');
+  });
+  
+  it('should handle errors gracefully', async () => {
+    await getUserData(999);
+    expect(errorSpy.called).to.be.true;
+  });
+});
+// ---
+// Setup (reuse from previous)
+let worker;
+let logSpy;
+let errorSpy;
+
+before(async () => {
+  const { http, HttpResponse, setupWorker } = await window.setupMSW();
+  
+  worker = setupWorker(
+    http.get('/api/users/:userId', ({ params }) => {
+      const userId = parseInt(params.userId);
+      if (userId === 999) {
+        return HttpResponse.error();
+      }
+      return HttpResponse.json({ 
+        id: userId, 
+        name: `User ${userId}` 
+      });
+    }),
+    
+    http.get('/api/posts', ({ request }) => {
+      const url = new URL(request.url);
+      const userId = url.searchParams.get('userId');
+      return HttpResponse.json([
+        { id: 1, title: "Post 1", userId: parseInt(userId) },
+        { id: 2, title: "Post 2", userId: parseInt(userId) }
+      ]);
+    })
+  );
+  
+  await worker.start({ quiet: true });
+  logSpy = sinon.spy(console, 'log');
+  errorSpy = sinon.spy(console, 'error');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+  errorSpy.resetHistory();
+});
+
+after(() => {
+  worker?.stop();
+  logSpy.restore();
+  errorSpy.restore();
+});
+
+//***
+// Step 1: Create async function wrapper
+async function getUserData(userId) {
+  // We'll convert the promise chain here
+  return fetch(`/api/users/${userId}`)
+    .then(response => response.json())
+    .then(user => {
+      return fetch(`/api/posts?userId=${user.id}`);
+    })
+    .then(response => response.json())
+    .then(posts => {
+      console.log(posts);
+      return posts;
+    })
+    .catch(error => {
+      console.error("Error:", error);
+    });
+}
+
+// Test the function
+getUserData(1);
+
+//***
+describe('Step 1: Async Function Wrapper', () => {
+  it('should still work as an async function', async () => {
+    const posts = await getUserData(2);
+    
+    expect(posts).to.be.an('array');
+    expect(posts).to.have.lengthOf.at.least(1);
+  });
+  
+  it('should maintain error handling', async () => {
+    await getUserData(999);
+    expect(errorSpy.called).to.be.true;
+  });
+  
+  it('should log results', () => {
+    // Check that the initial call logged
+    expect(logSpy.called).to.be.true;
+  });
+});
+// ---
+// Setup (reuse from previous)
+let worker;
+let logSpy;
+let errorSpy;
+
+before(async () => {
+  const { http, HttpResponse, setupWorker } = await window.setupMSW();
+  
+  worker = setupWorker(
+    http.get('/api/users/:userId', ({ params }) => {
+      const userId = parseInt(params.userId);
+      if (userId === 999) {
+        return HttpResponse.error();
+      }
+      return HttpResponse.json({ 
+        id: userId, 
+        name: `User ${userId}` 
+      });
+    }),
+    
+    http.get('/api/posts', ({ request }) => {
+      const url = new URL(request.url);
+      const userId = url.searchParams.get('userId');
+      return HttpResponse.json([
+        { id: 1, title: "Post 1", userId: parseInt(userId) },
+        { id: 2, title: "Post 2", userId: parseInt(userId) }
+      ]);
+    })
+  );
+  
+  await worker.start({ quiet: true });
+  logSpy = sinon.spy(console, 'log');
+  errorSpy = sinon.spy(console, 'error');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+  errorSpy.resetHistory();
+});
+
+after(() => {
+  worker?.stop();
+  logSpy.restore();
+  errorSpy.restore();
+});
+
+//***
+// Step 2: Replace first .then with await
+async function getUserData(userId) {
+  try {
+    const userResponse = await fetch(`/api/users/${userId}`);
+    const user = await userResponse.json();
+    
+    // Still need to convert the rest
+    return fetch(`/api/posts?userId=${user.id}`)
+      .then(response => response.json())
+      .then(posts => {
+        console.log(posts);
+        return posts;
+      });
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+
+// Test the partial conversion
+getUserData(1);
+
+//***
+describe('Step 2: Partial Conversion', () => {
+  it('should work with partial async/await conversion', async () => {
+    const posts = await getUserData(3);
+    
+    expect(posts).to.be.an('array');
+    expect(posts).to.have.lengthOf.at.least(1);
+    expect(posts[0]).to.have.property('title');
+  });
+  
+  it('should still handle the promise chain correctly', () => {
+    expect(logSpy.called).to.be.true;
+    expect(logSpy.firstCall.args[0]).to.be.an('array');
+  });
+  
+  it('should handle errors in try/catch', async () => {
+    await getUserData(999);
+    expect(errorSpy.called).to.be.true;
+  });
+});
+// ---
+// Setup with error handling
+let worker;
+let logSpy;
+let errorSpy;
+
+before(async () => {
+  const { http, HttpResponse, setupWorker } = await window.setupMSW();
+  
+  worker = setupWorker(
+    http.get('/api/users/:userId', ({ params }) => {
+      const userId = parseInt(params.userId);
+      if (userId === 999) {
+        return new HttpResponse(null, { status: 404, statusText: 'User not found' });
+      }
+      return HttpResponse.json({ 
+        id: userId, 
+        name: `User ${userId}` 
+      });
+    }),
+    
+    http.get('/api/posts', ({ request }) => {
+      const url = new URL(request.url);
+      const userId = url.searchParams.get('userId');
+      return HttpResponse.json([
+        { id: 1, title: "Post 1", userId: parseInt(userId) },
+        { id: 2, title: "Post 2", userId: parseInt(userId) }
+      ]);
+    })
+  );
+  
+  await worker.start({ quiet: true });
+  logSpy = sinon.spy(console, 'log');
+  errorSpy = sinon.spy(console, 'error');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+  errorSpy.resetHistory();
+});
+
+after(() => {
+  worker?.stop();
+  logSpy.restore();
+  errorSpy.restore();
+});
+
+//***
+// Step 3: Complete async/await conversion
+async function getUserData(userId) {
+  try {
+    // Get user data
+    const userResponse = await fetch(`/api/users/${userId}`);
+    if (!userResponse.ok) {
+      throw new Error(`User not found: ${userResponse.statusText}`);
+    }
+    const user = await userResponse.json();
+    
+    // Get user's posts
+    const postsResponse = await fetch(`/api/posts?userId=${user.id}`);
+    const posts = await postsResponse.json();
+    
+    console.log(posts);
+    return posts;
+  } catch (error) {
+    console.error("Error:", error);
+    throw error; // Re-throw to maintain error propagation
+  }
+}
+
+// Test the complete conversion
+getUserData(1).catch(() => {});
+
+//***
+describe('Step 3: Complete Async/Await Conversion', () => {
+  it('should successfully fetch and return posts', async () => {
+    const posts = await getUserData(2);
+    
+    expect(posts).to.be.an('array');
+    expect(posts).to.have.lengthOf(2);
+    expect(posts[0]).to.have.property('title', 'Post 1');
+    expect(posts[0]).to.have.property('userId', 2);
+  });
+  
+  it('should log posts to console', () => {
+    // The initial call should have logged
+    expect(logSpy.called).to.be.true;
+    expect(logSpy.firstCall.args[0]).to.be.an('array');
+  });
+  
+  it('should handle 404 errors gracefully', async () => {
+    try {
+      await getUserData(999);
+      throw new Error('Should have thrown an error');
+    } catch (error) {
+      expect(error.message).to.include('User not found');
+    }
+    
+    expect(errorSpy.called).to.be.true;
+  });
+  
+  it('should re-throw errors for proper error propagation', async () => {
+    try {
+      await getUserData(999);
+      expect.fail('Should have thrown an error');
+    } catch (error) {
+      expect(error).to.be.an('error');
+      expect(error.message).to.include('User not found');
+    }
+  });
+});
+```
+</SlideLayout.Center>

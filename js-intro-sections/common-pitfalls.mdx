@@ -1,0 +1,205 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Common Pitfalls
+
+```javascript
+// Equality confusion
+console.log(0 == false);    // true (loose equality)
+console.log(0 === false);   // false (strict equality)
+
+// Floating point precision
+console.log(0.1 + 0.2);     // 0.30000000000000004
+
+// Array/Object references
+const arr1 = [1, 2, 3];
+const arr2 = arr1;
+arr2.push(4);
+console.log(arr1);          // [1, 2, 3, 4]
+
+// "this" binding
+const obj = {
+  name: "Object",
+  greet: function() {
+    setTimeout(function() {
+      console.log(this.name); // undefined!
+    }, 1000);
+  }
+};
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Fix the "this" Problem
+
+```javascript
+// Fix the code so it prints countdown from 5 to 0, then "Timer: Done!"
+const timer = {
+  name: "Timer",
+  seconds: 5,
+  outputs: [], // Track outputs for testing
+  
+  start() {
+    const interval = setInterval(function() {
+      console.log(this.seconds); // undefined!
+      this.seconds--;
+      
+      if (this.seconds < 0) {
+        clearInterval(interval);
+        console.log(this.name + ": Done!"); // undefined: Done!
+      }
+    }, 100); // Faster for testing
+  }
+};
+
+timer.start();
+
+// ***
+describe('Fix "this" Problem - Initial Implementation', () => {
+  it('should fail because this is undefined', (done) => {
+    setTimeout(() => {
+      try {
+        // The timer should have counted down
+        expect(timer.seconds).to.equal(5);
+        done(new Error("Timer didn't run - 'this' was undefined in the callback"));
+      } catch (e) {
+        // Expected to fail
+        done();
+      }
+    }, 700);
+  });
+});
+// ---
+// Step 1: Store reference to 'this'
+const timer = {
+  name: "Timer",
+  seconds: 5,
+  outputs: [], // Track outputs for testing
+  
+  start() {
+    const self = this; // Store reference
+    const interval = setInterval(function() {
+      console.log(self.seconds);
+      self.outputs.push(self.seconds);
+      self.seconds--;
+      
+      if (self.seconds < 0) {
+        clearInterval(interval);
+        console.log(self.name + ": Done!");
+        self.outputs.push("done");
+      }
+    }, 100);
+  }
+};
+
+timer.start(); // Works!
+
+// ***
+describe('Fix "this" Problem - Step 1: Store reference', () => {
+  it('should complete countdown', (done) => {
+    setTimeout(() => {
+      expect(timer.outputs).to.have.length.at.least(6);
+      done();
+    }, 700);
+  });
+  
+  it('should count down correctly', (done) => {
+    setTimeout(() => {
+      expect(timer.outputs[0]).to.equal(5);
+      expect(timer.outputs[5]).to.equal(0);
+      done();
+    }, 700);
+  });
+  
+  it('should complete with done message', (done) => {
+    setTimeout(() => {
+      expect(timer.outputs[6]).to.equal("done");
+      done();
+    }, 700);
+  });
+});
+// ---
+// Step 2: Use arrow function (preserves 'this')
+const timer = {
+  name: "Timer",
+  seconds: 5,
+  outputs: [],
+  
+  start() {
+    const interval = setInterval(() => {  // Arrow function
+      console.log(this.seconds);
+      this.outputs.push(this.seconds);
+      this.seconds--;
+      
+      if (this.seconds < 0) {
+        clearInterval(interval);
+        console.log(this.name + ": Done!");
+        this.outputs.push("done");
+      }
+    }, 100);
+  }
+};
+
+timer.start(); // Works perfectly!
+
+// ***
+describe('Fix "this" Problem - Step 2: Arrow function', () => {
+  it('should complete with done message', (done) => {
+    setTimeout(() => {
+      expect(timer.outputs[timer.outputs.length - 1]).to.equal("done");
+      done();
+    }, 700);
+  });
+  
+  it('should have correct countdown sequence', (done) => {
+    setTimeout(() => {
+      expect(timer.outputs).to.include(5);
+      expect(timer.outputs).to.include(0);
+      done();
+    }, 700);
+  });
+});
+// ---
+// Step 3: Using bind() method
+const timer = {
+  name: "Timer",
+  seconds: 5,
+  outputs: [],
+  
+  start() {
+    const interval = setInterval(function() {
+      console.log(this.seconds);
+      this.outputs.push(this.seconds);
+      this.seconds--;
+      
+      if (this.seconds < 0) {
+        clearInterval(interval);
+        console.log(this.name + ": Done!");
+        this.outputs.push(this.name); // Store name to verify 'this'
+      }
+    }.bind(this), 100);  // Bind 'this' context
+  }
+};
+
+timer.start(); // Also works!
+
+// ***
+describe('Fix "this" Problem - Step 3: bind() method', () => {
+  it('should preserve this context with bind', (done) => {
+    setTimeout(() => {
+      const lastOutput = timer.outputs[timer.outputs.length - 1];
+      expect(lastOutput).to.equal("Timer");
+      done();
+    }, 700);
+  });
+  
+  it('should have 6 countdown numbers', (done) => {
+    setTimeout(() => {
+      const numbers = timer.outputs.filter(x => typeof x === 'number');
+      expect(numbers).to.have.lengthOf(6);
+      done();
+    }, 700);
+  });
+});
+```
+</SlideLayout.Center>

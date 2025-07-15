@@ -1,0 +1,254 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Variables in JavaScript
+
+```javascript
+// Old way (function-scoped)
+var name = "Alice";
+
+// Modern way (block-scoped)
+let age = 25;
+const isStudent = true;
+
+// const means the reference can't change
+const person = { name: "Bob" };
+person.name = "Charlie"; // This works!
+// person = {}; // This doesn't!
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Variable Scoping
+
+```javascript
+// Fix this code to print "Inside" then "Outside"
+var message = "Outside";
+
+if (true) {
+  var message = "Inside";
+  console.log(message);
+}
+
+console.log(message); // This prints "Inside" - why?
+
+// ***
+// Test: We want "Inside" then "Outside", but var doesn't respect block scope
+// This test will FAIL until you fix the scoping issue
+const outputs = [];
+var testMessage = "Outside";
+
+if (true) {
+  var testMessage = "Inside";
+  outputs.push(testMessage);
+}
+outputs.push(testMessage);
+
+if (outputs[0] !== "Inside" || outputs[1] !== "Outside") {
+  throw new Error(`Expected ["Inside", "Outside"] but got ["${outputs[0]}", "${outputs[1]}"]`);
+}
+// ---
+// Step 1: Understand the problem - var is function-scoped
+var message = "Outside";
+
+if (true) {
+  var message = "Inside"; // This overwrites the outer variable!
+  console.log(message);
+}
+
+console.log(message); // "Inside" - var doesn't respect block scope
+
+// ***
+// Test confirms the problem - var doesn't respect block scope
+if (message !== "Inside") {
+  throw new Error(`Expected message to be "Inside", but got "${message}"`);
+}
+// ---
+// Step 2: Fix using let for block scoping
+let message = "Outside";
+let innerMessage = "";
+let outerMessage = "";
+
+if (true) {
+  let message = "Inside"; // This creates a new block-scoped variable
+  console.log(message);    // "Inside"
+  innerMessage = message;
+}
+
+console.log(message);      // "Outside"
+outerMessage = message;
+
+// ***
+// Test: Now we should see "Inside" then "Outside"
+if (innerMessage !== "Inside") {
+  throw new Error(`Expected inner message to be "Inside", but got "${innerMessage}"`);
+}
+if (outerMessage !== "Outside") {
+  throw new Error(`Expected outer message to be "Outside", but got "${outerMessage}"`);
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Full>
+## JavaScript Data Types
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="row">
+    <Box width="100%" height="100%">
+      **Primitives:**
+      - `undefined`
+      - `null`
+      - `boolean`
+      - `number`
+      - `bigint`
+      - `string`
+      - `symbol`
+    </Box>
+    <Box width="100%" height="100%">
+      **Objects:**
+      - `Object`
+      - `Array`
+      - `Function`
+      - `Date`
+      - `RegExp`
+      - `Map/Set`
+      - `Promise`
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Data Types in Action
+```javascript
+// Primitives
+let undef;                          // undefined
+let nothing = null;                 // null
+let isActive = true;                // boolean
+let count = 42;                     // number
+let bigNumber = 9007199254740991n;  // bigint
+let message = "Hello, JavaScript!"; // string
+let unique = Symbol("id");          // symbol
+
+// Objects
+let obj = { key: "value" };         // object
+let nums = [1, 2, 3];               // array
+let greet = () => "Hello!";         // function
+let now = new Date();               // date
+let pattern = /[a-z]+/;             // regexp
+let map = new Map();                // map
+let promise = Promise.resolve(42);  // promise
+```
+</SlideLayout.Full>
+
+<SlideLayout.Center>
+## JavaScript's Flexibility Problem
+
+<FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+
+What happens here?
+
+```javascript
+console.log("5" + 3);        // "53"
+console.log("5" - 3);        // 2
+console.log(true + true);    // 2
+console.log([] + {});        // "[object Object]"
+// ---
+console.log("5" + 3);        // "53" (string concatenation)
+console.log("5" - 3);        // 2 (converts to number)
+console.log(true + true);    // 2 (true = 1)
+console.log([] + {});        // "[object Object]"
+```
+</FlexBox>
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Type Conversion
+
+```javascript
+// Predict the output, then fix to get numeric addition
+const userInput = "42";
+const bonus = 8;
+const total = userInput + bonus;
+
+console.log(total); // What will this print?
+console.log(typeof total); // What type is it?
+
+// ***
+// Test: We want 50 (numeric addition), not "428" (string concatenation)
+// This test will FAIL until you fix the type conversion
+if (total !== 50) {
+  throw new Error(`Expected 50 but got "${total}" (type: ${typeof total})`);
+}
+if (typeof total !== "number") {
+  throw new Error(`Expected type "number" but got "${typeof total}"`);
+}
+// ---
+// Step 1: Understanding the problem
+const userInput = "42";
+const bonus = 8;
+const total = userInput + bonus; // "42" + 8 = "428"
+
+console.log(total);        // "428" - string concatenation!
+console.log(typeof total); // "string"
+
+// ***
+// Test confirms the type coercion issue
+if (total !== "428" || typeof total !== "string") {
+  throw new Error("Type coercion didn't work as expected");
+}
+// ---
+// Step 2: Convert string to number using Number()
+const userInput = "42";
+const bonus = 8;
+const total = Number(userInput) + bonus;
+
+console.log(total);        // 50
+console.log(typeof total); // "number"
+
+// ***
+// Test: Now we should get proper numeric addition
+if (total !== 50) {
+  throw new Error(`Expected 50 but got ${total}`);
+}
+if (typeof total !== "number") {
+  throw new Error(`Expected type "number" but got "${typeof total}"`);
+}
+// ---
+// Step 3: Alternative solutions
+const userInput = "42";
+const bonus = 8;
+
+// Using parseInt
+const total1 = parseInt(userInput) + bonus; // 50
+console.log("parseInt:", total1);
+
+// Using unary plus
+const total2 = +userInput + bonus; // 50
+console.log("unary plus:", total2);
+
+// Using Number constructor
+const total3 = Number(userInput) + bonus; // 50
+console.log("Number():", total3);
+
+// ***
+// Test: All methods should produce the same result
+if (total1 !== 50 || total2 !== 50 || total3 !== 50) {
+  throw new Error("Not all conversion methods produced 50");
+}
+// Edge case: what about invalid input?
+const invalidInput = "abc";
+if (!isNaN(parseInt(invalidInput))) {
+  throw new Error("parseInt should return NaN for invalid input");
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Full>
+## Type Coercion: Feature or Bug?
+<FlexBox alignItems="center" justifyContent="center" flexDirection="row">
+  <Image src="https://media2.giphy.com/media/3o7TKTDn976rzVgky4/giphy.gif" width="50%" />
+  
+  - JavaScript tries to be helpful by converting types automatically
+  - This can lead to unexpected behavior
+  - Understanding type coercion is crucial for writing bug-free code
+  - Modern tools like TypeScript help catch these issues
+  </FlexBox>
+</SlideLayout.Full>

@@ -285,10 +285,20 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     const lineNumber = parseInt(lineMatch[1], 10);
     const columnNumber = parseInt(lineMatch[2], 10);
     
-    // Check if this is in the test section
+    // Check if this is in the test section or setup section
     const codeLines = value.split('\n');
-    const testSeparatorIndex = codeLines.findIndex(line => line.trim() === '// ***');
-    const isTestError = testSeparatorIndex !== -1 && lineNumber > testSeparatorIndex;
+    const separatorIndices = codeLines.reduce((acc, line, index) => {
+      if (line.trim() === '//***') {
+        acc.push(index);
+      }
+      return acc;
+    }, [] as number[]);
+    
+    let isTestError = false;
+    if (separatorIndices.length > 0) {
+      const lastSeparatorIndex = separatorIndices[separatorIndices.length - 1];
+      isTestError = lineNumber > lastSeparatorIndex;
+    }
     
     // Create decorations for the error line
     const decorations = [
@@ -312,10 +322,10 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     if (columnNumber > 0) {
       decorations.push({
         range: new monaco.Range(lineNumber, columnNumber, lineNumber, columnNumber + 1),
+        // @ts-expect-error
         options: {
           className: 'error-squiggle',
           hoverMessage: { value: errorMessage },
-          inlineClassName: 'error-inline'
         }
       });
     }
@@ -367,26 +377,47 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
     clearErrorHighlights();
     
     try {
-      // Split code into main code and test code
+      // Split code into setup code, main code, and test code
       const codeLines = value.split('\n');
-      const testSeparatorIndex = codeLines.findIndex(line => line.trim() === '// ***');
+      const separatorIndices = codeLines.reduce((acc, line, index) => {
+        if (line.trim() === '//***') {
+          acc.push(index);
+        }
+        return acc;
+      }, [] as number[]);
       
+      let setupCode = '';
       let mainCode = value;
       let testCode = '';
       
-      if (testSeparatorIndex !== -1) {
+      if (separatorIndices.length === 2) {
+        // We have setup, main, and test sections
+        setupCode = codeLines.slice(0, separatorIndices[0]).join('\n').trim();
+        mainCode = codeLines.slice(separatorIndices[0] + 1, separatorIndices[1]).join('\n').trim();
+        testCode = codeLines.slice(separatorIndices[1] + 1).join('\n').trim();
+      } else if (separatorIndices.length === 1) {
+        // We have main and test sections (backward compatibility)
+        const testSeparatorIndex = separatorIndices[0];
         mainCode = codeLines.slice(0, testSeparatorIndex).join('\n');
         testCode = codeLines.slice(testSeparatorIndex + 1).join('\n').trim();
       }
       
       // Compile TypeScript if needed
+      let setupCodeToRun = setupCode;
       let codeToRun = mainCode;
       let testCodeToRun = testCode;
+      let setupSourceMap: string | undefined;
       let mainSourceMap: string | undefined;
       let testSourceMap: string | undefined;
       
       if (language === 'typescript' || language === 'tsx') {
         try {
+          if (setupCode) {
+            const setupResult = compileTypeScript(setupCode, 'setup.ts');
+            setupCodeToRun = setupResult.code;
+            setupSourceMap = setupResult.sourceMap;
+          }
+          
           const mainResult = compileTypeScript(mainCode, 'main.ts');
           codeToRun = mainResult.code;
           mainSourceMap = mainResult.sourceMap;
@@ -409,13 +440,43 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       // Determine the filename for stack traces
       const fileName = language === 'typescript' || language === 'tsx' ? 'code.ts' : 'code.js';
       
-      // Create a single module with both main and test code
-      // This preserves variable scope while maintaining accurate line numbers
-      let fullModule = codeToRun;
+      // Create a module that runs setup, then main code, then tests
+      // Setup code contains before/after hooks
+      let fullModule = '';
       
-      if (testCodeToRun) {
-        // Add the test separator and test code
-        fullModule += '\n// ***\n' + testCodeToRun;
+      // If we have setup code (containing before/after hooks), wrap everything properly
+      if (setupCodeToRun && testCodeToRun) {
+        fullModule = `
+// Setup code with hooks
+${setupCodeToRun}
+
+// Execute main code in a way that before() hooks run first
+(async () => {
+  // Run any before() hooks
+  if (typeof mocha !== 'undefined' && mocha._beforeHooks) {
+    for (const hook of mocha._beforeHooks) {
+      await hook.fn();
+    }
+  }
+  
+  // Main code execution
+  ${codeToRun}
+  
+  // Tests will run after main code
+  ${testCodeToRun}
+})();
+`;
+      } else {
+        // Fallback to original behavior for backward compatibility
+        if (setupCodeToRun) {
+          fullModule = setupCodeToRun + '\n//***\n';
+        }
+        
+        fullModule += codeToRun;
+        
+        if (testCodeToRun) {
+          fullModule += '\n//***\n' + testCodeToRun;
+        }
       }
       
       // Add source map if available
@@ -431,6 +492,32 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({
       const runnerScript = `
 // Get executionId from window
 const executionId = window.executionId || '${executionId}';
+
+// Track if tests use Mocha
+let usingMocha = false;
+let mochaTestsRegistered = false;
+let hasSetupCode = ${!!setupCodeToRun};
+
+// Override describe to detect Mocha usage
+const originalDescribe = window.describe;
+if (originalDescribe) {
+  window.describe = function(...args) {
+    usingMocha = true;
+    mochaTestsRegistered = true;
+    return originalDescribe.apply(this, args);
+  };
+}
+
+// Reset Mocha state for this run
+if (window.mocha) {
+  // Clear previous test suites
+  mocha.suite.suites = [];
+  mocha.suite.tests = [];
+  mocha.suite._beforeEach = [];
+  mocha.suite._beforeAll = [];
+  mocha.suite._afterEach = [];
+  mocha.suite._afterAll = [];
+}
 
 // Override error handler to clean up blob URLs in stack traces
 const originalConsoleError = console.error;
@@ -481,16 +568,52 @@ try {
 }
 
 ${testCodeToRun ? `
-// If we have test code and main succeeded, show success
+// If we have test code and main succeeded, handle test execution
 if (__mainExecutionSuccess) {
   // Find the test separator line
   const moduleText = await fetch('${moduleUrl}').then(r => r.text());
   const lines = moduleText.split('\\n');
-  __testSeparatorLine = lines.findIndex(line => line.trim() === '// ***') + 1;
+  __testSeparatorLine = lines.findIndex(line => line.trim() === '//***') + 1;
   
-  // If no error was thrown, tests passed
-  console.log('\\n--- Running Tests ---');
-  console.log('✓ All tests passed');
+  // If using Mocha, run tests
+  if (usingMocha && mochaTestsRegistered) {
+    console.log('\\n--- Running Mocha Tests ---');
+    
+    // Override Mocha reporter to capture results
+    mocha.reporter(function(runner) {
+      let passes = 0;
+      let failures = 0;
+      let tests = [];
+      
+      runner.on('pass', function(test) {
+        passes++;
+        console.log('✓ ' + test.fullTitle());
+      });
+      
+      runner.on('fail', function(test, err) {
+        failures++;
+        console.error('✗ ' + test.fullTitle());
+        if (err.stack) {
+          err.stack = err.stack.replace(/blob:[^:]+:\\/\\/[^/]+\\/[^:]+/g, '${fileName}');
+        }
+        console.error(err.stack || err.message);
+      });
+      
+      runner.on('end', function() {
+        console.log('\\n' + passes + ' passing');
+        if (failures > 0) {
+          console.log(failures + ' failing');
+        }
+      });
+    });
+    
+    // Run the tests
+    mocha.run();
+  } else {
+    // Simple test execution (non-Mocha)
+    console.log('\\n--- Running Tests ---');
+    console.log('✓ All tests passed');
+  }
 }
 ` : ''}
 
@@ -506,9 +629,51 @@ URL.revokeObjectURL('${moduleUrl}');
         <!DOCTYPE html>
         <html>
         <head>
+          <!-- Include Mocha CSS -->
+          <link rel="stylesheet" href="https://unpkg.com/mocha@latest/mocha.css" />
+          
+          <!-- Include testing libraries -->
+          <script src="https://unpkg.com/mocha@latest/mocha.js"></script>
+          <script src="https://unpkg.com/chai@latest/chai.js"></script>
+          <script src="https://unpkg.com/sinon@latest/pkg/sinon.js"></script>
+          
           <script>
             const executionId = '${executionId}';
             window.executionId = executionId; // Make it available globally
+            
+            // Setup Mocha
+            mocha.setup({
+              ui: 'bdd',
+              reporter: 'spec',
+              timeout: 5000
+            });
+            
+            // Make testing globals available
+            window.describe = mocha.describe || describe;
+            window.it = mocha.it || it;
+            window.before = mocha.before || before;
+            window.after = mocha.after || after;
+            window.beforeEach = mocha.beforeEach || beforeEach;
+            window.afterEach = mocha.afterEach || afterEach;
+            window.expect = chai.expect;
+            window.assert = chai.assert;
+            window.should = chai.should();
+            
+            // MSW will be loaded as a module, we'll expose setup functions globally
+            window.setupMSW = async () => {
+              try {
+                const { http, HttpResponse, graphql, passthrough } = await import('https://unpkg.com/msw@latest/lib/browser/index.js');
+                const { setupWorker } = await import('https://unpkg.com/msw@latest/lib/browser/index.js');
+                
+                // Make MSW utilities globally available
+                window.msw = { http, HttpResponse, graphql, passthrough, setupWorker };
+                
+                return { http, HttpResponse, graphql, passthrough, setupWorker };
+              } catch (error) {
+                console.warn('MSW could not be loaded:', error);
+                return null;
+              }
+            };
             
             // Override console methods to send messages to parent
             const originalConsole = {

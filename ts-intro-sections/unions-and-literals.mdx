@@ -1,0 +1,189 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Union Types
+
+- Sometimes a value can be one of several types
+- Union types use the `|` operator to say "this OR that"
+- Common in real-world scenarios
+
+```typescript
+type Status = "loading" | "success" | "error";
+
+function setStatus(status: Status) {
+  console.log(`Current status: ${status}`);
+}
+
+setStatus("loading"); // ✅
+setStatus("pending"); // ❌ Error!
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Build a Result Type
+
+```typescript
+// Create a Result type that can be either success or failure
+// Success should have data, failure should have error message
+
+// TODO: Define the Result type
+type Result = any; // Replace this!
+
+function processData(input: string): Result {
+  if (input.length > 0) {
+    return { success: true, data: input.toUpperCase() };
+  } else {
+    return { success: false, error: "Input cannot be empty" };
+  }
+}
+
+// This should work with proper types
+const result = processData("hello");
+if (result.success) {
+  console.log(result.data); // Should be accessible
+} else {
+  console.log(result.error); // Should be accessible
+}
+
+// ***
+// Test: Result type should work correctly
+const goodResult = processData("test");
+const badResult = processData("");
+
+if (!goodResult.success || goodResult.data !== "TEST") {
+  throw new Error('Success result should have uppercase data');
+}
+if (badResult.success || !badResult.error) {
+  throw new Error('Failure result should have error message');
+}
+// ---
+// Step 1: Define discriminated union
+type Result = 
+  | { success: true; data: string }
+  | { success: false; error: string };
+
+function processData(input: string): Result {
+  if (input.length > 0) {
+    return { success: true, data: input.toUpperCase() };
+  } else {
+    return { success: false, error: "Input cannot be empty" };
+  }
+}
+
+const result = processData("hello");
+if (result.success) {
+  console.log(result.data); // TypeScript knows data exists!
+} else {
+  console.log(result.error); // TypeScript knows error exists!
+}
+
+// ***
+// Test: Type narrowing works
+const testResult = processData("typescript");
+if (testResult.success) {
+  if (testResult.data !== "TYPESCRIPT") {
+    throw new Error('Data should be uppercase');
+  }
+  // @ts-expect-error - error doesn't exist on success
+  if (testResult.error) {
+    throw new Error('Should not have error on success');
+  }
+}
+// ---
+// Step 2: Make it generic
+type Result<T, E = string> = 
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+function processData<T>(
+  input: string, 
+  transform: (s: string) => T
+): Result<T> {
+  if (input.length > 0) {
+    return { success: true, data: transform(input) };
+  } else {
+    return { success: false, error: "Input cannot be empty" };
+  }
+}
+
+// Now it works with any transformation!
+const numberResult = processData("123", s => parseInt(s));
+if (numberResult.success) {
+  const num: number = numberResult.data; // It's a number!
+  console.log(num * 2); // 246
+}
+
+const objectResult = processData("hello", s => ({ 
+  original: s, 
+  reversed: s.split('').reverse().join('') 
+}));
+
+// ***
+// Test: Generic result type
+if (numberResult.success && numberResult.data !== 123) {
+  throw new Error('Number transformation failed');
+}
+
+if (objectResult.success) {
+  if (objectResult.data.original !== "hello" || 
+      objectResult.data.reversed !== "olleh") {
+    throw new Error('Object transformation failed');
+  }
+}
+
+// Test error case
+const emptyResult = processData("", s => s);
+if (emptyResult.success || !emptyResult.error.includes("empty")) {
+  throw new Error('Empty input should return error');
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Literal Types
+
+```typescript
+// Exact value types
+type Direction = "north" | "south" | "east" | "west";
+type DiceRoll = 1 | 2 | 3 | 4 | 5 | 6;
+type Answer = true; // Only true, not false!
+
+// Combine with objects
+type ActionType = 
+  | { type: "INCREMENT"; amount: number }
+  | { type: "DECREMENT"; amount: number }
+  | { type: "RESET" };
+
+function reducer(action: ActionType) {
+  switch (action.type) {
+    case "INCREMENT":
+      return action.amount; // TypeScript knows amount exists
+    case "RESET":
+      return 0;
+  }
+}
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Template Literal Types
+
+```typescript
+// New in TypeScript 4.1+
+type EventName = "click" | "focus" | "blur";
+type Handler = `on${Capitalize<EventName>}`;
+// Result: "onClick" | "onFocus" | "onBlur"
+
+// Dynamic string patterns
+type CssUnit = "px" | "em" | "rem" | "%";
+type CssValue = `${number}${CssUnit}`;
+
+function setWidth(width: CssValue) {
+  element.style.width = width;
+}
+
+setWidth("100px"); // ✅
+setWidth("2.5em"); // ✅
+setWidth("100"); // ❌ Error!
+```
+</SlideLayout.Center>

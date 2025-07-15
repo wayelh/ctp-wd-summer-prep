@@ -1,0 +1,342 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Center>
+## Closures: Functions That Remember
+
+```javascript
+// Closure example
+function createCounter() {
+  let count = 0;
+  
+  return function() {
+    count++;
+    return count;
+  };
+}
+
+const counter = createCounter();
+console.log(counter()); // 1
+console.log(counter()); // 2
+console.log(counter()); // 3
+
+// The inner function "remembers" the count variable
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Exercise: Create a Bank Account with Closures
+
+```javascript
+// Create a bank account factory with private balance
+function createBankAccount(initialBalance) {
+  // Your code here
+  // Should return an object with deposit, withdraw, and getBalance methods
+  // Balance should not be directly accessible
+}
+
+const account = createBankAccount(100);
+console.log(account.deposit(50));   // 150
+console.log(account.withdraw(30));  // 120
+console.log(account.getBalance());  // 120
+console.log(account.balance);       // undefined (private!)
+
+// ***
+describe('Bank Account with Closures - Initial Implementation', () => {
+  let testAccount;
+  
+  before(() => {
+    testAccount = createBankAccount(100);
+  });
+  
+  it('should keep balance private', () => {
+    expect(testAccount.balance).to.be.undefined;
+  });
+  
+  it('should deposit and return new balance', () => {
+    const newBalance = testAccount.deposit(50);
+    expect(newBalance).to.equal(150);
+  });
+  
+  it('should withdraw and return new balance', () => {
+    const newBalance = testAccount.withdraw(30);
+    expect(newBalance).to.equal(120);
+  });
+  
+  it('should get current balance', () => {
+    expect(testAccount.getBalance()).to.equal(120);
+  });
+});
+// ---
+// Step 1: Basic implementation with closure
+function createBankAccount(initialBalance) {
+  let balance = initialBalance;
+  
+  return {
+    deposit(amount) {
+      balance += amount;
+      return balance;
+    },
+    withdraw(amount) {
+      balance -= amount;
+      return balance;
+    },
+    getBalance() {
+      return balance;
+    }
+  };
+}
+
+const account = createBankAccount(100);
+console.log(account.deposit(50));   // 150
+console.log(account.withdraw(30));  // 120
+console.log(account.getBalance());  // 120
+console.log(account.balance);       // undefined
+
+// ***
+describe('Bank Account - Step 1: Basic functionality', () => {
+  it('should not expose balance directly', () => {
+    expect(account.balance).to.be.undefined;
+  });
+  
+  it('should calculate balance correctly', () => {
+    expect(account.getBalance()).to.equal(120);
+  });
+  
+  it('should keep accounts independent', () => {
+    const account2 = createBankAccount(500);
+    expect(account2.getBalance()).to.not.equal(account.getBalance());
+  });
+});
+// ---
+// Step 2: Add validation and transaction history
+function createBankAccount(initialBalance) {
+  let balance = initialBalance;
+  const transactions = [];
+  
+  function addTransaction(type, amount, newBalance) {
+    transactions.push({
+      type,
+      amount,
+      balance: newBalance,
+      timestamp: new Date()
+    });
+  }
+  
+  return {
+    deposit(amount) {
+      if (amount <= 0) {
+        throw new Error('Deposit amount must be positive');
+      }
+      balance += amount;
+      addTransaction('deposit', amount, balance);
+      return balance;
+    },
+    
+    withdraw(amount) {
+      if (amount <= 0) {
+        throw new Error('Withdrawal amount must be positive');
+      }
+      if (amount > balance) {
+        throw new Error('Insufficient funds');
+      }
+      balance -= amount;
+      addTransaction('withdrawal', amount, balance);
+      return balance;
+    },
+    
+    getBalance() {
+      return balance;
+    },
+    
+    getTransactions() {
+      return [...transactions]; // Return copy to prevent modification
+    }
+  };
+}
+
+const account = createBankAccount(100);
+try {
+  account.withdraw(200);
+} catch (e) {
+  console.log('Error:', e.message); // 'Insufficient funds'
+}
+
+// ***
+describe('Bank Account - Step 2: Validation and transaction history', () => {
+  it('should not allow negative deposits', () => {
+    expect(() => account.deposit(-50))
+      .to.throw(Error)
+      .with.property('message').that.includes('positive');
+  });
+  
+  it('should not allow overdraft', () => {
+    expect(() => account.withdraw(1000))
+      .to.throw(Error)
+      .with.property('message').that.includes('Insufficient');
+  });
+  
+  it('should track transactions', () => {
+    account.deposit(50);
+    const history = account.getTransactions();
+    expect(history).to.not.be.empty;
+  });
+  
+  it('should record transaction type', () => {
+    const history = account.getTransactions();
+    const lastTransaction = history[history.length - 1];
+    expect(lastTransaction.type).to.equal('deposit');
+  });
+});
+// ---
+// Step 3: Add interest calculation with closure
+function createBankAccount(initialBalance, interestRate = 0.02) {
+  let balance = initialBalance;
+  const transactions = [];
+  let lastInterestDate = new Date();
+  
+  function addTransaction(type, amount, newBalance) {
+    transactions.push({
+      type,
+      amount,
+      balance: newBalance,
+      timestamp: new Date()
+    });
+  }
+  
+  function calculateInterest() {
+    const now = new Date();
+    const daysSinceLastInterest = (now - lastInterestDate) / (1000 * 60 * 60 * 24);
+    
+    if (daysSinceLastInterest >= 30) {
+      const interest = balance * (interestRate / 12);
+      balance += interest;
+      addTransaction('interest', interest, balance);
+      lastInterestDate = now;
+      return interest;
+    }
+    return 0;
+  }
+  
+  return {
+    deposit(amount) {
+      if (amount <= 0) {
+        throw new Error('Deposit amount must be positive');
+      }
+      calculateInterest(); // Check for interest before transaction
+      balance += amount;
+      addTransaction('deposit', amount, balance);
+      return balance;
+    },
+    
+    withdraw(amount) {
+      if (amount <= 0) {
+        throw new Error('Withdrawal amount must be positive');
+      }
+      calculateInterest(); // Check for interest before transaction
+      if (amount > balance) {
+        throw new Error('Insufficient funds');
+      }
+      balance -= amount;
+      addTransaction('withdrawal', amount, balance);
+      return balance;
+    },
+    
+    getBalance() {
+      calculateInterest(); // Always check for pending interest
+      return balance;
+    },
+    
+    getTransactions() {
+      return [...transactions];
+    },
+    
+    // Method to simulate time passing for testing
+    _simulateTimePass(days) {
+      lastInterestDate = new Date(lastInterestDate.getTime() - days * 24 * 60 * 60 * 1000);
+    }
+  };
+}
+
+const account = createBankAccount(1000, 0.12); // 12% annual interest
+account._simulateTimePass(31); // Simulate 31 days passing
+const newBalance = account.getBalance();
+console.log('Balance with interest:', newBalance);
+
+// ***
+describe('Bank Account - Step 3: Interest calculation', () => {
+  let testAccount;
+  
+  before(() => {
+    testAccount = createBankAccount(1200, 0.12); // 12% annual = 1% monthly
+    testAccount._simulateTimePass(31);
+  });
+  
+  it('should calculate correct interest', () => {
+    const balanceWithInterest = testAccount.getBalance();
+    expect(balanceWithInterest).to.be.closeTo(1212, 0.01);
+  });
+  
+  it('should record interest as transaction', () => {
+    const transactions = testAccount.getTransactions();
+    const interestTransaction = transactions.find(t => t.type === 'interest');
+    expect(interestTransaction).to.exist;
+  });
+  
+  it('should calculate correct interest amount', () => {
+    const transactions = testAccount.getTransactions();
+    const interestTransaction = transactions.find(t => t.type === 'interest');
+    expect(interestTransaction.amount).to.be.closeTo(12, 0.01);
+  });
+});
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Higher-Order Functions
+
+```javascript
+// Functions that take or return other functions
+function withLogging(fn) {
+  return function(...args) {
+    console.log(`Calling ${fn.name} with:`, args);
+    const result = fn(...args);
+    console.log(`Result:`, result);
+    return result;
+  };
+}
+
+function add(a, b) {
+  return a + b;
+}
+
+const loggedAdd = withLogging(add);
+loggedAdd(5, 3);
+// Calling add with: [5, 3]
+// Result: 8
+```
+</SlideLayout.Center>
+
+<SlideLayout.Center>
+## Function Composition
+
+```javascript
+// Combining simple functions to build complex ones
+const compose = (f, g) => (x) => f(g(x));
+
+const addOne = x => x + 1;
+const double = x => x * 2;
+const square = x => x * x;
+
+// Different compositions
+const addThenDouble = compose(double, addOne);
+const doubleThenAdd = compose(addOne, double);
+
+console.log(addThenDouble(5));  // (5 + 1) * 2 = 12
+console.log(doubleThenAdd(5));  // (5 * 2) + 1 = 11
+
+// Pipe multiple functions
+const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x);
+const transform = pipe(addOne, double, square);
+console.log(transform(3)); // ((3 + 1) * 2)² = 64
+```
+</SlideLayout.Center>
