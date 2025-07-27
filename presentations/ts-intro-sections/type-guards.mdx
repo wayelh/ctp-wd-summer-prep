@@ -1,0 +1,285 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Text } from 'spectacle'
+
+<SlideLayout.VerticalImage
+  title="Type Guards"
+  src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXVwYWFiM2ZneWo0Y3B3MmVmeGZ1aDZ2c3FuMWVrczNsb2I0YnJhbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3ohzdQ1IynzclJldUQ/giphy.gif"
+  listItems={[
+    'Type guards help narrow down union types',
+    'Common guards: typeof, instanceof, in',
+    'Custom type guards with "is" keyword',
+    'Essential for working with unions safely',
+  ]}
+/>
+
+<SlideLayout.Full>
+## Type Guards in Action
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+type Result = 
+  | { success: true; data: string }
+  | { success: false; error: string };
+
+function handleResult(result: Result) {
+  if (result.success) {
+    // TypeScript knows result.data exists here
+    console.log("Success:", result.data);
+  } else {
+    // TypeScript knows result.error exists here
+    console.log("Error:", result.error);
+  }
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Create Type Guards
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Create type guards for different shapes
+interface Circle {
+  kind: "circle";
+  radius: number;
+}
+
+interface Rectangle {
+  kind: "rectangle";
+  width: number;
+  height: number;
+}
+
+interface Triangle {
+  kind: "triangle";
+  base: number;
+  height: number;
+}
+
+type Shape = Circle | Rectangle | Triangle;
+
+// TODO: Implement this function using type guards
+function calculateArea(shape: Shape): number {
+  // Your code here
+  return 0;
+}
+
+// Test cases
+const circle: Circle = { kind: "circle", radius: 5 };
+const rectangle: Rectangle = { kind: "rectangle", width: 10, height: 20 };
+const triangle: Triangle = { kind: "triangle", base: 10, height: 15 };
+
+console.log(calculateArea(circle)); // Should be ~78.54
+console.log(calculateArea(rectangle)); // Should be 200
+console.log(calculateArea(triangle)); // Should be 75
+
+//***
+describe('Shape Area Calculator - Initial Implementation', () => {
+  it('should calculate circle area correctly', () => {
+    const testCircle: Circle = { kind: "circle", radius: 10 };
+    const circleArea = calculateArea(testCircle);
+    expect(circleArea).to.be.closeTo(Math.PI * 100, 0.1);
+  });
+  
+  it('should calculate rectangle area correctly', () => {
+    const testRect: Rectangle = { kind: "rectangle", width: 5, height: 10 };
+    expect(calculateArea(testRect)).to.equal(50);
+  });
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Type Predicates
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Custom type guard with 'is' keyword
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isNotNull<T>(value: T | null): value is T {
+  return value !== null;
+}
+
+// Using type guards
+const values: (string | number | null)[] = ["hello", 42, null, "world"];
+
+// Filter with type guard
+const strings = values.filter(isString); // string[]
+const nonNulls = values.filter(isNotNull); // (string | number)[]
+
+// In conditionals
+function process(value: unknown) {
+  if (isString(value)) {
+    console.log(value.toUpperCase()); // Safe!
+  }
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Habit Type Guards
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Exercise: Create type guards for the habit tracking system
+// TODO: Implement type guards for different habit-related types
+
+// Different types of habits and entries
+type DailyHabit = {
+  type: "daily";
+  habitId: string;
+  name: string;
+  targetCount: 1;
+}
+
+type WeeklyHabit = {
+  type: "weekly";
+  habitId: string;
+  name: string;
+  targetCount: number;
+  targetDays: string[]; // ["Mon", "Wed", "Fri"]
+}
+
+type CustomHabit = {
+  type: "custom";
+  habitId: string;
+  name: string;
+  targetCount: number;
+  frequency: number; // every N days
+}
+
+type Habit = DailyHabit | WeeklyHabit | CustomHabit;
+
+// TODO: Create type guards
+function isDailyHabit(habit: Habit): boolean {
+  // Your code here
+}
+
+function isWeeklyHabit(habit: Habit): boolean {
+  // Your code here
+}
+
+// TODO: Calculate if habit is due today
+function isHabitDueToday(habit: Habit, today: Date): boolean {
+  // Your code here
+}
+
+// Test your implementation
+const habits: Habit[] = [
+  { type: "daily", habitId: "1", name: "Exercise", targetCount: 1 },
+  { type: "weekly", habitId: "2", name: "Read", targetCount: 3, targetDays: ["Mon", "Wed", "Fri"] },
+  { type: "custom", habitId: "3", name: "Meditate", targetCount: 1, frequency: 2 }
+];
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Advanced Type Guards
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="20px">More sophisticated type narrowing:</Text>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">1. in operator</Text>
+        <Text fontSize="16px">• Check if property exists in object</Text>
+        <Text fontSize="16px">• Useful for optional properties</Text>
+        <Text fontSize="16px">• Works with union types</Text>
+      </Box>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">2. instanceof checks</Text>
+        <Text fontSize="16px">• Check class instances</Text>
+        <Text fontSize="16px">• Works with inheritance</Text>
+        <Text fontSize="16px">• Type-safe error handling</Text>
+      </Box>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">3. Assertion functions</Text>
+        <Text fontSize="16px">• Throw if condition not met</Text>
+        <Text fontSize="16px">• Narrow type after assertion</Text>
+        <Text fontSize="16px">• Great for validation</Text>
+      </Box>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: API Response Guards
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Exercise: Handle different API responses safely
+// TODO: Create guards for API responses
+
+// Success response
+interface SuccessResponse<T> {
+  status: "success";
+  data: T;
+  timestamp: string;
+}
+
+// Error response
+interface ErrorResponse {
+  status: "error";
+  code: string;
+  message: string;
+  details?: unknown;
+}
+
+// Loading state
+interface LoadingResponse {
+  status: "loading";
+  progress?: number;
+}
+
+type ApiResponse<T> = SuccessResponse<T> | ErrorResponse | LoadingResponse;
+
+// TODO: Create type guards
+function isSuccess<T>(response: ApiResponse<T>): boolean {
+  // Your code here
+}
+
+function isError<T>(response: ApiResponse<T>): boolean {
+  // Your code here
+}
+
+// TODO: Create safe data extractor
+function extractData<T>(response: ApiResponse<T>): T | null {
+  // Your code here
+}
+
+// Test with habit data
+interface HabitData {
+  habits: Array<{ id: string; name: string }>;
+  total: number;
+}
+
+const responses: ApiResponse<HabitData>[] = [
+  { status: "success", data: { habits: [{id: "1", name: "Exercise"}], total: 1 }, timestamp: "2024-01-01" },
+  { status: "error", code: "NOT_FOUND", message: "Habits not found" },
+  { status: "loading", progress: 50 }
+];
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

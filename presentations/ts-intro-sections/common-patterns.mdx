@@ -1,0 +1,112 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## Common TypeScript Patterns: Readonly Properties
+
+```
+interface Config {
+  readonly apiUrl: string;
+  readonly timeout: number;
+}
+```
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Common TypeScript Patterns: Index Signatures
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+interface StringDictionary {
+  [key: string]: string;
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Common TypeScript Patterns: Discriminated Unions
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+type Shape = 
+  | { kind: "circle"; radius: number }
+  | { kind: "square"; size: number };
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Real World Example
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+interface TodoItem {
+  id: string;
+  title: string;
+  completed: boolean;
+  createdAt: Date;
+}
+
+type TodoFilter = "all" | "active" | "completed";
+
+function filterTodos(todos: TodoItem[], filter: TodoFilter): TodoItem[] {
+  switch (filter) {
+    case "active":
+      return todos.filter(todo => !todo.completed);
+    case "completed":
+      return todos.filter(todo => todo.completed);
+    default:
+      return todos;
+  }
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Build a State Machine
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Create a type-safe state machine for a traffic light
+
+// TODO: Define the states and transitions
+type TrafficLightState = any; // Replace this
+type TrafficLightEvent = any; // Replace this
+
+class TrafficLight {
+  private state: TrafficLightState = "red";
+  
+  transition(event: TrafficLightEvent): void {
+    // TODO: Implement state transitions
+    // Red -> Green (on "next")
+    // Green -> Yellow (on "next")
+    // Yellow -> Red (on "next")
+    // Any state -> Red (on "emergency")
+  }
+  
+  getState(): TrafficLightState {
+    return this.state;
+  }
+}
+
+// Usage
+const light = new TrafficLight();
+console.log(light.getState()); // "red"
+light.transition("next");
+console.log(light.getState()); // "green"
+light.transition("emergency");
+console.log(light.getState()); // "red"
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,113 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Multi-File Code Example
+
+<CodeDisplay
+  multiFile={true}
+  height="500px"
+>
+{`// @@@ index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Habit Tracker</title>
+</head>
+<body>
+    <div id="root"></div>
+    <div id="test-output"></div>
+</body>
+</html>
+// @@@ index.css
+.habit-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 8px 0;
+    background-color: #f9f9f9;
+}
+
+.habit-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.habit-title {
+    color: #333;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.habit-streak {
+    color: #4CAF50;
+    font-weight: bold;
+}
+// @@@ app.tsx
+interface Habit {
+    id: string;
+    name: string;
+    streak: number;
+}
+
+const HabitCard: React.FC<{ habit: Habit }> = ({ habit }) => {
+    return (
+        <div className="habit-card">
+            <h3 className="habit-title">{habit.name}</h3>
+            <div className="habit-streak">Streak: {habit.streak} days</div>
+        </div>
+    );
+};
+
+const App: React.FC = () => {
+    const habits: Habit[] = [
+        { id: '1', name: 'Morning Exercise', streak: 15 },
+        { id: '2', name: 'Read 30 minutes', streak: 7 }
+    ];
+    
+    return (
+        <div>
+            <h1>My Habits</h1>
+            {habits.map(habit => (
+                <HabitCard key={habit.id} habit={habit} />
+            ))}
+        </div>
+    );
+};
+
+// Render the app
+ReactDOM.render(<App />, document.getElementById('root'));
+
+// Tests
+test('Should render habit cards', () => {
+    const cards = document.querySelectorAll('.habit-card');
+    expect(cards.length).to.equal(2);
+});
+
+test('Should have correct CSS styles', () => {
+    const cssRules = parseCSS(getCSSAST());
+    const cardRule = cssRules.find(r => r.selector === '.habit-card');
+    expect(cardRule).to.exist;
+    expect(cardRule.declarations['border-radius']).to.equal('8px');
+});
+
+test('Should display habit names', () => {
+    const titles = document.querySelectorAll('.habit-title');
+    expect(titles[0].textContent).to.equal('Morning Exercise');
+    expect(titles[1].textContent).to.equal('Read 30 minutes');
+});
+
+test('Should apply hover styles', () => {
+    const card = document.querySelector('.habit-card');
+    const styles = getComputedStyles('.habit-card');
+    expect(styles.backgroundColor).to.equal('rgb(249, 249, 249)');
+});`}
+</CodeDisplay>
+
+This example demonstrates:
+- HTML file for structure
+- CSS file for styling
+- TSX file with React components
+- Tests that check DOM, CSS, and computed styles
+
+</SlideLayout.Full>

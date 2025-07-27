@@ -1,0 +1,196 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Functions: The Heart of JavaScript
+
+<CodeDisplay height="500px">
+  <File name="habitFunctions.js">
+    
+```javascript
+// Exercise: Create functions for habit tracking
+// TODO: Create three functions:
+// 1. calculateStreak - takes array of dates, returns count
+// 2. isHabitCompleted - takes habit and date, returns boolean
+// 3. getPoints - takes streak number, returns points (streak * 10)
+
+// Your code here...
+
+// Test your functions
+console.log(calculateStreak(['2024-01-01', '2024-01-02']));
+console.log(isHabitCompleted({ completions: ['2024-01-01'] }, '2024-01-01'));
+console.log(getPoints(5));
+```
+    
+    
+```javascript
+// Step 1: Basic function declaration
+function calculateStreak(completionDates) {
+  return completionDates.length;
+}
+
+function isHabitCompleted(habit, date) {
+  // Check if date exists in completions array
+  for (let i = 0; i < habit.completions.length; i++) {
+    if (habit.completions[i] === date) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getPoints(streak) {
+  return streak * 10;
+}
+
+// Test them
+console.log(calculateStreak(['2024-01-01', '2024-01-02'])); // 2
+console.log(isHabitCompleted({ completions: ['2024-01-01'] }, '2024-01-01')); // true
+console.log(getPoints(5)); // 50
+```
+    
+    
+```javascript
+// Step 2: Refactor with modern syntax
+// Function declaration - still good for main functions
+function calculateStreak(completionDates) {
+  return completionDates.length;
+}
+
+// Function expression - useful for conditional assignment
+const isHabitCompleted = function(habit, date) {
+  // Modern array method
+  return habit.completions.includes(date);
+};
+
+// Arrow function - concise for simple operations
+const getPoints = (streak) => streak * 10;
+
+// Arrow function with block body for complex logic
+const getStreakBonus = (streak) => {
+  if (streak >= 30) return 100;
+  if (streak >= 7) return 25;
+  return 0;
+};
+
+// Test them
+console.log(calculateStreak(['2024-01-01', '2024-01-02'])); // 2
+console.log(getPoints(5)); // 50
+console.log(getStreakBonus(30)); // 100
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Test: Functions should work correctly
+describe('Habit Functions', () => {
+  it('should calculate streak from dates array', () => {
+    expect(calculateStreak(['2024-01-01', '2024-01-02'])).to.equal(2);
+    expect(calculateStreak([])).to.equal(0);
+  });
+  
+  it('should check if habit was completed on date', () => {
+    const habit = { completions: ['2024-01-01', '2024-01-03'] };
+    expect(isHabitCompleted(habit, '2024-01-01')).to.equal(true);
+    expect(isHabitCompleted(habit, '2024-01-02')).to.equal(false);
+  });
+  
+  it('should calculate points based on streak', () => {
+    expect(getPoints(0)).to.equal(0);
+    expect(getPoints(5)).to.equal(50);
+    expect(getPoints(10)).to.equal(100);
+  });
+
+  it('should implement all required functions', () => {
+    expect(typeof calculateStreak).to.equal('function');
+    expect(typeof isHabitCompleted).to.equal('function');
+    expect(typeof getPoints).to.equal('function');
+    
+    expect(calculateStreak(['a', 'b', 'c'])).to.equal(3);
+    expect(getPoints(7)).to.equal(70);
+  });
+
+  it('should use includes for array checking', () => {
+    const habit = { completions: ['2024-01-01', '2024-01-03'] };
+    expect(isHabitCompleted(habit, '2024-01-01')).to.equal(true);
+    expect(isHabitCompleted(habit, '2024-01-02')).to.equal(false);
+  });
+  
+  it('should calculate streak bonuses', () => {
+    expect(getStreakBonus(2)).to.equal(0);
+    expect(getStreakBonus(7)).to.equal(25);
+    expect(getStreakBonus(30)).to.equal(100);
+    expect(getStreakBonus(100)).to.equal(100);
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Functions as First-Class Citizens
+
+<CodeDisplay height="500px">
+  <File name="advancedFunctions.js">
+```javascript
+// Step 3: Functions as first-class citizens
+// Store functions in variables
+const scoreCalculator = getPoints;
+const bonusCalculator = getStreakBonus;
+
+// Pass functions as arguments
+function calculateTotalScore(streak, pointsFn, bonusFn) {
+  return pointsFn(streak) + bonusFn(streak);
+}
+
+// Return functions from functions
+function createMultiplier(factor) {
+  return (value) => value * factor;
+}
+
+const doublePoints = createMultiplier(2);
+const triplePoints = createMultiplier(3);
+
+// Use them
+console.log(scoreCalculator(5)); // 50
+console.log(calculateTotalScore(30, getPoints, getStreakBonus)); // 300 + 100 = 400
+console.log(doublePoints(10)); // 20
+console.log(triplePoints(10)); // 30
+```
+</File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Function Calculator
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Habit Tracker: Create a habit analytics function
+// Exercise: Build a function that analyzes habit completion data
+
+function analyzeHabit(action, habitData) {
+  // Your code here
+  // Actions: "streak", "points", "completion-rate", "best-day"
+}
+
+// Test data
+const myHabit = {
+  name: "Morning Exercise",
+  completions: ['2024-01-01', '2024-01-02', '2024-01-04', '2024-01-05', '2024-01-06'],
+  totalDays: 7,
+  pointsPerDay: 10
+};
+
+console.log(analyzeHabit("streak", myHabit));
+console.log(analyzeHabit("points", myHabit));
+console.log(analyzeHabit("completion-rate", myHabit));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

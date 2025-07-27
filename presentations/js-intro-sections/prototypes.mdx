@@ -1,0 +1,269 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+
+<SlideLayout.Full>
+## 🧬 Prototypes and Inheritance
+### JavaScript's Object-Oriented Foundation
+
+- Understanding the prototype chain
+- Creating inheritance relationships  
+- Constructor functions and classes
+- Sharing methods efficiently
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">What Are Prototypes?</Heading>
+    <UnorderedList>
+      <ListItem>Every JavaScript object has a hidden [[Prototype]] property</ListItem>
+      <ListItem>Objects inherit properties and methods from their prototype</ListItem>
+      <ListItem>Creates a chain of inheritance (prototype chain)</ListItem>
+      <ListItem>Enables code reuse without copying</ListItem>
+    </UnorderedList>
+    <Box marginTop="50px">
+      <Text fontSize="24px" fontWeight="bold">Real-world analogy:</Text>
+      <Text fontSize="20px">A habit template that specific habits inherit from</Text>
+      <Text fontSize="20px">All habits share common behaviors</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## The Prototype Chain
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Every object has a prototype
+const baseHabit = {
+  isActive: true,
+  complete() {
+    console.log(`${this.name} completed!`);
+  }
+};
+
+// Create new object with baseHabit as prototype
+const exerciseHabit = Object.create(baseHabit);
+exerciseHabit.name = "Morning Run";
+exerciseHabit.category = "fitness";
+
+// Access own and inherited properties
+console.log(exerciseHabit.name);       // "Morning Run" (own)
+console.log(exerciseHabit.isActive);   // true (inherited)
+exerciseHabit.complete();              // "Morning Run completed!" (inherited method)
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">How Prototypes Work</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Property Lookup Process:</Text>
+      <UnorderedList>
+        <ListItem>1. Check if object has own property</ListItem>
+        <ListItem>2. If not, check object's prototype</ListItem>
+        <ListItem>3. Continue up the chain until found or null</ListItem>
+        <ListItem>4. Return undefined if not found</ListItem>
+      </UnorderedList>
+      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">Benefits:</Text>
+      <UnorderedList>
+        <ListItem>Memory efficient - methods stored once</ListItem>
+        <ListItem>Dynamic - changes to prototype affect all instances</ListItem>
+        <ListItem>Flexible inheritance patterns</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Habit Prototype System
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build a prototype-based habit tracking system
+// TODO: Create a base habit prototype with common functionality
+// Then create specialized habit types that inherit from it
+
+// Base habit prototype
+const habitPrototype = {
+  // TODO: Add methods for all habits:
+  // - complete() - marks habit as complete for today
+  // - reset() - resets completion status
+  // - getStatus() - returns completion status
+};
+
+// TODO: Create specific habit types using the prototype:
+// 1. exerciseHabit - with duration property
+// 2. studyHabit - with subject property
+// 3. healthHabit - with target property
+
+// Test your implementation:
+const morningRun = // Create exercise habit
+console.log(morningRun.getStatus()); // Should work!
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Constructor Functions</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="30px">Before ES6 classes, constructor functions were the standard way to create objects with shared methods:</Text>
+      <UnorderedList>
+        <ListItem>Functions that create and initialize objects</ListItem>
+        <ListItem>Used with 'new' keyword</ListItem>
+        <ListItem>Prototype property holds shared methods</ListItem>
+        <ListItem>Capital letter convention (e.g., Habit)</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Constructor Function Pattern
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Constructor function
+function Habit(name, category) {
+  // Instance properties
+  this.name = name;
+  this.category = category;
+  this.streak = 0;
+  this.isActive = true;
+}
+
+// Shared methods on prototype
+Habit.prototype.complete = function() {
+  this.streak++;
+  return `${this.name} completed! Streak: ${this.streak}`;
+};
+
+Habit.prototype.reset = function() {
+  this.streak = 0;
+  return `${this.name} streak reset`;
+};
+
+// Create instances
+const exercise = new Habit('Exercise', 'health');
+const reading = new Habit('Reading', 'learning');
+
+console.log(exercise.complete()); // Methods are shared!
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Habit Constructor System
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build a constructor-based habit system with inheritance
+// TODO: Create constructor functions for:
+// 1. Base Habit constructor
+// 2. TimedHabit that extends Habit
+// 3. SocialHabit that extends Habit
+
+function Habit(name, category, pointsPerCompletion) {
+  // TODO: Initialize properties
+}
+
+// TODO: Add methods to Habit.prototype:
+// - complete() - marks complete and adds points
+// - getPoints() - returns total points
+// - getInfo() - returns habit information
+
+function TimedHabit(name, category, pointsPerCompletion, targetMinutes) {
+  // TODO: Call parent constructor and add timer properties
+}
+
+// TODO: Set up inheritance and add timer-specific methods
+
+// Test it:
+const meditation = new TimedHabit('Meditation', 'wellness', 20, 15);
+meditation.complete(20); // Complete with 20 minutes
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## ES6 Classes: Modern Syntax
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// ES6 Classes - syntactic sugar over prototypes
+class Habit {
+  constructor(name, category) {
+    this.name = name;
+    this.category = category;
+    this.streak = 0;
+  }
+  
+  complete() {
+    this.streak++;
+    return `${this.name} completed!`;
+  }
+}
+
+class TimedHabit extends Habit {
+  constructor(name, category, targetMinutes) {
+    super(name, category);
+    this.targetMinutes = targetMinutes;
+  }
+  
+  complete(minutes) {
+    super.complete();
+    return `Completed ${minutes}/${this.targetMinutes} minutes`;
+  }
+}
+
+// It's still prototypes under the hood!
+const meditation = new TimedHabit('Meditation', 'wellness', 20);
+console.log(meditation instanceof Habit); // true
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Prototypes vs Classes</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Constructor Functions:</Text>
+      <Text fontSize="18px" marginBottom="30px">• Traditional JavaScript approach</Text>
+      <Text fontSize="18px" marginBottom="30px">• More flexible and explicit</Text>
+      <Text fontSize="18px" marginBottom="30px">• Shows how inheritance really works</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginTop="20px" marginBottom="20px">ES6 Classes:</Text>
+      <Text fontSize="18px" marginBottom="30px">• Cleaner, more familiar syntax</Text>
+      <Text fontSize="18px" marginBottom="30px">• Built on top of prototypes</Text>
+      <Text fontSize="18px">• Better for complex hierarchies</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 🎯 Key Takeaways: Prototypes
+
+1. **Every object** has a prototype chain for inheritance
+2. **Property lookup** traverses the chain until found
+3. **Constructor functions** create objects with shared methods
+4. **ES6 classes** are syntactic sugar over prototypes
+5. **Prototype pattern** enables efficient memory usage
+
+### Coming Up Next: Modules
+Organizing code into reusable components!
+</SlideLayout.Full>

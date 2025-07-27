@@ -1,0 +1,149 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from './components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Example: Using Context-Based CodeDisplay
+
+This demonstrates the new context-based approach where you can use MDX code fences as versions.
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Example</title>
+</head>
+<body>
+    <h1>Version 1</h1>
+    <button id="myButton">Click me</button>
+</body>
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Example</title>
+</head>
+<body>
+    <h1>Version 2 - Enhanced</h1>
+    <button id="myButton" class="primary">Click me</button>
+    <p id="output"></p>
+</body>
+</html>
+```
+  </File>
+  
+  <File name="app.js">
+```javascript
+// Version 1 - Basic click handler
+document.getElementById('myButton').addEventListener('click', function() {
+    alert('Button clicked!');
+});
+```
+
+```javascript
+// Version 2 - Enhanced with output
+document.getElementById('myButton').addEventListener('click', function() {
+    const output = document.getElementById('output');
+    output.textContent = 'Button was clicked at ' + new Date().toLocaleTimeString();
+});
+```
+  </File>
+  
+  <File name="style.css">
+```css
+/* Version 1 - Basic styles */
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+}
+```
+
+```css
+/* Version 2 - Enhanced styles */
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.primary:hover {
+    background-color: #0056b3;
+}
+
+#output {
+    margin-top: 20px;
+    font-style: italic;
+}
+```
+  </File>
+  
+  <Tests>
+    
+```javascript
+describe('Button functionality', () => {
+    it('should have a button element', () => {
+        const button = document.getElementById('myButton');
+        expect(button).to.exist;
+    });
+    
+    it('should have click event listener', () => {
+        const button = document.getElementById('myButton');
+        const clickEvent = new Event('click');
+        let eventFired = false;
+        
+        // Override alert or check output
+        const output = document.getElementById('output');
+        if (output) {
+            button.dispatchEvent(clickEvent);
+            expect(output.textContent).to.include('clicked');
+        }
+    });
+});
+```
+
+```javascript
+// Version 2 tests - more comprehensive
+describe('Enhanced Button functionality', () => {
+    it('should have primary class', () => {
+        const button = document.getElementById('myButton');
+        expect(button.classList.contains('primary')).to.be.true;
+    });
+    
+    it('should update output on click', () => {
+        const button = document.getElementById('myButton');
+        const output = document.getElementById('output');
+        
+        button.click();
+        
+        expect(output.textContent).to.include('Button was clicked at');
+        expect(output.textContent).to.match(/\d{1,2}:\d{2}:\d{2}/);
+    });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Benefits of Context-Based Approach
+
+1. **Cleaner MDX**: Use standard code fences instead of template literals
+2. **Better Syntax Highlighting**: MDX processors can properly highlight the code
+3. **Version Support**: Multiple code fences in a File become versions automatically
+4. **No Escaping Issues**: No need to escape backticks or special characters
+5. **Natural Structure**: Files and tests are clearly separated
+
+</SlideLayout.Full>

@@ -1,0 +1,170 @@
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<CodeDisplay height="550px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Efficient DOM Updates</title>
+    <style>
+        .habit-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+        .habit-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <button id="loadHabits">Load 50 Habits</button>
+    <div id="habitsList"></div>
+    <div id="performance"></div>
+</body>
+</html>
+```
+  </File>
+  <File name="app.js">
+```javascript
+// Exercise: Optimize DOM operations for better performance
+// TODO: Refactor to use efficient DOM update patterns
+
+// Inefficient approach (DO NOT USE):
+function inefficientLoad() {
+  const list = document.querySelector('#habitsList');
+  const start = performance.now();
+  
+  for (let i = 0; i < 50; i++) {
+    const div = document.createElement('div');
+    div.innerHTML = `<h3>Habit ${i}</h3><span>Streak: 0</span>`;
+    div.style.border = '1px solid #ddd';
+    div.style.padding = '10px';
+    div.style.margin = '5px';
+    list.appendChild(div); // DOM update in loop!
+  }
+  
+  return performance.now() - start;
+}
+
+// TODO: Create efficientLoad() function that:
+// 1. Uses DocumentFragment
+// 2. Batches DOM updates
+// 3. Uses CSS classes instead of inline styles
+
+// Your code here...
+```
+
+```javascript
+// Solution: Optimized DOM updates
+
+function efficientLoad() {
+  const list = document.querySelector('#habitsList');
+  const perfDiv = document.querySelector('#performance');
+  const start = performance.now();
+  
+  // Create fragment to batch updates
+  const fragment = document.createDocumentFragment();
+  
+  // Build all elements in memory
+  for (let i = 0; i < 50; i++) {
+    const div = document.createElement('div');
+    div.className = 'habit-item'; // Use CSS class
+    div.dataset.habitId = i;
+    
+    // Build inner HTML once
+    div.innerHTML = `
+      <h3>Habit ${i + 1}</h3>
+      <div class="habit-meta">
+        <span class="streak">Streak: 0</span>
+        <button class="complete-btn" data-id="${i}">Complete</button>
+      </div>
+    `;
+    
+    fragment.appendChild(div);
+  }
+  
+  // Single DOM update
+  list.appendChild(fragment);
+  
+  const time = performance.now() - start;
+  perfDiv.textContent = `Loaded in ${time.toFixed(2)}ms`;
+  
+  // Add event delegation for all buttons
+  list.addEventListener('click', (e) => {
+    if (e.target.classList.contains('complete-btn')) {
+      const habitItem = e.target.closest('.habit-item');
+      const streak = habitItem.querySelector('.streak');
+      const current = parseInt(streak.textContent.match(/\d+/)[0]);
+      streak.textContent = `Streak: ${current + 1}`;
+      
+      // Visual feedback
+      habitItem.style.backgroundColor = '#e8f5e9';
+      setTimeout(() => {
+        habitItem.style.backgroundColor = '';
+      }, 500);
+    }
+  });
+  
+  return time;
+}
+
+// Load habits
+document.querySelector('#loadHabits').addEventListener('click', () => {
+  document.querySelector('#habitsList').innerHTML = ''; // Clear first
+  efficientLoad();
+});
+
+// Auto-load for testing
+efficientLoad();
+```
+  </File>
+  <Tests>
+```javascript
+// Test: Performance improvement
+describe('DOM Performance', () => {
+  it('should load habits efficiently', () => {
+    const time = efficientLoad();
+    const list = document.querySelector('#habitsList');
+    
+    expect(list.children).to.have.lengthOf(50);
+    expect(time).to.be.below(50); // Should be fast
+  });
+});
+```
+
+```javascript
+// Test: Optimized implementation
+describe('Optimized DOM Updates', () => {
+  it('should load all habits', () => {
+    const items = document.querySelectorAll('.habit-item');
+    expect(items).to.have.lengthOf(50);
+  });
+  
+  it('should use CSS classes', () => {
+    const firstItem = document.querySelector('.habit-item');
+    expect(firstItem.className).to.equal('habit-item');
+    expect(firstItem.style.border).to.equal(''); // No inline styles
+  });
+  
+  it('should handle clicks efficiently', () => {
+    const firstBtn = document.querySelector('.complete-btn');
+    const firstStreak = document.querySelector('.streak');
+    
+    firstBtn.click();
+    expect(firstStreak.textContent).to.equal('Streak: 1');
+  });
+  
+  it('should be performant', () => {
+    const perfText = document.querySelector('#performance').textContent;
+    const time = parseFloat(perfText.match(/[\d.]+/)[0]);
+    expect(time).to.be.below(50);
+  });
+});
+```
+  </Tests>
+</CodeDisplay>

@@ -1,0 +1,278 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.VerticalImage
+  title="Interfaces vs Types"
+  src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGo5NnJmMmt2dGp6cWNqeHF5Y3BwNnl0YjNkY2x3c3ZyZWRmMnFnZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7btPCcdNniyf0ArS/giphy.gif"
+  listItems={[
+    'Interfaces define object shapes',
+    'Types can define any type (objects, unions, primitives)',
+    'Interfaces can be extended and merged',
+    'Types are more flexible but cannot be reopened',
+  ]}
+/>
+
+<SlideLayout.Full>
+## Interface Example
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Admin extends User {
+  permissions: string[];
+}
+
+const admin: Admin = {
+  id: 1,
+  name: "Alice",
+  email: "alice@example.com",
+  permissions: ["read", "write", "delete"]
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Optional Properties
+
+- Not all properties are required all the time
+- Use `?` to make a property optional
+- TypeScript will allow the property to be missing
+
+```typescript
+interface UserProfile {
+  name: string;
+  bio?: string;  // Optional
+  avatar?: string;  // Optional
+}
+
+const user1: UserProfile = { name: "Bob" }; // ✅
+const user2: UserProfile = { 
+  name: "Alice", 
+  bio: "TypeScript enthusiast" 
+}; // ✅
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Model a Blog System
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Create interfaces for a blog system with posts, authors, and comments
+
+// TODO: Define these interfaces
+interface Author {
+  // Your code here
+}
+
+interface Comment {
+  // Your code here
+}
+
+interface BlogPost {
+  // Your code here
+}
+
+// This should work when interfaces are defined correctly
+const myBlog: BlogPost = {
+  id: 1,
+  title: "Learning TypeScript",
+  content: "TypeScript is amazing!",
+  author: {
+    id: 100,
+    name: "Jane Doe",
+    email: "jane@example.com"
+  },
+  publishedAt: new Date(),
+  tags: ["typescript", "programming"],
+  comments: [
+    {
+      id: 1,
+      content: "Great post!",
+      author: "John",
+      createdAt: new Date()
+    }
+  ]
+};
+
+//***
+describe('Blog System - Initial Implementation', () => {
+  it('should have properly structured author with valid email', () => {
+    expect(myBlog.author.email).to.include('@');
+  });
+  
+  it('should have at least one comment', () => {
+    expect(myBlog.comments).to.have.lengthOf.above(0);
+  });
+  
+  it('should include typescript tag', () => {
+    expect(myBlog.tags).to.include('typescript');
+  });
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Habit Tracker Types
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Exercise: Define interfaces for the habit tracking system
+// TODO: Create proper TypeScript interfaces for habits
+
+// TODO: Define these interfaces
+interface Habit {
+  // Your code here
+}
+
+interface HabitEntry {
+  // Your code here
+}
+
+interface HabitTracker {
+  // Your code here
+}
+
+// This should work when interfaces are defined
+const tracker: HabitTracker = {
+  habits: [
+    {
+      id: "habit-1",
+      name: "Morning Exercise",
+      category: "health",
+      targetFrequency: "daily",
+      difficulty: "medium",
+      isActive: true,
+      createdAt: new Date("2024-01-01")
+    }
+  ],
+  entries: [
+    {
+      id: "entry-1",
+      habitId: "habit-1",
+      date: "2024-01-15",
+      completed: true,
+      notes: "30 min workout"
+    }
+  ],
+  addHabit(habit) {
+    this.habits.push(habit);
+  },
+  recordEntry(entry) {
+    this.entries.push(entry);
+  }
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Interface Best Practices
+
+Design clean, maintainable interfaces:
+
+**1. Single Responsibility**
+- Each interface should represent one concept
+- Split large interfaces into smaller ones
+- Use composition over inheritance when possible
+
+**2. Explicit Over Implicit**
+- Use descriptive property names
+- Document complex properties
+- Prefer specific types over 'any'
+
+**3. Flexibility**
+- Use optional properties wisely
+- Consider readonly for immutability
+- Create utility types for variations
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Advanced Interface Patterns
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Exercise: Use advanced interface patterns for the habit system
+// TODO: Implement generic interfaces and utility types
+
+// TODO: Make this interface generic
+interface ApiResponse {
+  data: any; // Should be generic
+  status: number;
+  message?: string;
+}
+
+// TODO: Create a utility type for creating habits
+type CreateHabitInput = any; // Should omit system fields
+
+// TODO: Create a type for habit statistics
+interface HabitStats {
+  // Your code here
+}
+
+// Test your types
+const habitResponse: ApiResponse = {
+  data: { id: "1", name: "Exercise" },
+  status: 200
+};
+
+const newHabitInput: CreateHabitInput = {
+  name: "Meditate",
+  category: "wellness",
+  targetFrequency: "daily",
+  difficulty: "easy"
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Interface Declaration Merging
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Interfaces can be declared multiple times
+interface User {
+  name: string;
+}
+
+interface User {
+  age: number; // Added to the same interface
+}
+
+// Now User has both properties
+const user: User = {
+  name: "Alice",
+  age: 30
+};
+
+// This is useful for extending third-party types
+interface Window {
+  myCustomProperty: string;
+}
+
+window.myCustomProperty = "Hello!";
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

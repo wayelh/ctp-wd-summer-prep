@@ -1,0 +1,365 @@
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<CodeDisplay height="550px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Form Validation</title>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Create New Habit</h2>
+        
+        <form id="habitForm">
+            <div class="form-group">
+                <label for="habitName">Habit Name:</label>
+                <input id="habitName" type="text" placeholder="3-50 characters" />
+                <span class="field-hint">e.g., "Morning meditation"</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="targetDays">Target Days:</label>
+                <input id="targetDays" type="number" placeholder="1-365" />
+                <span class="field-hint">How many days to build this habit?</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="difficulty">Difficulty:</label>
+                <select id="difficulty">
+                    <option value="">Select difficulty</option>
+                    <option value="easy">Easy (5-10 min/day)</option>
+                    <option value="medium">Medium (15-30 min/day)</option>
+                    <option value="hard">Hard (30+ min/day)</option>
+                </select>
+            </div>
+            
+            <div id="errorMsg" class="error-message"></div>
+            
+            <button type="submit" class="submit-btn">Create Habit</button>
+        </form>
+        
+        <div id="habitsList" class="habits-list"></div>
+    </div>
+</body>
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Form Validation</title>
+</head>
+<body>
+  <form id="habitForm">
+    <input id="habitName" placeholder="Habit name (3-50 chars)">
+    <input id="targetDays" type="number" placeholder="Target days (1-365)">
+    <select id="difficulty">
+      <option value="">Select difficulty</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+    <div id="errorMsg" style="color: red; display: none;"></div>
+    <button type="submit">Create Habit</button>
+  </form>
+  <div id="habitsList"></div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+.form-container {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: bold;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+input.error, select.error {
+    border-color: #f44336;
+}
+
+.field-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #777;
+}
+
+.error-message {
+    display: none;
+    padding: 10px;
+    margin: 15px 0;
+    background-color: #ffebee;
+    border: 1px solid #ffcdd2;
+    border-radius: 5px;
+    color: #c62828;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #45a049;
+}
+
+.submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.habits-list {
+    margin-top: 30px;
+}
+
+.habit-card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.habit-card h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.difficulty-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+}
+
+.difficulty-badge.easy {
+    background-color: #4CAF50;
+}
+
+.difficulty-badge.medium {
+    background-color: #FF9800;
+}
+
+.difficulty-badge.hard {
+    background-color: #f44336;
+}
+```
+  </File>
+  <File name="app.js">
+```javascript
+// TODO: Build form validation for habit creation
+// Requirements:
+// 1. Name must be 3-50 characters
+// 2. Target days must be 1-365
+// 3. Difficulty must be selected
+// 4. Show error messages
+// 5. Prevent form submission if invalid
+
+// Your code here...
+```
+
+```javascript
+// Solution: Comprehensive form validation
+
+const form = document.querySelector("#habitForm");
+const nameInput = document.querySelector("#habitName");
+const targetInput = document.querySelector("#targetDays");
+const difficultySelect = document.querySelector("#difficulty");
+const errorMsg = document.querySelector("#errorMsg");
+const habitsList = document.querySelector("#habitsList");
+
+function showError(message) {
+  errorMsg.textContent = message;
+  errorMsg.style.display = "block";
+  errorMsg.style.padding = "10px";
+  errorMsg.style.backgroundColor = "#ffebee";
+  errorMsg.style.border = "1px solid #ffcdd2";
+  errorMsg.style.borderRadius = "4px";
+}
+
+function hideError() {
+  errorMsg.style.display = "none";
+  errorMsg.textContent = "";
+}
+
+function validateForm() {
+  const name = nameInput.value.trim();
+  const target = parseInt(targetInput.value);
+  const difficulty = difficultySelect.value;
+  
+  // Validate name
+  if (name.length < 3 || name.length > 50) {
+    showError("Habit name must be 3-50 characters long");
+    nameInput.focus();
+    return false;
+  }
+  
+  // Validate target days
+  if (isNaN(target) || target < 1 || target > 365) {
+    showError("Target days must be between 1-365");
+    targetInput.focus();
+    return false;
+  }
+  
+  // Validate difficulty
+  if (!difficulty) {
+    showError("Please select a difficulty level");
+    difficultySelect.focus();
+    return false;
+  }
+  
+  hideError();
+  return true;
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  
+  if (validateForm()) {
+    // Create habit card
+    const habitCard = document.createElement("div");
+    habitCard.style.cssText = "border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px;";
+    
+    const difficultyColors = {
+      easy: "#4CAF50",
+      medium: "#FF9800",
+      hard: "#f44336"
+    };
+    
+    habitCard.innerHTML = `
+      <h3>${nameInput.value.trim()}</h3>
+      <p>Target: ${targetInput.value} days</p>
+      <span style="background: ${difficultyColors[difficultySelect.value]}; color: white; padding: 4px 8px; border-radius: 4px;">
+        ${difficultySelect.value.toUpperCase()}
+      </span>
+    `;
+    
+    habitsList.appendChild(habitCard);
+    
+    // Reset form
+    form.reset();
+    
+    // Success feedback
+    const successMsg = document.createElement("div");
+    successMsg.textContent = "✓ Habit created successfully!";
+    successMsg.style.cssText = "color: #4CAF50; margin: 10px 0; font-weight: bold;";
+    form.appendChild(successMsg);
+    
+    setTimeout(() => successMsg.remove(), 3000);
+  }
+});
+
+// Test the validation
+nameInput.value = "ab";
+form.dispatchEvent(new Event('submit'));
+```
+  </File>
+  <Tests>
+```javascript
+// Test: Form validation
+describe('Form Validation', () => {
+  it('should validate habit name length', () => {
+    const form = document.querySelector("#habitForm");
+    const nameInput = document.querySelector("#habitName");
+    const errorMsg = document.querySelector("#errorMsg");
+    
+    nameInput.value = "ab"; // Too short
+    form.dispatchEvent(new Event('submit'));
+    
+    expect(errorMsg.style.display).to.not.equal("none");
+    expect(errorMsg.textContent).to.include("3-50 characters");
+  });
+  
+  it('should validate target days range', () => {
+    const targetInput = document.querySelector("#targetDays");
+    const errorMsg = document.querySelector("#errorMsg");
+    
+    targetInput.value = "400"; // Too high
+    document.querySelector("#habitForm").dispatchEvent(new Event('submit'));
+    
+    expect(errorMsg.textContent).to.include("1-365");
+  });
+});
+```
+
+```javascript
+// Test: Validation implementation
+describe('Form Validation Implementation', () => {
+  it('should show error for short name', () => {
+    expect(errorMsg.style.display).to.not.equal("none");
+    expect(errorMsg.textContent).to.equal("Habit name must be 3-50 characters long");
+  });
+  
+  it('should focus on invalid field', () => {
+    expect(document.activeElement).to.equal(nameInput);
+  });
+  
+  it('should validate all fields', () => {
+    nameInput.value = "Morning Exercise";
+    targetInput.value = "30";
+    difficultySelect.value = "medium";
+    
+    const isValid = validateForm();
+    expect(isValid).to.be.true;
+    expect(errorMsg.style.display).to.equal("none");
+  });
+});
+```
+  </Tests>
+</CodeDisplay>

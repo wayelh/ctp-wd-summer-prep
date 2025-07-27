@@ -1,0 +1,602 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Objects and Arrays
+### The Foundation of Data Structures
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">What Are Objects?</Heading>
+    <UnorderedList>
+      <ListItem>Collections of key-value pairs</ListItem>
+      <ListItem>Store related data and functionality together</ListItem>
+      <ListItem>Foundation of object-oriented programming in JS</ListItem>
+      <ListItem>Similar to dictionaries, maps, or hash tables</ListItem>
+    </UnorderedList>
+    <Box marginTop="50px">
+      <Text fontSize="16px" fontWeight="bold">Real-world analogy: A habit tracker app is like an object</Text>
+      <Text fontSize="16px">Properties: name, streak, category</Text>
+      <Text fontSize="16px">Methods: complete(), reset(), getStatus()</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Why Objects Matter
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Without objects - messy and hard to maintain
+let habitName = "Morning Exercise";
+let habitCategory = "health";
+let habitStreak = 5;
+let habitIsActive = true;
+
+// With objects - clean and organized
+const habit = {
+  name: "Morning Exercise",
+  category: "health",
+  streak: 5,
+  isActive: true
+};
+
+// Objects group related data
+console.log(habit.name); // "Morning Exercise"
+console.log(habit.streak); // 5
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Object Syntax and Access</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="20px">Two ways to create objects:</Text>
+      <UnorderedList>
+        <ListItem>Object literal notation: {`{ key: value }`}</ListItem>
+        <ListItem>Constructor notation: new Object()</ListItem>
+      </UnorderedList>
+      <Text fontSize="20px" marginTop="30px" marginBottom="20px">Two ways to access properties:</Text>
+      <UnorderedList>
+        <ListItem>Dot notation: object.property</ListItem>
+        <ListItem>Bracket notation: object["property"]</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Objects: JavaScript's Building Blocks
+
+<CodeDisplay height="500px">
+  <File name="habit.js">
+    
+```javascript
+// Exercise: Create a habit object
+// TODO: Create an object representing a habit with:
+// - name (string)
+// - category (string)
+// - streakDays (number)
+// - isActive (boolean)
+// - complete() method that increments streakDays
+
+// Your code here...
+```
+    
+    
+```javascript
+// Step 1: Basic object literal
+const habit = {
+  name: "Morning Exercise",
+  category: "health",
+  streakDays: 0,
+  isActive: true
+};
+
+// Accessing properties
+console.log(habit.name);        // Dot notation
+console.log(habit["category"]); // Bracket notation
+
+// Dynamic property access
+const prop = "streakDays";
+console.log(habit[prop]);       // 0
+```
+    
+    
+```javascript
+// Step 2: Add methods and use 'this'
+const habit = {
+  name: "Morning Exercise",
+  category: "health",
+  streakDays: 0,
+  isActive: true,
+  
+  complete() {
+    this.streakDays++;
+    console.log(`${this.name} completed! Streak: ${this.streakDays}`);
+  },
+  
+  reset() {
+    this.streakDays = 0;
+    console.log(`${this.name} streak reset.`);
+  },
+  
+  getStatus() {
+    return `${this.name}: ${this.streakDays} day streak`;
+  }
+};
+
+// Use the methods
+habit.complete(); // Morning Exercise completed! Streak: 1
+habit.complete(); // Morning Exercise completed! Streak: 2
+console.log(habit.getStatus()); // Morning Exercise: 2 day streak
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Test: Check habit object structure
+describe('Habit Object', () => {
+  it('should define a variable called `habit`', () => {
+    expect(typeof habit).to.be('object');
+  });
+
+  it('should have required properties', () => {
+    expect(habit).to.have.property('name');
+    expect(habit).to.have.property('category');
+    expect(habit).to.have.property('streakDays');
+    expect(habit).to.have.property('isActive');
+  });
+  
+  it('should have complete method', () => {
+    expect(habit.complete).to.be.a('function');
+    const initialStreak = habit.streakDays;
+    habit.complete();
+    expect(habit.streakDays).to.equal(initialStreak + 1);
+  });
+
+  it('should have correct initial values', () => {
+    expect(habit.name).to.equal("Morning Exercise");
+    expect(habit.category).to.equal("health");
+    expect(habit.streakDays).to.equal(0);
+    expect(habit.isActive).to.be.true;
+  });
+
+  it('should increment streak on complete', () => {
+    const startStreak = habit.streakDays;
+    habit.complete();
+    expect(habit.streakDays).to.equal(startStreak + 1);
+  });
+  
+  it('should reset streak to 0', () => {
+    habit.reset();
+    expect(habit.streakDays).to.equal(0);
+  });
+  
+  it('should return status string', () => {
+    expect(habit.getStatus()).to.be.a('string');
+    expect(habit.getStatus()).to.contain(habit.name);
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Object Methods and 'this'</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="20px">Objects can contain functions (methods)</Text>
+      <Text fontSize="20px" marginBottom="20px">The 'this' keyword refers to the current object</Text>
+      <UnorderedList>
+        <ListItem>Methods can access object properties using 'this'</ListItem>
+        <ListItem>Methods can modify object state</ListItem>
+        <ListItem>Methods enable object-oriented programming</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Modern Object Features
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Destructuring - extract values easily
+const { name, category } = habit;
+
+// Spread operator - copy and extend objects
+const updatedHabit = { ...habit, streak: 10 };
+
+// Computed property names
+const propName = "lastCompleted";
+const habitWithDate = {
+  ...habit,
+  [propName]: "2024-01-20"
+};
+
+// Object shorthand
+const streak = 7;
+const points = 100;
+const stats = { streak, points }; // Same as { streak: streak, points: points }
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Building a Habit Tracker
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build a habit tracker object
+// TODO: Create a habitTracker object with:
+// 1. habits array to store habit objects
+// 2. addHabit(name, category) method
+// 3. completeHabit(name) method that finds and marks habit complete
+// 4. getTotalPoints() method (each completion = 10 points)
+
+const habitTracker = {
+  habits: [],
+  
+  addHabit(name, category) {
+    // Your code here
+  },
+  
+  completeHabit(name) {
+    // Your code here
+  },
+  
+  getTotalPoints() {
+    // Your code here
+  }
+};
+
+// Test it
+habitTracker.addHabit("Drink Water", "health");
+habitTracker.addHabit("Read 30 mins", "learning");
+habitTracker.completeHabit("Drink Water");
+console.log(habitTracker.getTotalPoints()); // Should be 10
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">What Are Arrays?</Heading>
+    <UnorderedList>
+      <ListItem>Ordered collections of values</ListItem>
+      <ListItem>Zero-indexed (first element is at index 0)</ListItem>
+      <ListItem>Can hold any data type, including mixed types</ListItem>
+      <ListItem>Dynamic size - can grow or shrink</ListItem>
+    </UnorderedList>
+  </FlexBox>
+</SlideLayout.Full>
+<SlideLayout.Center>
+      ## Real-world analogy:
+      <Text fontSize="16px">A list of daily habit completions</Text>
+      <Text fontSize="16px">Each day's data stored in order</Text>
+</SlideLayout.Center>
+
+<SlideLayout.Full>
+## Array Basics
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Creating arrays
+const habits = ["Exercise", "Read", "Meditate"];
+const points = [10, 20, 15, 30];
+const mixed = ["Habit", 42, true, { name: "Exercise" }];
+
+// Accessing elements
+console.log(habits[0]);  // "Exercise" (first element)
+console.log(habits[2]);  // "Meditate" (third element)
+
+// Array properties
+console.log(habits.length); // 3
+
+// Modifying arrays
+habits[1] = "Study";     // Change element
+habits.push("Journal");  // Add to end
+habits.pop();           // Remove from end
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Array Methods: The Power Tools</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Transformation Methods</Text>
+      <UnorderedList>
+        <ListItem>map() - transform each element</ListItem>
+        <ListItem>filter() - select elements that match criteria</ListItem>
+        <ListItem>reduce() - combine all elements into single value</ListItem>
+      </UnorderedList>
+      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">Search Methods</Text>
+      <UnorderedList>
+        <ListItem>find() - get first matching element</ListItem>
+        <ListItem>some() - check if any element matches</ListItem>
+        <ListItem>every() - check if all elements match</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Arrays: Lists of Data
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Work with arrays of habit data
+// TODO: Given an array of daily completion records,
+// calculate various statistics
+
+const dailyRecords = [
+  { date: "2024-01-01", completed: true, points: 10 },
+  { date: "2024-01-02", completed: true, points: 15 },
+  { date: "2024-01-03", completed: false, points: 0 },
+  { date: "2024-01-04", completed: true, points: 10 },
+  { date: "2024-01-05", completed: true, points: 20 }
+];
+
+// TODO: Calculate:
+// 1. Total days completed
+// 2. Total points earned
+// 3. Completion rate (percentage)
+// 4. Array of just the completed dates
+
+// Your code here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Array Transformation
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Transform habit points data
+// TODO: Given an array of daily habit points,
+// 1. Add 20% bonus to each
+// 2. Format as strings with "pts" suffix
+// 3. Filter to show only days with 50+ points
+
+const dailyPoints = [30, 45, 60, 20, 75, 40, 90];
+const BONUS_RATE = 0.20;
+
+// Goal: ["72 pts", "90 pts", "108 pts"]
+// Your code here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Combining Objects and Arrays</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="30px">Most real applications use both:</Text>
+      <UnorderedList>
+        <ListItem>Arrays of objects (list of habits)</ListItem>
+        <ListItem>Objects containing arrays (habit with completion dates)</ListItem>
+        <ListItem>Nested structures for complex data</ListItem>
+      </UnorderedList>
+      <Box marginTop="40px" padding="20px" backgroundColor="#f0f0f0" borderRadius="8px">
+        <Text fontSize="18px" fontWeight="bold">Example: Habit Tracker Data Structure</Text>
+        <Text fontSize="16px">• User object contains array of habits</Text>
+        <Text fontSize="16px">• Each habit is an object with properties</Text>
+        <Text fontSize="16px">• Completion history is array of dates</Text>
+      </Box>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Local Storage Integration
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Save and load habits from localStorage
+// TODO: Implement persistence for the habit tracker
+
+const habitStorage = {
+  // TODO: Implement these methods
+  save(habits) {
+    // Save habits array to localStorage
+    // Your code here...
+  },
+  
+  load() {
+    // Load habits from localStorage
+    // Return empty array if none exist
+    // Your code here...
+  },
+  
+  clear() {
+    // Remove habits from localStorage
+    // Your code here...
+  }
+};
+
+// Test your implementation
+const testHabits = [
+  { name: "Exercise", category: "health", streak: 5 },
+  { name: "Read", category: "learning", streak: 3 }
+];
+
+habitStorage.save(testHabits);
+const loaded = habitStorage.load();
+console.log("Loaded:", loaded);
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Date Handling for Streaks
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Calculate streaks with proper date handling
+// TODO: Implement streak calculation logic
+
+const streakCalculator = {
+  // TODO: Implement these methods
+  isConsecutive(date1, date2) {
+    // Check if date2 is exactly one day after date1
+    // Your code here...
+  },
+  
+  calculateStreak(completionDates) {
+    // Given array of date strings (YYYY-MM-DD), 
+    // calculate current streak ending today
+    // Your code here...
+  },
+  
+  getLongestStreak(completionDates) {
+    // Find the longest streak in the history
+    // Your code here...
+  }
+};
+
+// Test data
+const dates = [
+  "2024-01-01", "2024-01-02", "2024-01-03", // 3-day streak
+  "2024-01-05", "2024-01-06",                // 2-day streak
+  "2024-01-08"                               // 1-day streak
+];
+
+console.log("Current streak:", streakCalculator.calculateStreak(dates));
+console.log("Longest streak:", streakCalculator.getLongestStreak(dates));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Working with Complex Data</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="20px">Real apps need sophisticated data handling:</Text>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">1. Data Transformation</Text>
+        <Text fontSize="16px">• Use map() to transform data shapes</Text>
+        <Text fontSize="16px">• Use filter() to subset data</Text>
+        <Text fontSize="16px">• Use reduce() for aggregations</Text>
+      </Box>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">2. Data Persistence</Text>
+        <Text fontSize="16px">• Serialize with JSON.stringify()</Text>
+        <Text fontSize="16px">• Parse with JSON.parse()</Text>
+        <Text fontSize="16px">• Handle errors gracefully</Text>
+      </Box>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">3. Data Validation</Text>
+        <Text fontSize="16px">• Check types and structure</Text>
+        <Text fontSize="16px">• Provide defaults for missing data</Text>
+        <Text fontSize="16px">• Sanitize user input</Text>
+      </Box>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Habit Analytics
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build analytics for habit data
+// TODO: Implement methods to analyze habit performance
+
+const habitAnalytics = {
+  // TODO: Calculate completion rate for a habit
+  getCompletionRate(habit, daysTracked) {
+    // Return percentage of days completed
+    // Your code here...
+  },
+  
+  // TODO: Get habits by category
+  getHabitsByCategory(habits, category) {
+    // Return array of habits in given category
+    // Your code here...
+  },
+  
+  // TODO: Find best performing habits
+  getTopHabits(habits, limit = 3) {
+    // Return top habits by completion count
+    // Your code here...
+  },
+  
+  // TODO: Calculate category statistics
+  getCategoryStats(habits) {
+    // Return object with stats per category
+    // { category: { count, totalCompletions, avgStreak } }
+    // Your code here...
+  }
+};
+
+// Test data
+const sampleHabits = [
+  { name: "Exercise", category: "health", completions: 45, streak: 15 },
+  { name: "Meditate", category: "wellness", completions: 30, streak: 10 },
+  { name: "Read", category: "learning", completions: 60, streak: 20 },
+  { name: "Water", category: "health", completions: 90, streak: 30 },
+  { name: "Journal", category: "wellness", completions: 25, streak: 5 }
+];
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Key Takeaways: Objects and Arrays
+
+<Box width="80%">
+  <Text fontSize="24px" fontWeight="bold" marginBottom="30px">Objects</Text>
+  <UnorderedList>
+    <ListItem>Use for structured data with named properties</ListItem>
+    <ListItem>Perfect for modeling real-world entities</ListItem>
+    <ListItem>Support methods for behavior</ListItem>
+  </UnorderedList>
+  
+  <Text fontSize="24px" fontWeight="bold" marginTop="40px" marginBottom="30px">Arrays</Text>
+  <UnorderedList>
+    <ListItem>Use for ordered lists of similar items</ListItem>
+    <ListItem>Powerful methods for data transformation</ListItem>
+    <ListItem>Essential for handling collections</ListItem>
+  </UnorderedList>
+  
+  <Text fontSize="20px" fontStyle="italic" marginTop="40px">Master these, and you can model any data structure!</Text>
+</Box>
+</SlideLayout.Full>

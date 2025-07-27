@@ -1,0 +1,349 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Variables in JavaScript
+
+<CodeDisplay>
+  <File name="app.js">
+    
+```javascript
+// Exercise: Create variables for a habit tracker app
+// TODO: Declare variables for:
+// 1. User's name (can change)
+// 2. Current streak count (can change)
+// 3. Maximum habits allowed (constant)
+// 4. A habit object with name and streak properties
+
+// Your code here...
+```
+    
+    
+```javascript
+// Solution Step 1: Start with basic variable declarations
+var userName = "Alice";  // Using var (old way)
+var currentStreak = 0;
+var MAX_HABITS = 10;
+var habit = { name: "Drink Water", streak: 0 };
+```
+    
+    
+```javascript
+// Solution Step 2: Modernize with let and const
+let userName = "Alice";      // let for values that change
+let currentStreak = 0;      // let for mutable numbers
+const MAX_HABITS = 10;      // const for constants
+const habit = {             // const for objects (reference won't change)
+  name: "Drink Water", 
+  streak: 0 
+};
+
+// Demonstrate mutation
+currentStreak = 5;          // ✅ Works with let
+habit.streak = 5;          // ✅ Works - modifying property
+// habit = {};              // ❌ Error - can't reassign const
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Tests for Variable Declarations
+describe('Variable Declarations', () => {
+  it('should have userName as a string', () => {
+    expect(typeof userName).to.equal('string');
+  });
+  
+  it('should have currentStreak as a number', () => {
+    expect(typeof currentStreak).to.equal('number');
+  });
+  
+  it('should have MAX_HABITS as a constant number', () => {
+    expect(typeof MAX_HABITS).to.equal('number');
+    expect(MAX_HABITS).to.be.greaterThan(0);
+  });
+  
+  it('should have habit object with correct properties', () => {
+    expect(habit).to.be.an('object');
+    expect(habit).to.have.property('name').that.is.a('string');
+    expect(habit).to.have.property('streak').that.is.a('number');
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Variable Scoping
+
+<CodeDisplay>
+  <File name="app.js">
+    
+```javascript
+// Exercise: Fix the scope issue in habit status check
+// The code below has a problem - var doesn't respect block scope
+// TODO: Fix this code so habitStatus keeps its original value outside the block
+
+var habitStatus = "incomplete";
+
+if (true) {
+  var habitStatus = "complete"; // Problem: overwrites outer variable!
+  console.log("Inside block:", habitStatus);
+}
+
+console.log("Outside block:", habitStatus); // Prints "complete" - not what we want!
+```
+    
+    
+```javascript
+// Solution: Use let for block scoping
+let habitStatus = "incomplete";
+
+if (true) {
+  let habitStatus = "complete"; // This creates a new block-scoped variable
+  console.log("Inside block:", habitStatus);    // "complete"
+}
+
+console.log("Outside block:", habitStatus);      // "incomplete" - Fixed!
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Tests for Variable Scoping
+describe('Variable Scoping', () => {
+  it('should maintain different values inside and outside block', () => {
+    // The outer habitStatus should be "incomplete"
+    if (typeof habitStatus !== 'undefined') {
+      // Check what the final value is
+      const finalValue = habitStatus;
+      
+      // With var, this would be "complete" (wrong)
+      // With let, this should be "incomplete" (correct)
+      if (finalValue === "incomplete") {
+        expect(finalValue).to.equal("incomplete");
+      } else {
+        // If it's "complete", the student hasn't fixed the scoping issue yet
+        expect.fail('habitStatus was overwritten - use let instead of var for block scoping');
+      }
+    } else {
+      expect.fail('habitStatus is not defined');
+    }
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## JavaScript Data Types
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="row">
+    <Box width="100%" height="100%">
+      **Primitives:**
+      - `undefined`
+      - `null`
+      - `boolean`
+      - `number`
+      - `bigint`
+      - `string`
+      - `symbol`
+    </Box>
+    <Box width="100%" height="100%">
+      **Objects:**
+      - `Object`
+      - `Array`
+      - `Function`
+      - `Date`
+      - `RegExp`
+      - `Map/Set`
+      - `Promise`
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Data Types in Action
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Habit Tracker: Data types we'll use in our app
+
+// Primitives
+let lastCompleted;                    // undefined (habit not completed yet)
+let deletedHabit = null;              // null (explicitly no value)
+let isCompleted = true;               // boolean (habit completion status)
+let currentStreak = 42;               // number (days in a row)
+let totalPoints = 9007199254740991n;  // bigint (for huge point values)
+let habitName = "Drink 8 glasses";    // string (habit description)
+let habitId = Symbol("unique-id");    // symbol (unique identifier)
+
+// Objects for our habit tracker
+let habit = {                         // object (main data structure)
+  name: "Exercise",
+  streak: 5
+};
+let completionDates = [               // array (tracking dates)
+  "2024-01-01", 
+  "2024-01-02"
+];
+let calculateStreak = () => 5;        // function (business logic)
+let today = new Date();               // date (current date)
+let validHabitName = /^[a-zA-Z\s]+$/; // regexp (name validation)
+let habitCategories = new Map([       // map (category storage)
+  ["health", ["Exercise", "Sleep"]]
+]);
+let saveHabit = Promise.resolve(true); // promise (async operations)
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## JavaScript's Flexibility Problem
+
+<FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+
+What happens here?
+
+```javascript
+// Habit Tracker: Type coercion gotchas
+console.log("5" + 3);        // "53" - Oops! String concat instead of addition
+console.log("5" - 3);        // 2 - Subtraction converts to number
+console.log(true + true);    // 2 - Booleans convert to 1
+console.log([] + {});        // "[object Object]" - Both convert to strings
+```
+</FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Type Conversion
+
+<CodeDisplay height="600px">
+  <File name="app.js">
+    
+```javascript
+// Exercise: Calculate total habit points
+// TODO: Fix this code so it adds the numbers instead of concatenating strings
+const currentStreakInput = "42"; // From form input (always a string!)
+const bonusPoints = 8;            // From our rewards system
+const totalPoints = currentStreakInput + bonusPoints;
+
+console.log("Total points:", totalPoints); // Should print 50, not "428"!
+console.log("Type:", typeof totalPoints);  // Should be "number", not "string"!
+```
+    
+    
+```javascript
+// Solution 1: Use Number() to convert
+const currentStreakInput = "42";
+const bonusPoints = 8;
+const totalPoints = Number(currentStreakInput) + bonusPoints;
+
+console.log("Total points:", totalPoints);     // 50 - Correct!
+console.log("Type:", typeof totalPoints);      // "number"
+```
+    
+    
+```javascript
+// Solution 2: Create a safe calculator function
+function calculateHabitPoints(streakInput, bonus) {
+  // Parse and validate user input
+  const streak = parseInt(streakInput, 10);
+  
+  // Check if parsing succeeded
+  if (isNaN(streak)) {
+    console.error(`Invalid streak input: "${streakInput}"`);
+    return 0; // Safe default
+  }
+  
+  // Calculate total points
+  return streak + bonus;
+}
+
+// Now it's safe to use with any input
+const currentStreakInput = "42";
+const bonusPoints = 8;
+const totalPoints = calculateHabitPoints(currentStreakInput, bonusPoints);
+
+console.log("Total points:", totalPoints);     // 50
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Tests for Type Conversion
+describe('Habit Points Calculation', () => {
+  it('should calculate total points as a number', () => {
+    if (typeof totalPoints !== 'undefined') {
+      // Check if the student fixed the type conversion
+      if (totalPoints === 50) {
+        expect(totalPoints).to.equal(50);
+        expect(typeof totalPoints).to.equal('number');
+      } else if (totalPoints === "428") {
+        expect.fail('Points were concatenated as strings - use Number() or parseInt() to convert the string to a number');
+      } else {
+        expect.fail(`Unexpected result: ${totalPoints}. Expected 50.`);
+      }
+    } else {
+      expect.fail('totalPoints is not defined');
+    }
+  });
+  
+  it('should have correct types', () => {
+    expect(typeof currentStreakInput).to.equal('string');
+    expect(typeof bonusPoints).to.equal('number');
+  });
+});
+
+// Test the calculator function if defined
+describe('Calculator Function', () => {
+  it('should handle valid inputs', () => {
+    if (typeof calculateHabitPoints === 'function') {
+      expect(calculateHabitPoints("42", 8)).to.equal(50);
+      expect(calculateHabitPoints("100", 25)).to.equal(125);
+      expect(calculateHabitPoints("0", 10)).to.equal(10);
+    }
+  });
+  
+  it('should handle invalid inputs safely', () => {
+    if (typeof calculateHabitPoints === 'function') {
+      expect(calculateHabitPoints("abc", 10)).to.equal(0);
+      expect(calculateHabitPoints("", 10)).to.equal(0);
+    }
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Type Coercion: Feature or Bug?
+<FlexBox alignItems="center" justifyContent="center" flexDirection="row">
+  <Image src="https://media2.giphy.com/media/3o7TKTDn976rzVgky4/giphy.gif" width="50%" />
+  
+  - JavaScript tries to be helpful by converting types automatically
+  - This can lead to unexpected behavior
+  - Understanding type coercion is crucial for writing bug-free code
+  - Modern tools like TypeScript help catch these issues
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 🎯 Key Takeaways: Variables & Types
+
+1. **Use `const` by default**, `let` when you need to reassign
+2. **Never use `var`** in modern JavaScript  
+3. **Understand type coercion** to avoid bugs
+4. **Explicit conversion** is safer than implicit
+5. **Block scope** with `let`/`const` prevents many errors
+</SlideLayout.Full>

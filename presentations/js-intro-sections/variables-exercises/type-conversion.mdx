@@ -1,0 +1,146 @@
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<CodeDisplay height="600px">
+  <File name="app.js">
+    
+```javascript
+// Habit Tracker: Calculate total habit points
+const currentStreakInput = "42"; // From form input (always a string!)
+const bonusPoints = 8;            // From our rewards system
+const totalPoints = currentStreakInput + bonusPoints;
+
+console.log("Total points:", totalPoints); // What will this print?
+console.log("Type:", typeof totalPoints);  // What type is it?
+```
+    
+    
+```javascript
+// Step 1: Understanding the problem
+const currentStreakInput = "42"; // User typed "42" in the form
+const bonusPoints = 8;            // Number from our system
+const totalPoints = currentStreakInput + bonusPoints; // "42" + 8 = "428"
+
+console.log("Total points:", totalPoints);     // "428" - Oops!
+console.log("Type:", typeof totalPoints);      // "string"
+console.log("Expected:", 42 + 8);              // 50 - What we wanted
+```
+    
+    
+```javascript
+// Step 2: Fix with proper type conversion
+const currentStreakInput = "42";
+const bonusPoints = 8;
+const totalPoints = Number(currentStreakInput) + bonusPoints;
+
+console.log("Total points:", totalPoints);     // 50 - Correct!
+console.log("Type:", typeof totalPoints);      // "number"
+```
+    
+    
+```javascript
+// Step 3: Safe habit points calculator
+function calculateHabitPoints(streakInput, bonus) {
+  // Parse and validate user input
+  const streak = parseInt(streakInput, 10);
+  
+  // Check if parsing succeeded
+  if (isNaN(streak)) {
+    console.error(`Invalid streak input: "${streakInput}"`);
+    return 0; // Safe default
+  }
+  
+  // Calculate total points
+  return streak + bonus;
+}
+
+// Try different conversion methods
+const userInput = "42";
+const bonus = 8;
+
+console.log("parseInt:", calculateHabitPoints(userInput, bonus));      // 50
+console.log("Number():", Number(userInput) + bonus);                  // 50
+console.log("Unary +:", +userInput + bonus);                         // 50
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Test: We want 50 points, not "428"!
+describe('Habit Points Calculation', () => {
+  it('should fail with string concatenation', () => {
+    // This test shows the problem
+    expect(totalPoints).to.equal("428"); // Wrong result!
+    expect(typeof totalPoints).to.equal('string');
+  });
+  
+  it('should calculate what we actually want', () => {
+    // What we really want
+    const correctTotal = 50;
+    expect(Number(currentStreakInput) + bonusPoints).to.equal(correctTotal);
+  });
+});
+```
+    
+    
+```javascript
+// Test confirms the type coercion issue
+describe('Type Coercion Problem', () => {
+  it('should concatenate instead of add', () => {
+    expect(totalPoints).to.equal("428");
+    expect(typeof totalPoints).to.equal('string');
+  });
+});
+```
+    
+    
+```javascript
+// Test: Verify correct calculation
+describe('Fixed Points Calculation', () => {
+  it('should add numbers correctly', () => {
+    expect(totalPoints).to.equal(50);
+    expect(typeof totalPoints).to.equal('number');
+  });
+  
+  it('should handle edge cases', () => {
+    expect(Number("") + 10).to.equal(10);  // Empty string → 0
+    expect(Number("0") + 10).to.equal(10); // "0" → 0
+    expect(Number(" 5 ") + 10).to.equal(15); // Trims whitespace
+  });
+});
+```
+    
+    
+```javascript
+// Test: Comprehensive points calculation
+describe('Habit Points Calculator', () => {
+  it('should handle valid inputs', () => {
+    expect(calculateHabitPoints("42", 8)).to.equal(50);
+    expect(calculateHabitPoints("100", 25)).to.equal(125);
+    expect(calculateHabitPoints("0", 10)).to.equal(10);
+  });
+  
+  it('should handle invalid inputs safely', () => {
+    expect(calculateHabitPoints("abc", 10)).to.equal(0);
+    expect(calculateHabitPoints("", 10)).to.equal(0);
+    expect(calculateHabitPoints("12.5", 10)).to.equal(22); // parseInt stops at decimal
+    expect(calculateHabitPoints("5 days", 10)).to.equal(15); // parseInt reads until non-digit
+  });
+  
+  it('should compare conversion methods', () => {
+    const input = "42";
+    expect(parseInt(input) + bonus).to.equal(50);
+    expect(Number(input) + bonus).to.equal(50);
+    expect(+input + bonus).to.equal(50);
+    
+    // But they differ with decimals!
+    const decimal = "42.7";
+    expect(parseInt(decimal)).to.equal(42);     // Truncates
+    expect(Number(decimal)).to.equal(42.7);     // Preserves decimal
+    expect(+decimal).to.equal(42.7);            // Preserves decimal
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>

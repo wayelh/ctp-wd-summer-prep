@@ -1,0 +1,258 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+
+<SlideLayout.Full>
+## 🚀 Modern JavaScript Features
+### ES6+ Features That Power Today's JavaScript
+
+- Destructuring and spread syntax
+- Template literals and tagged templates
+- Optional chaining and nullish coalescing
+- Modern array and object methods
+- Async patterns and promises
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Why Modern JavaScript?</Heading>
+    <UnorderedList>
+      <ListItem>Cleaner, more expressive syntax</ListItem>
+      <ListItem>Better error handling and safety</ListItem>
+      <ListItem>Improved performance optimizations</ListItem>
+      <ListItem>Enhanced developer productivity</ListItem>
+    </UnorderedList>
+    <Box marginTop="50px">
+      <Text fontSize="24px" fontWeight="bold">The Evolution:</Text>
+      <Text fontSize="20px">ES5 (2009) → ES6/ES2015 → Annual releases</Text>
+      <Text fontSize="20px">Each version adds powerful new features</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Destructuring: Unpack Values Elegantly
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Object destructuring
+const habit = {
+  name: 'Exercise',
+  category: 'health',
+  streak: 5,
+  points: 150
+};
+
+const { name, streak } = habit;
+console.log(`${name}: ${streak} days`);
+
+// Array destructuring
+const [first, second, ...rest] = habits;
+
+// Function parameter destructuring
+function displayHabit({ name, category, streak = 0 }) {
+  return `${name} (${category}): ${streak} days`;
+}
+
+// Nested destructuring
+const { user: { preferences: { theme } } } = data;
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Spread and Rest Operators</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Spread (...) - Expand</Text>
+      <Text fontSize="18px" marginBottom="30px">• Arrays: [...array1, ...array2]</Text>
+      <Text fontSize="18px" marginBottom="30px">• Objects: {`{...obj1, ...obj2}`}</Text>
+      <Text fontSize="18px" marginBottom="30px">• Function calls: fn(...args)</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginTop="20px" marginBottom="20px">Rest (...) - Collect</Text>
+      <Text fontSize="18px" marginBottom="30px">• Function parameters: (...args)</Text>
+      <Text fontSize="18px" marginBottom="30px">• Destructuring: [first, ...rest]</Text>
+      <Text fontSize="18px">• Flexible function signatures</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Modern Habit Analytics
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Use modern JS features to build habit analytics
+// TODO: Implement functions using destructuring, spread, and modern methods
+
+const habitData = [
+  { id: 1, name: 'Exercise', category: 'health', completions: [1, 2, 3, 5, 6, 7], points: 150 },
+  { id: 2, name: 'Reading', category: 'learning', completions: [1, 2, 4, 5], points: 80 },
+  { id: 3, name: 'Meditation', category: 'wellness', completions: [2, 3, 4, 5, 6], points: 100 }
+];
+
+// TODO: 
+// 1. mergeHabits(...habits) - merge multiple habit objects
+// 2. getTopHabits(habits, n = 3) - get top n habits by points
+// 3. calculateStats(habits) - return stats object with totals
+// 4. transformHabitData(habits) - transform to new format
+
+// Your implementation here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Template Literals: Beyond String Concatenation
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Multi-line strings
+const habitReport = `
+  Habit Performance Report
+  =======================
+  Name: ${habit.name}
+  Streak: ${habit.streak} days
+  Points: ${habit.points}
+  Status: ${habit.streak > 7 ? 'Excellent!' : 'Keep going!'}
+`;
+
+// Tagged templates for custom processing
+function sql(strings, ...values) {
+  return {
+    query: strings.join('?'),
+    values: values
+  };
+}
+
+const query = sql`
+  SELECT * FROM habits 
+  WHERE category = ${category} 
+  AND points > ${minPoints}
+`;
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Optional Chaining & Nullish Coalescing
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Optional chaining (?.) - safe property access
+const userName = user?.profile?.name;
+const firstHabit = habits?.[0]?.name;
+const result = calculateStats?.();
+
+// Nullish coalescing (??) - default for null/undefined only
+const port = process.env.PORT ?? 3000;
+const theme = userPrefs.theme ?? 'light';
+
+// Combining both
+const city = user?.address?.city ?? 'Unknown';
+
+// Logical assignment operators
+let score = 0;
+score ||= 10;  // score = score || 10
+score &&= 5;   // score = score && 5
+score ??= 1;   // score = score ?? 1
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Modern Array Methods</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" fontWeight="bold" marginBottom="20px">ES6+:</Text>
+      <UnorderedList>
+        <ListItem>find() / findIndex() - get first match</ListItem>
+        <ListItem>includes() - check existence</ListItem>
+        <ListItem>flat() / flatMap() - flatten arrays</ListItem>
+        <ListItem>from() - create from iterables</ListItem>
+      </UnorderedList>
+      <Text fontSize="20px" fontWeight="bold" marginTop="30px" marginBottom="20px">ES2023:</Text>
+      <UnorderedList>
+        <ListItem>toSorted() - sort without mutation</ListItem>
+        <ListItem>toReversed() - reverse without mutation</ListItem>
+        <ListItem>with() - update element immutably</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Modern Habit Dashboard
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build a modern habit dashboard using latest features
+// TODO: Implement these features using modern JavaScript
+
+class HabitDashboard {
+  #habits = [];
+  #settings = {
+    theme: 'light',
+    notifications: true
+  };
+  
+  // TODO: Implement these methods using modern features:
+  // 1. addHabits(...habits) - add multiple habits
+  // 2. getHabitsByTags(tags) - filter by multiple tags
+  // 3. generateReport() - create summary with template literals
+  // 4. updateSettings(updates) - merge settings immutably
+  
+  // Your implementation here...
+}
+
+// Test your implementation
+const dashboard = new HabitDashboard();
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Modern JavaScript Ecosystem</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Build Tools:</Text>
+      <Text fontSize="18px" marginBottom="30px">• Vite, Webpack, Parcel, esbuild</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Package Managers:</Text>
+      <Text fontSize="18px" marginBottom="30px">• npm, yarn, pnpm</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Frameworks:</Text>
+      <Text fontSize="18px" marginBottom="30px">• React, Vue, Angular, Svelte</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Testing:</Text>
+      <Text fontSize="18px">• Jest, Vitest, Mocha, Cypress</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 🎯 Key Takeaways: Modern JavaScript
+
+1. **Destructuring** makes code cleaner and more expressive
+2. **Spread/Rest** operators enable flexible data handling
+3. **Optional chaining** and **nullish coalescing** prevent errors
+4. **Template literals** go beyond simple string interpolation
+5. **Modern classes** provide encapsulation with private fields
+6. **New array methods** make data transformation easier
+
+### Coming Up Next: Common Pitfalls
+Learn to avoid JavaScript's tricky parts!
+</SlideLayout.Full>

@@ -1,0 +1,145 @@
+[font-family="header"] {
+  filter: drop-shadow(2px 4px 4px rgb(0, 0, 0));
+}
+
+/* Reset and base styles */
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Presentation container styles */
+.presentation-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+/* Solarized Dark Monaco Editor tooltips */
+.monaco-hover,
+.monaco-editor-hover,
+.monaco-editor .monaco-hover,
+.monaco-editor .monaco-editor-hover,
+.monaco-hover-content {
+  background-color: #073642 !important;
+  border: 1px solid #586e75 !important;
+  color: #839496 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+.monaco-editor .monaco-hover .hover-contents,
+.monaco-hover .hover-contents {
+  background-color: #073642 !important;
+  color: #839496 !important;
+}
+
+/* Suggest widget */
+.suggest-widget,
+.monaco-editor .suggest-widget {
+  background-color: #073642 !important;
+  border: 1px solid #586e75 !important;
+  color: #839496 !important;
+}
+
+.suggest-widget .monaco-list-row,
+.monaco-editor .suggest-widget .monaco-list-row {
+  background-color: transparent !important;
+  color: #839496 !important;
+}
+
+.suggest-widget .monaco-list-row.focused,
+.monaco-editor .suggest-widget .monaco-list-row.focused {
+  background-color: #586e75 !important;
+  color: #fdf6e3 !important;
+}
+
+/* Parameter hints */
+.parameter-hints-widget,
+.monaco-editor .parameter-hints-widget {
+  background-color: #073642 !important;
+  border: 1px solid #586e75 !important;
+  color: #839496 !important;
+}
+
+/* Context menu - comprehensive selectors */
+.monaco-menu,
+.context-view.monaco-menu-container,
+.context-view .monaco-menu,
+.monaco-menu-container .monaco-menu,
+.monaco-scrollable-element .monaco-menu {
+  background-color: #073642 !important;
+  border: 1px solid #586e75 !important;
+  color: #839496 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+.monaco-menu .monaco-action-bar,
+.monaco-menu .actions-container,
+.context-view .monaco-action-bar,
+.monaco-menu .monaco-scrollable-element {
+  background-color: #073642 !important;
+}
+
+.monaco-menu .action-item,
+.monaco-menu .action-label,
+.monaco-menu .monaco-list-row {
+  color: #839496 !important;
+  background-color: transparent !important;
+}
+
+.monaco-menu .action-item:hover,
+.monaco-menu .action-item.focused,
+.monaco-menu .monaco-list-row:hover,
+.monaco-menu .monaco-list-row.focused {
+  background-color: #586e75 !important;
+}
+
+.monaco-menu .action-item.disabled .action-label {
+  opacity: 0.4;
+}
+
+/* Ensure menu container has background */
+.monaco-menu-container {
+  background-color: #073642 !important;
+}
+
+/* Shadow container */
+.shadow-root-host {
+  background-color: transparent !important;
+}
+
+/* Monaco scrollable element */
+.monaco-scrollable-element > .scrollbar {
+  background: transparent !important;
+}
+
+/* Ensure high z-index for all tooltips */
+.monaco-hover,
+.suggest-widget,
+.parameter-hints-widget,
+.monaco-menu,
+.context-view {
+  z-index: 10000 !important;
+}
+
+/* Force Monaco editor background colors */
+.monaco-editor,
+.monaco-editor .monaco-editor-background,
+.monaco-editor .margin,
+.monaco-editor .view-overlays,
+.monaco-editor .margin-view-overlays,
+.monaco-editor .monaco-scrollable-element,
+.monaco-editor .lines-content.monaco-editor-background,
+.monaco-editor .minimap,
+.monaco-editor .decorationsOverviewRuler {
+  background-color: transparent !important;
+}
+
+/* Override Monaco's internal styles */
+.monaco-editor .lines-content,
+.monaco-editor .view-lines,
+.monaco-editor .view-line,
+.monaco-editor .overflow-guard {
+  background-color: transparent !important;
+}

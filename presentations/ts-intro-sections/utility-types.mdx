@@ -1,0 +1,120 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## Utility Types
+
+- TypeScript provides built-in utility types
+- Transform existing types into new ones
+- Save time and make code more maintainable
+
+```typescript
+// Partial<T> - Makes all properties optional
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+type PartialUser = Partial<User>;
+// Same as: { id?: number; name?: string; email?: string; }
+
+function updateUser(id: number, updates: Partial<User>) {
+  // Can update any subset of properties
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Utility Types
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Required<T> - Makes all properties required
+type RequiredUser = Required<PartialUser>;
+
+// Readonly<T> - Makes all properties readonly
+type ReadonlyUser = Readonly<User>;
+
+// Pick<T, K> - Pick specific properties
+type UserCredentials = Pick<User, 'email' | 'password'>;
+
+// Omit<T, K> - Omit specific properties
+type PublicUser = Omit<User, 'password'>;
+
+// Record<K, T> - Create object type with keys K and values T
+type UserRoles = Record<string, 'admin' | 'user' | 'guest'>;
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Build a CRUD Type System
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Create types for a CRUD API using utility types
+
+interface User {
+  id: string;
+  email: string;
+  password: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// TODO: Create these types using utility types
+type CreateUserInput = any; // Should exclude id, createdAt, updatedAt
+type UpdateUserInput = any; // Should make all fields optional except id
+type PublicUserData = any; // Should exclude password
+type UserSummary = any; // Should only have id and name
+
+// These should work when types are correct
+const createData: CreateUserInput = {
+  email: "user@example.com",
+  password: "secret",
+  name: "John Doe"
+};
+
+const updateData: UpdateUserInput = {
+  name: "Jane Doe" // Can update just name
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Advanced Utility Types
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Extract<T, U> - Extract types assignable to U
+type StringOrNumber = string | number | boolean;
+type OnlyStringOrNumber = Extract<StringOrNumber, string | number>;
+// Result: string | number
+
+// Exclude<T, U> - Exclude types assignable to U
+type NotBoolean = Exclude<StringOrNumber, boolean>;
+// Result: string | number
+
+// NonNullable<T> - Remove null and undefined
+type MaybeString = string | null | undefined;
+type DefinitelyString = NonNullable<MaybeString>;
+// Result: string
+
+// ReturnType<T> - Extract return type of function
+function getData() { return { id: 1, name: "test" }; }
+type Data = ReturnType<typeof getData>;
+// Result: { id: number; name: string; }
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

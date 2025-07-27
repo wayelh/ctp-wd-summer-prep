@@ -1,0 +1,58 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { CodeDisplay, File, Version } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Control Flow
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Create control flow for habit streak messages
+// TODO: Write code that:
+// 1. Displays different messages based on streak length:
+//    - 30+ days: "Habit Master!"
+//    - 7+ days: "On fire!"
+//    - 3+ days: "Getting consistent!"
+//    - Otherwise: "Keep going!"
+// 2. Shows "Active" or "Inactive" status
+// 3. Categorizes habits (health/productivity/learning)
+
+const currentStreak = 7;
+const habitCategory = "health";
+
+// Your code here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Loops and Iteration
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Process weekly habit data
+// TODO: Use loops to:
+// 1. Count how many days were completed
+// 2. Calculate total points earned
+// 3. Find the best day (highest points)
+// 4. List all completed days
+
+const weeklyHabits = [
+  { day: "Mon", completed: true, points: 10 },
+  { day: "Tue", completed: true, points: 15 },
+  { day: "Wed", completed: false, points: 0 },
+  { day: "Thu", completed: true, points: 10 },
+  { day: "Fri", completed: true, points: 20 },
+  { day: "Sat", completed: true, points: 15 },
+  { day: "Sun", completed: false, points: 0 }
+];
+
+// Your code here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

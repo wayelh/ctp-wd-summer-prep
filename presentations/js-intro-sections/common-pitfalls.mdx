@@ -1,0 +1,67 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## Common Pitfalls
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Equality confusion
+console.log(0 == false);    // true (loose equality)
+console.log(0 === false);   // false (strict equality)
+
+// Floating point precision
+console.log(0.1 + 0.2);     // 0.30000000000000004
+
+// Array/Object references
+const arr1 = [1, 2, 3];
+const arr2 = arr1;
+arr2.push(4);
+console.log(arr1);          // [1, 2, 3, 4]
+
+// "this" binding
+const obj = {
+  name: "Object",
+  greet: function() {
+    setTimeout(function() {
+      console.log(this.name); // undefined!
+    }, 1000);
+  }
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Fix the "this" Problem
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Fix the code so it prints countdown from 5 to 0, then "Timer: Done!"
+const timer = {
+  name: "Timer",
+  seconds: 5,
+  outputs: [], // Track outputs for testing
+  
+  start() {
+    const interval = setInterval(function() {
+      console.log(this.seconds); // undefined!
+      this.seconds--;
+      
+      if (this.seconds < 0) {
+        clearInterval(interval);
+        console.log(this.name + ": Done!"); // undefined: Done!
+      }
+    }, 100); // Faster for testing
+  }
+};
+
+timer.start();
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

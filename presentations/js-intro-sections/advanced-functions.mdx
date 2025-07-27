@@ -1,0 +1,248 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+
+<SlideLayout.Full>
+## 🚀 Advanced Functions
+### Closures, Higher-Order Functions, and Functional Programming
+
+- Understanding closures and lexical scope
+- Higher-order functions that transform code
+- Function composition patterns
+- Building powerful abstractions
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">What Are Closures?</Heading>
+    <UnorderedList>
+      <ListItem>Functions that "remember" their outer scope</ListItem>
+      <ListItem>Access variables from parent function after it returns</ListItem>
+      <ListItem>Enable data privacy and stateful functions</ListItem>
+      <ListItem>Foundation of many JavaScript patterns</ListItem>
+    </UnorderedList>
+    <Box marginTop="50px">
+      <Text fontSize="24px" fontWeight="bold">Real-world analogy:</Text>
+      <Text fontSize="20px">A habit tracker that remembers your personal goals</Text>
+      <Text fontSize="20px">Even after the setup is complete</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## How Closures Work
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// The outer function creates a scope
+function createHabitTracker(userName) {
+  // Private variable - not accessible outside
+  let totalPoints = 0;
+  
+  // Inner function has access to outer variables
+  return function(points) {
+    totalPoints += points;
+    return `${userName} has ${totalPoints} points`;
+  };
+}
+
+const tracker = createHabitTracker("Alice");
+console.log(tracker(10)); // "Alice has 10 points"
+console.log(tracker(5));  // "Alice has 15 points"
+
+// totalPoints persists between calls!
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Closure Benefits</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">1. Data Privacy</Text>
+      <Text fontSize="18px" marginBottom="30px">Variables can't be accessed directly from outside</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">2. Stateful Functions</Text>
+      <Text fontSize="18px" marginBottom="30px">Functions can maintain state between calls</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">3. Factory Pattern</Text>
+      <Text fontSize="18px" marginBottom="30px">Create multiple instances with their own private data</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">4. Event Handlers</Text>
+      <Text fontSize="18px">Callbacks can access data from creation time</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Habit Goal Tracker with Closures
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Create a habit goal tracker using closures
+// TODO: Implement a factory function that creates trackers
+// Each tracker should:
+// 1. Store a private goal and current progress
+// 2. Have methods to add progress and check if complete
+// 3. Calculate completion percentage
+// 4. Not expose internal variables directly
+
+function createGoalTracker(habitName, targetDays) {
+  // Your code here
+}
+
+// Test your implementation:
+const exerciseTracker = createGoalTracker("Exercise", 30);
+exerciseTracker.addProgress(5);
+console.log(exerciseTracker.getStatus()); // "Exercise: 5/30 days (17%)"
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Higher-Order Functions</Heading>
+    <UnorderedList>
+      <ListItem>Functions that operate on other functions</ListItem>
+      <ListItem>Take functions as arguments</ListItem>
+      <ListItem>Return functions as results</ListItem>
+      <ListItem>Enable powerful abstractions and code reuse</ListItem>
+    </UnorderedList>
+    <Box marginTop="50px">
+      <Text fontSize="24px" fontWeight="bold">Common Examples:</Text>
+      <Text fontSize="20px">• Array methods: map, filter, reduce</Text>
+      <Text fontSize="20px">• Event handlers: addEventListener</Text>
+      <Text fontSize="20px">• Decorators and middleware</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Higher-Order Function Patterns
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// 1. Function as argument
+function processHabits(habits, operation) {
+  return habits.map(operation);
+}
+
+// 2. Function as return value
+function createMultiplier(factor) {
+  return function(points) {
+    return points * factor;
+  };
+}
+
+// 3. Function transformation
+function withLogging(fn) {
+  return function(...args) {
+    console.log(`Calling ${fn.name} with:`, args);
+    const result = fn(...args);
+    console.log(`Result:`, result);
+    return result;
+  };
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Habit Points Calculator
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build a points calculation system using higher-order functions
+// TODO: Create functions that:
+// 1. Apply bonuses based on streaks
+// 2. Add multipliers for different habit categories
+// 3. Compose multiple calculations together
+
+// Base point calculator
+function calculateBasePoints(completions) {
+  return completions * 10;
+}
+
+// TODO: Create these higher-order functions:
+// 1. withStreakBonus(calculator) - adds 50% for 7+ day streaks
+// 2. withCategoryMultiplier(calculator, category) - multiplies by category factor
+// 3. withDailyLimit(calculator, maxPoints) - caps daily points
+
+// Test it:
+const enhancedCalculator = withStreakBonus(calculateBasePoints);
+console.log(enhancedCalculator(5, 7)); // Should include streak bonus
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Function Composition
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Combining simple functions to create complex behavior
+const compose = (...fns) => x => 
+  fns.reduceRight((acc, fn) => fn(acc), x);
+
+const pipe = (...fns) => x => 
+  fns.reduce((acc, fn) => fn(acc), x);
+
+// Example: Processing habit data
+const addTimestamp = habit => ({...habit, timestamp: Date.now()});
+const calculatePoints = habit => ({...habit, points: habit.completions * 10});
+const addStreak = habit => ({...habit, streak: habit.consecutive || 0});
+
+const processHabit = compose(
+  addStreak,
+  calculatePoints,
+  addTimestamp
+);
+
+// The functions are applied right-to-left with compose
+const result = processHabit({ name: "Exercise", completions: 5 });
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Functional Programming Principles
+
+<Box width="80%">
+  <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Pure Functions</Text>
+  <Text fontSize="18px" marginBottom="30px">• Same input → same output</Text>
+  <Text fontSize="18px" marginBottom="30px">• No side effects</Text>
+  
+  <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Immutability</Text>
+  <Text fontSize="18px" marginBottom="30px">• Don't modify, create new</Text>
+  <Text fontSize="18px" marginBottom="30px">• Safer and more predictable</Text>
+  
+  <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Function Composition</Text>
+  <Text fontSize="18px">• Build complex operations from simple ones</Text>
+</Box>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 🎯 Key Takeaways: Advanced Functions
+
+1. **Closures** enable data privacy and stateful functions
+2. **Higher-order functions** create reusable abstractions
+3. **Function composition** builds complex behavior from simple parts
+4. **Pure functions** make code predictable and testable
+5. **Functional patterns** lead to more maintainable code
+
+### Coming Up Next: Prototypes
+Understanding JavaScript's inheritance model!
+</SlideLayout.Full>

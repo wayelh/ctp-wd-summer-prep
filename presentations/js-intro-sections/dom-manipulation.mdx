@@ -1,0 +1,849 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## DOM Manipulation
+### Making Web Pages Interactive
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">What is the DOM?</Heading>
+    <UnorderedList>
+      <ListItem>Document Object Model - tree representation of HTML</ListItem>
+      <ListItem>JavaScript's interface to web page content</ListItem>
+      <ListItem>Allows dynamic updates without page reload</ListItem>
+      <ListItem>Foundation of modern interactive websites</ListItem>
+    </UnorderedList>
+    <Box marginTop="50px">
+      <Text fontSize="24px" fontWeight="bold">Think of it as:</Text>
+      <Text fontSize="20px">HTML = Structure (skeleton)</Text>
+      <Text fontSize="20px">CSS = Style (appearance)</Text>
+      <Text fontSize="20px">JavaScript/DOM = Behavior (muscles)</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## DOM Tree Structure
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// HTML:
+// <div id="app">
+//   <h1>My Habits</h1>
+//   <ul class="habit-list">
+//     <li>Exercise</li>
+//     <li>Read</li>
+//   </ul>
+// </div>
+
+// DOM representation:
+document
+  └── html
+      └── body
+          └── div#app
+              ├── h1
+              │   └── "My Habits"
+              └── ul.habit-list
+                  ├── li
+                  │   └── "Exercise"
+                  └── li
+                      └── "Read"
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Core DOM Operations</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">1. Selection</Text>
+      <UnorderedList>
+        <ListItem>querySelector() - select by CSS selector</ListItem>
+        <ListItem>getElementById() - select by ID</ListItem>
+        <ListItem>getElementsByClassName() - select by class</ListItem>
+      </UnorderedList>
+      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">2. Manipulation</Text>
+      <UnorderedList>
+        <ListItem>textContent - change text</ListItem>
+        <ListItem>innerHTML - change HTML</ListItem>
+        <ListItem>style - change CSS properties</ListItem>
+      </UnorderedList>
+      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">3. Creation</Text>
+      <UnorderedList>
+        <ListItem>createElement() - create new elements</ListItem>
+        <ListItem>appendChild() - add to page</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## The DOM: Bringing Pages to Life
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build DOM manipulation skills for habit tracker
+// TODO: Practice selecting, modifying, and creating elements
+
+// Given this HTML structure:
+// <div id="habit-container">
+//   <h2 class="habit-title">Morning Exercise</h2>
+//   <span class="streak-count">0</span>
+//   <button id="complete-btn">Mark Complete</button>
+// </div>
+
+// TODO:
+// 1. Select the button and streak count
+// 2. Add click handler to increment streak
+// 3. Update the display
+// 4. Add visual feedback
+
+// Your code here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Event Handling
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Events make pages interactive!
+
+// Common events:
+// - click: user clicks an element
+// - submit: form is submitted
+// - keypress: key is pressed
+// - mouseover: mouse enters element
+// - change: input value changes
+
+// Adding event listeners:
+button.addEventListener('click', function(event) {
+  console.log('Button clicked!');
+  // event object contains details about the event
+});
+
+// Event delegation - handle events on parent:
+habitsList.addEventListener('click', (e) => {
+  if (e.target.classList.contains('complete-btn')) {
+    // Handle complete button click
+  }
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">DOM Best Practices</Heading>
+    <Box width="80%">
+      <UnorderedList>
+        <ListItem>Cache DOM selections (don't query repeatedly)</ListItem>
+        <ListItem>Use event delegation for dynamic content</ListItem>
+        <ListItem>Batch DOM updates to minimize reflows</ListItem>
+        <ListItem>Prefer textContent over innerHTML for text</ListItem>
+        <ListItem>Always validate user input</ListItem>
+      </UnorderedList>
+      <Box marginTop="40px" padding="20px" backgroundColor="#f0f0f0" borderRadius="8px">
+        <Text fontSize="18px" fontWeight="bold">Performance Tip:</Text>
+        <Text fontSize="16px">DOM operations are expensive. Minimize them by:</Text>
+        <Text fontSize="16px">• Building elements before adding to DOM</Text>
+        <Text fontSize="16px">• Using document fragments for multiple additions</Text>
+        <Text fontSize="16px">• Updating classes instead of individual styles</Text>
+      </Box>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Interactive Habit Tracker
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Tracker UI</title>
+</head>
+<body>
+    <div class="app-container">
+        <h1>My Habits</h1>
+        
+        <div class="add-habit-form">
+            <input id="habitName" type="text" placeholder="Habit name" value="Morning Run" />
+            <select id="habitCategory">
+                <option value="health">Health</option>
+                <option value="productivity">Productivity</option>
+                <option value="learning">Learning</option>
+            </select>
+            <button id="addHabitBtn">Add Habit</button>
+        </div>
+        
+        <div id="habitsList"></div>
+    </div>
+</body>
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Tracker UI</title>
+</head>
+<body>
+  <input id="habitName" placeholder="Enter habit name" value="Morning Run">
+  <select id="habitCategory">
+    <option value="health">Health</option>
+    <option value="productivity">Productivity</option>
+    <option value="learning">Learning</option>
+  </select>
+  <button id="addHabitBtn">Add Habit</button>
+  <div id="habitsList"></div>
+</body>
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Tracker UI</title>
+    <style>
+        .habit-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.2s;
+        }
+        .habit-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .category-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .category-health { background-color: #4CAF50; }
+        .category-productivity { background-color: #2196F3; }
+        .category-learning { background-color: #FF9800; }
+    </style>
+</head>
+<body>
+  <input id="habitName" value="Morning Run">
+  <select id="habitCategory">
+    <option value="health">Health</option>
+    <option value="productivity">Productivity</option>
+    <option value="learning">Learning</option>
+  </select>
+  <button id="addHabitBtn">Add Habit</button>
+  <div id="habitsList"></div>
+</body>
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Tracker UI</title>
+</head>
+<body>
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1>My Habits</h1>
+    
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+      <input id="habitName" placeholder="What habit do you want to build?" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 4px;">
+      
+      <div style="display: flex; gap: 12px;">
+        <select id="habitCategory" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          <option value="health">💪 Health</option>
+          <option value="productivity">⚡ Productivity</option>
+          <option value="learning">📚 Learning</option>
+          <option value="mindfulness">🧘 Mindfulness</option>
+        </select>
+        
+        <button id="addHabitBtn" style="padding: 8px 24px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+          Add Habit
+        </button>
+      </div>
+    </div>
+    
+    <div id="stats" style="display: flex; gap: 16px; margin-bottom: 24px;">
+      <div style="flex: 1; background: #E3F2FD; padding: 16px; border-radius: 8px; text-align: center;">
+        <div style="font-size: 24px; font-weight: bold;" id="totalHabits">0</div>
+        <div style="color: #666;">Total Habits</div>
+      </div>
+      <div style="flex: 1; background: #E8F5E9; padding: 16px; border-radius: 8px; text-align: center;">
+        <div style="font-size: 24px; font-weight: bold;" id="completedToday">0</div>
+        <div style="color: #666;">Completed Today</div>
+      </div>
+    </div>
+    
+    <div id="habitsList"></div>
+  </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+.app-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.add-habit-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+#habitName {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#addHabitBtn {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.habit-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    border-left: 4px solid #4CAF50;
+}
+
+.habit-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.category-badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: #e0e0e0;
+}
+
+.category-badge.health {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.category-badge.productivity {
+    background-color: #2196F3;
+    color: white;
+}
+
+.category-badge.learning {
+    background-color: #ff9800;
+    color: white;
+}
+```
+  </File>
+  <File name="app.js">
+```javascript
+// TODO: Build an interactive habit tracker UI
+// 1. Select the form elements
+// 2. Add click handler to create habit cards
+// 3. Display habits with complete buttons
+
+// Your code here...
+```
+
+```javascript
+// Step 1: Basic form handling
+
+// Select form elements
+const nameInput = document.querySelector("#habitName");
+const categorySelect = document.querySelector("#habitCategory");
+const addButton = document.querySelector("#addHabitBtn");
+const habitsList = document.querySelector("#habitsList");
+
+// Add click handler
+addButton.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const category = categorySelect.value;
+  
+  if (name === "") {
+    alert("Please enter a habit name");
+    return;
+  }
+  
+  console.log(`Adding habit: ${name} (${category})`);
+  
+  // Create habit element
+  const habitDiv = document.createElement("div");
+  habitDiv.className = "habit-item";
+  habitDiv.innerHTML = `
+    <span class="habit-name">${name}</span>
+    <span class="habit-category">${category}</span>
+  `;
+  
+  habitsList.appendChild(habitDiv);
+  nameInput.value = ""; // Clear input
+});
+
+// Trigger add for testing
+addButton.click();
+```
+
+```javascript
+// Step 2: Enhanced habit cards with styling
+
+const nameInput = document.querySelector("#habitName");
+const categorySelect = document.querySelector("#habitCategory");
+const addButton = document.querySelector("#addHabitBtn");
+const habitsList = document.querySelector("#habitsList");
+
+let habitCount = 0;
+
+function createHabitCard(name, category) {
+  habitCount++;
+  
+  const card = document.createElement("div");
+  card.className = "habit-card";
+  card.id = `habit-${habitCount}`;
+  
+  const leftSection = document.createElement("div");
+  leftSection.innerHTML = `
+    <h3 style="margin: 0 0 8px 0;">${name}</h3>
+    <span class="category-badge category-${category}">${category.toUpperCase()}</span>
+  `;
+  
+  const rightSection = document.createElement("div");
+  rightSection.innerHTML = `
+    <span class="streak" style="margin-right: 16px;">Streak: <strong>0</strong></span>
+    <button class="complete-btn" style="padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Complete Today
+    </button>
+  `;
+  
+  card.appendChild(leftSection);
+  card.appendChild(rightSection);
+  
+  // Add complete functionality
+  const completeBtn = card.querySelector(".complete-btn");
+  const streakCount = card.querySelector("strong");
+  
+  completeBtn.addEventListener("click", () => {
+    const currentStreak = parseInt(streakCount.textContent);
+    streakCount.textContent = currentStreak + 1;
+    completeBtn.disabled = true;
+    completeBtn.textContent = "Completed ✓";
+    completeBtn.style.background = "#9E9E9E";
+  });
+  
+  return card;
+}
+
+addButton.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const category = categorySelect.value;
+  
+  if (name) {
+    const card = createHabitCard(name, category);
+    habitsList.appendChild(card);
+    nameInput.value = "";
+    nameInput.focus();
+  }
+});
+
+// Add initial habit
+addButton.click();
+```
+
+```javascript
+// Step 3: Full habit management system
+
+// Global state
+const habits = [];
+let completedToday = 0;
+
+// Elements
+const nameInput = document.querySelector("#habitName");
+const categorySelect = document.querySelector("#habitCategory");
+const addButton = document.querySelector("#addHabitBtn");
+const habitsList = document.querySelector("#habitsList");
+const totalHabitsEl = document.querySelector("#totalHabits");
+const completedTodayEl = document.querySelector("#completedToday");
+
+// Category colors
+const categoryColors = {
+  health: "#4CAF50",
+  productivity: "#2196F3",
+  learning: "#FF9800",
+  mindfulness: "#9C27B0"
+};
+
+function updateStats() {
+  totalHabitsEl.textContent = habits.length;
+  completedTodayEl.textContent = completedToday;
+}
+
+function createHabitCard(habitData) {
+  const card = document.createElement("div");
+  card.style.cssText = `
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+  `;
+  
+  card.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="margin: 0; font-size: 20px;">${habitData.name}</h3>
+      <button class="delete-btn" style="background: none; border: none; color: #f44336; cursor: pointer; font-size: 20px;">×</button>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <span style="background: ${categoryColors[habitData.category]}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+          ${habitData.category.toUpperCase()}
+        </span>
+        <span style="margin-left: 12px; color: #666;">
+          Streak: <strong style="color: ${habitData.streak > 0 ? '#4CAF50' : '#666'};">${habitData.streak} days</strong>
+        </span>
+      </div>
+      
+      <button class="complete-btn" style="padding: 10px 20px; background: ${habitData.completedToday ? '#9E9E9E' : '#4CAF50'}; color: white; border: none; border-radius: 6px; cursor: ${habitData.completedToday ? 'default' : 'pointer'}; font-weight: bold;" ${habitData.completedToday ? 'disabled' : ''}>
+        ${habitData.completedToday ? 'Completed ✓' : 'Mark Complete'}
+      </button>
+    </div>
+  `;
+  
+  // Delete functionality
+  const deleteBtn = card.querySelector(".delete-btn");
+  deleteBtn.addEventListener("click", () => {
+    const index = habits.indexOf(habitData);
+    if (index > -1) {
+      habits.splice(index, 1);
+      card.remove();
+      updateStats();
+    }
+  });
+  
+  // Complete functionality
+  const completeBtn = card.querySelector(".complete-btn");
+  if (!habitData.completedToday) {
+    completeBtn.addEventListener("click", () => {
+      habitData.completedToday = true;
+      habitData.streak++;
+      completedToday++;
+      
+      // Update button
+      completeBtn.style.background = "#9E9E9E";
+      completeBtn.textContent = "Completed ✓";
+      completeBtn.disabled = true;
+      
+      // Update streak display
+      const streakEl = card.querySelector("strong");
+      streakEl.textContent = habitData.streak + " days";
+      streakEl.style.color = "#4CAF50";
+      
+      // Celebration animation
+      card.style.transform = "scale(1.05)";
+      card.style.borderColor = "#4CAF50";
+      setTimeout(() => {
+        card.style.transform = "scale(1)";
+        card.style.borderColor = "#e0e0e0";
+      }, 300);
+      
+      updateStats();
+    });
+  }
+  
+  return card;
+}
+
+// Add habit handler
+addButton.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const category = categorySelect.value;
+  
+  if (name) {
+    const habitData = {
+      id: Date.now(),
+      name: name,
+      category: category,
+      streak: 0,
+      completedToday: false
+    };
+    
+    habits.push(habitData);
+    const card = createHabitCard(habitData);
+    habitsList.appendChild(card);
+    
+    nameInput.value = "";
+    nameInput.focus();
+    updateStats();
+  }
+});
+
+// Enter key support
+nameInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    addButton.click();
+  }
+});
+
+// Add sample habits
+const sampleHabits = [
+  { id: 1, name: "Drink 8 glasses of water", category: "health", streak: 5, completedToday: false },
+  { id: 2, name: "Read for 30 minutes", category: "learning", streak: 3, completedToday: true }
+];
+
+sampleHabits.forEach(habit => {
+  habits.push(habit);
+  habitsList.appendChild(createHabitCard(habit));
+  if (habit.completedToday) completedToday++;
+});
+
+updateStats();
+```
+  </File>
+  <Tests>
+    
+```javascript
+// Test: Check implementation
+describe('Habit Tracker UI', () => {
+  it('should add habit when button clicked', () => {
+    const habitsList = document.querySelector("#habitsList");
+    expect(habitsList.children).to.have.lengthOf.at.least(1);
+  });
+  
+  it('should display habit name correctly', () => {
+    const habitName = document.querySelector(".habit-name");
+    expect(habitName.textContent).to.equal("Morning Run");
+  });
+});
+```
+
+```javascript
+// Test: Basic form handling
+describe('Basic Habit Form', () => {
+  it('should create habit element', () => {
+    expect(habitsList.children).to.have.lengthOf(1);
+  });
+  
+  it('should display habit details', () => {
+    const habit = habitsList.querySelector(".habit-item");
+    expect(habit.querySelector(".habit-name").textContent).to.equal("Morning Run");
+    expect(habit.querySelector(".habit-category").textContent).to.equal("health");
+  });
+  
+  it('should clear input after adding', () => {
+    expect(nameInput.value).to.equal("");
+  });
+});
+```
+
+```javascript
+// Test: Enhanced cards
+describe('Enhanced Habit Cards', () => {
+  it('should create styled habit card', () => {
+    const card = habitsList.querySelector(".habit-card");
+    expect(card).to.exist;
+    expect(card.id).to.equal("habit-1");
+  });
+  
+  it('should have correct category styling', () => {
+    const badge = habitsList.querySelector(".category-badge");
+    expect(badge.textContent).to.equal("HEALTH");
+    expect(badge.classList.contains("category-health")).to.be.true;
+  });
+  
+  it('should track completions', () => {
+    const completeBtn = habitsList.querySelector(".complete-btn");
+    const streakCount = habitsList.querySelector("strong");
+    
+    completeBtn.click();
+    expect(streakCount.textContent).to.equal("1");
+    expect(completeBtn.disabled).to.be.true;
+    expect(completeBtn.textContent).to.equal("Completed ✓");
+  });
+});
+```
+
+```javascript
+// Test: Complete habit management
+describe('Complete Habit System', () => {
+  it('should display initial stats', () => {
+    expect(totalHabitsEl.textContent).to.equal("2");
+    expect(completedTodayEl.textContent).to.equal("1");
+  });
+  
+  it('should have sample habits', () => {
+    expect(habits).to.have.lengthOf(2);
+    expect(habitsList.children).to.have.lengthOf(2);
+  });
+  
+  it('should show correct completion states', () => {
+    const buttons = habitsList.querySelectorAll(".complete-btn");
+    expect(buttons[0].disabled).to.be.false;
+    expect(buttons[1].disabled).to.be.true;
+    expect(buttons[1].textContent).to.equal("Completed ✓");
+  });
+  
+  it('should handle habit completion', () => {
+    const firstCompleteBtn = habitsList.querySelector(".complete-btn:not([disabled])");
+    firstCompleteBtn.click();
+    
+    expect(completedToday).to.equal(2);
+    expect(completedTodayEl.textContent).to.equal("2");
+    expect(habits[0].streak).to.equal(6);
+  });
+  
+  it('should support enter key', () => {
+    nameInput.value = "Test Habit";
+    const enterEvent = new KeyboardEvent("keypress", { key: "Enter" });
+    nameInput.dispatchEvent(enterEvent);
+    
+    expect(habits).to.have.lengthOf(3);
+    expect(habitsList.children).to.have.lengthOf(3);
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Working with Forms and Input</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="20px">Forms are essential for user interaction:</Text>
+      <UnorderedList>
+        <ListItem>Get user input with value property</ListItem>
+        <ListItem>Listen for 'submit' event on forms</ListItem>
+        <ListItem>Prevent default behavior with preventDefault()</ListItem>
+        <ListItem>Validate input before processing</ListItem>
+      </UnorderedList>
+      
+      <Box marginTop="30px" padding="15px" backgroundColor="#f5f5f5" borderRadius="8px">
+        <Text fontSize="18px" fontWeight="bold">Form Best Practices:</Text>
+        <Text fontSize="16px">• Always trim() user input</Text>
+        <Text fontSize="16px">• Provide clear error messages</Text>
+        <Text fontSize="16px">• Disable submit during processing</Text>
+        <Text fontSize="16px">• Reset form after successful submission</Text>
+      </Box>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Form Validation
+
+import FormValidationExercise from './dom-exercises/form-validation.mdx'
+
+<FormValidationExercise />
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Data Attributes & State
+
+import DataAttributesExercise from './dom-exercises/data-attributes.mdx'
+
+<DataAttributesExercise />
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">DOM Performance Tips</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="20px">Optimize your DOM operations:</Text>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">1. Batch DOM Updates</Text>
+        <Text fontSize="16px">• Build elements before adding to DOM</Text>
+        <Text fontSize="16px">• Use DocumentFragment for multiple additions</Text>
+        <Text fontSize="16px">• Update classes instead of individual styles</Text>
+      </Box>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">2. Cache Selections</Text>
+        <Text fontSize="16px">• Store frequently used elements in variables</Text>
+        <Text fontSize="16px">• Avoid repeated querySelector calls</Text>
+        <Text fontSize="16px">• Use event delegation for dynamic content</Text>
+      </Box>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">3. Minimize Reflows</Text>
+        <Text fontSize="16px">• Read DOM properties together</Text>
+        <Text fontSize="16px">• Write DOM changes together</Text>
+        <Text fontSize="16px">• Use CSS transforms for animations</Text>
+      </Box>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Efficient DOM Updates
+
+import EfficientDOMUpdatesExercise from './dom-exercises/efficient-dom-updates.mdx'
+
+<EfficientDOMUpdatesExercise />
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Key Takeaways: DOM Manipulation
+
+<Box width="80%">
+  <Text fontSize="24px" fontWeight="bold" marginBottom="30px">Remember:</Text>
+  <UnorderedList>
+    <ListItem>The DOM is your bridge between JavaScript and HTML</ListItem>
+    <ListItem>Select elements before you can modify them</ListItem>
+    <ListItem>Event listeners make pages interactive</ListItem>
+    <ListItem>Create dynamic content with createElement()</ListItem>
+    <ListItem>Always consider performance with DOM operations</ListItem>
+  </UnorderedList>
+  
+  <Box marginTop="40px" padding="20px" backgroundColor="#e3f2fd" borderRadius="8px">
+    <Text fontSize="20px" fontWeight="bold">Modern Alternatives:</Text>
+    <Text fontSize="18px">• React, Vue, Angular abstract DOM manipulation</Text>
+    <Text fontSize="18px">• Virtual DOM for better performance</Text>
+    <Text fontSize="18px">• But understanding vanilla DOM is essential!</Text>
+  </Box>
+  
+  <Text fontSize="20px" fontStyle="italic" marginTop="40px">Master the DOM, and you can build any web interface!</Text>
+</Box>
+</SlideLayout.Full>

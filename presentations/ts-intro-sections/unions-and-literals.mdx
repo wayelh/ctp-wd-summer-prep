@@ -1,0 +1,112 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## Union Types
+
+- Sometimes a value can be one of several types
+- Union types use the `|` operator to say "this OR that"
+- Common in real-world scenarios
+
+```typescript
+type Status = "loading" | "success" | "error";
+
+function setStatus(status: Status) {
+  console.log(`Current status: ${status}`);
+}
+
+setStatus("loading"); // ✅
+setStatus("pending"); // ❌ Error!
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Build a Result Type
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Create a Result type that can be either success or failure
+// Success should have data, failure should have error message
+
+// TODO: Define the Result type
+type Result = any; // Replace this!
+
+function processData(input: string): Result {
+  if (input.length > 0) {
+    return { success: true, data: input.toUpperCase() };
+  } else {
+    return { success: false, error: "Input cannot be empty" };
+  }
+}
+
+// This should work with proper types
+const result = processData("hello");
+if (result.success) {
+  console.log(result.data); // Should be accessible
+} else {
+  console.log(result.error); // Should be accessible
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Literal Types
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Exact value types
+type Direction = "north" | "south" | "east" | "west";
+type DiceRoll = 1 | 2 | 3 | 4 | 5 | 6;
+type Answer = true; // Only true, not false!
+
+// Combine with objects
+type ActionType = 
+  | { type: "INCREMENT"; amount: number }
+  | { type: "DECREMENT"; amount: number }
+  | { type: "RESET" };
+
+function reducer(action: ActionType) {
+  switch (action.type) {
+    case "INCREMENT":
+      return action.amount; // TypeScript knows amount exists
+    case "RESET":
+      return 0;
+  }
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Template Literal Types
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// New in TypeScript 4.1+
+type EventName = "click" | "focus" | "blur";
+type Handler = `on${Capitalize<EventName>}`;
+// Result: "onClick" | "onFocus" | "onBlur"
+
+// Dynamic string patterns
+type CssUnit = "px" | "em" | "rem" | "%";
+type CssValue = `${number}${CssUnit}`;
+
+function setWidth(width: CssValue) {
+  element.style.width = width;
+}
+
+setWidth("100px"); // ✅
+setWidth("2.5em"); // ✅
+setWidth("100"); // ❌ Error!
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,135 @@
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<CodeDisplay height="450px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Attributes Exercise</title>
+</head>
+<body>
+  <div id="habitsList">
+    <div class="habit-card" data-habit-id="1" data-streak="0" data-completed="false">
+      <h3>Morning Meditation</h3>
+      <span class="streak-display">Streak: 0</span>
+      <button class="complete-btn">Complete</button>
+    </div>
+  </div>
+</body>
+</html>
+```
+  </File>
+  <File name="app.js">
+```javascript
+// Exercise: Use data attributes to store habit state
+// TODO: Store habit data in DOM using data-* attributes
+
+// TODO: 
+// 1. Read data attributes
+// 2. Update data-streak when completed
+// 3. Store completion state in data-completed
+// 4. Add data-last-completed with today's date
+
+// Your code here...
+```
+
+```javascript
+// Solution: Working with data attributes
+
+const card = document.querySelector('.habit-card');
+const streakDisplay = card.querySelector('.streak-display');
+const completeBtn = card.querySelector('.complete-btn');
+
+// Read initial data
+console.log('Habit ID:', card.dataset.habitId);
+console.log('Current streak:', card.dataset.streak);
+console.log('Completed today:', card.dataset.completed);
+
+completeBtn.addEventListener('click', () => {
+  // Check if already completed
+  if (card.dataset.completed === 'true') {
+    alert('Already completed today!');
+    return;
+  }
+  
+  // Update streak
+  const currentStreak = parseInt(card.dataset.streak) || 0;
+  const newStreak = currentStreak + 1;
+  
+  // Update data attributes
+  card.dataset.streak = newStreak;
+  card.dataset.completed = 'true';
+  card.dataset.lastCompleted = new Date().toISOString().split('T')[0];
+  
+  // Update display
+  streakDisplay.textContent = `Streak: ${newStreak}`;
+  
+  // Update button
+  completeBtn.textContent = 'Completed ✓';
+  completeBtn.disabled = true;
+  completeBtn.style.backgroundColor = '#9e9e9e';
+  
+  // Add visual feedback
+  card.style.borderColor = '#4CAF50';
+  card.style.boxShadow = '0 0 10px rgba(76, 175, 80, 0.3)';
+  
+  console.log('Updated data:', {
+    streak: card.dataset.streak,
+    completed: card.dataset.completed,
+    lastCompleted: card.dataset.lastCompleted
+  });
+});
+
+// Trigger for testing
+completeBtn.click();
+```
+  </File>
+  <Tests>
+    
+```javascript
+// Test: Data attributes
+describe('Data Attributes', () => {
+  it('should read and update data attributes', () => {
+    const card = document.querySelector('.habit-card');
+    const btn = card.querySelector('.complete-btn');
+    
+    btn.click();
+    
+    expect(card.dataset.streak).to.equal('1');
+    expect(card.dataset.completed).to.equal('true');
+    expect(card.dataset.lastCompleted).to.exist;
+  });
+});
+```
+
+```javascript
+// Test: Data attribute updates
+describe('Data Attribute Management', () => {
+  it('should update all data attributes', () => {
+    expect(card.dataset.streak).to.equal('1');
+    expect(card.dataset.completed).to.equal('true');
+    expect(card.dataset.lastCompleted).to.match(/^\d{4}-\d{2}-\d{2}$/);
+  });
+  
+  it('should update visual elements', () => {
+    expect(streakDisplay.textContent).to.equal('Streak: 1');
+    expect(completeBtn.disabled).to.be.true;
+    expect(completeBtn.textContent).to.equal('Completed ✓');
+  });
+  
+  it('should prevent double completion', () => {
+    // Try clicking again
+    const alertStub = sinon.stub(window, 'alert');
+    completeBtn.click();
+    
+    expect(alertStub.calledWith('Already completed today!')).to.be.true;
+    expect(card.dataset.streak).to.equal('1'); // Should not increment
+    
+    alertStub.restore();
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>

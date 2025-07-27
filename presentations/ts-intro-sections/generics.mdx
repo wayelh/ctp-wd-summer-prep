@@ -1,0 +1,251 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Text } from 'spectacle'
+
+<SlideLayout.Full>
+## Arrays and Generics
+
+- Arrays can be typed in two ways
+- Generics allow types to be flexible but safe
+- Think of generics as "type functions" with argument types and a return type
+
+```typescript
+// Two ways to type arrays
+let numbers: number[] = [1, 2, 3];
+let strings: Array<string> = ["a", "b", "c"];
+
+// Generic function
+function identity<T>(value: T): T {
+  return value;
+}
+
+identity<string>("hello"); // Returns string
+identity<number>(42); // Returns number
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Build a Generic Container
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Create a generic Box class that can hold any type of value
+// It should have methods to get and set the value
+
+class Box {
+  // TODO: Make this generic!
+  private value: any;
+  
+  constructor(initial: any) {
+    this.value = initial;
+  }
+  
+  getValue(): any {
+    return this.value;
+  }
+  
+  setValue(newValue: any): void {
+    this.value = newValue;
+  }
+}
+
+// This should work with proper generics
+const numberBox = new Box(42);
+const num: number = numberBox.getValue(); // Should be type-safe
+
+const stringBox = new Box("hello");
+const str: string = stringBox.getValue(); // Should be type-safe
+
+//***
+describe('Generic Box - Initial Implementation', () => {
+  it('should store and retrieve values', () => {
+    const testBox = new Box(100);
+    expect(testBox.getValue()).to.equal(100);
+  });
+  
+  it('should update values correctly', () => {
+    const testBox = new Box(100);
+    testBox.setValue(200);
+    expect(testBox.getValue()).to.equal(200);
+  });
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Generic Habit Storage
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Exercise: Create a generic storage class for habits
+// TODO: Implement a type-safe storage system
+
+class Storage {
+  // TODO: Make this generic to work with any type
+  private items: any[] = [];
+  
+  add(item: any): void {
+    // Your code here
+  }
+  
+  getById(id: string): any {
+    // Your code here
+  }
+  
+  getAll(): any[] {
+    // Your code here
+  }
+  
+  update(id: string, updates: any): boolean {
+    // Your code here
+  }
+  
+  remove(id: string): boolean {
+    // Your code here
+  }
+}
+
+// Test with habits
+interface Habit {
+  id: string;
+  name: string;
+  streak: number;
+}
+
+const habitStorage = new Storage();
+habitStorage.add({ id: "1", name: "Exercise", streak: 5 });
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Generic Constraints
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="20px">Generics can be constrained to certain types:</Text>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">1. extends keyword</Text>
+        <Text fontSize="16px">• Limit generic to types with certain properties</Text>
+        <Text fontSize="16px">• Ensure type safety while maintaining flexibility</Text>
+        <Text fontSize="16px">• Access properties of the constrained type</Text>
+      </Box>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">2. Multiple constraints</Text>
+        <Text fontSize="16px">• Combine interfaces with &</Text>
+        <Text fontSize="16px">• Create complex type requirements</Text>
+        <Text fontSize="16px">• Build reusable, type-safe utilities</Text>
+      </Box>
+      
+      <Box marginBottom="30px">
+        <Text fontSize="18px" fontWeight="bold">3. Default generics</Text>
+        <Text fontSize="16px">• Provide default types for convenience</Text>
+        <Text fontSize="16px">• Make APIs easier to use</Text>
+        <Text fontSize="16px">• Maintain backwards compatibility</Text>
+      </Box>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Generic Data Transformers
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Exercise: Build generic data transformation utilities
+// TODO: Create type-safe transform functions
+
+// TODO: Make this function generic
+function mapArray(items: any[], transform: (item: any) => any): any[] {
+  // Your code here
+}
+
+// TODO: Create a generic groupBy function
+function groupBy(items: any[], key: string): any {
+  // Your code here
+}
+
+// Test with habits
+const habits = [
+  { id: "1", name: "Exercise", category: "health", points: 50 },
+  { id: "2", name: "Meditate", category: "wellness", points: 30 },
+  { id: "3", name: "Read", category: "learning", points: 40 },
+  { id: "4", name: "Water", category: "health", points: 20 }
+];
+
+// Should work with type safety
+const names = mapArray(habits, h => h.name);
+const grouped = groupBy(habits, "category");
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Generic Constraints
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Constrain generics to certain types
+interface Lengthwise {
+  length: number;
+}
+
+function logLength<T extends Lengthwise>(item: T): T {
+  console.log(item.length);
+  return item;
+}
+
+logLength("hello"); // OK - strings have length
+logLength([1, 2, 3]); // OK - arrays have length
+logLength({ length: 10 }); // OK - has length property
+// logLength(123); // Error - numbers don't have length
+
+// Multiple constraints
+function merge<T extends object, U extends object>(obj1: T, obj2: U): T & U {
+  return { ...obj1, ...obj2 };
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Built-in Generic Types
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Promise<T> - Async values
+const promise: Promise<string> = fetch('/api').then(r => r.text());
+
+// Array<T> - Lists of values
+const numbers: Array<number> = [1, 2, 3];
+
+// Map<K, V> - Key-value pairs
+const userMap: Map<number, string> = new Map();
+userMap.set(1, "Alice");
+
+// Set<T> - Unique values
+const uniqueNumbers: Set<number> = new Set([1, 2, 2, 3]);
+
+// Record<K, V> - Object with specific key/value types
+const scores: Record<string, number> = {
+  alice: 100,
+  bob: 95
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

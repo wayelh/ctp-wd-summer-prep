@@ -1,0 +1,994 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, CodePane } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.VerticalImage
+  title="CSS Fundamentals"
+  src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmgxeGY1MnRyMHgzZzN4MzJwamZrNHplN3lkZnQ5NnRxZWdyNGQzbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/yYSSBtDgbbRzq/giphy.gif"
+  listItems={[
+    'CSS adds style and layout to HTML',
+    'Selectors, properties, and values',
+    'Box model and positioning',
+    'Modern layout with Flexbox and Grid'
+  ]}
+/>
+
+<SlideLayout.Full>
+## CSS Syntax and Selectors
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Selectors</title>
+</head>
+<body>
+    <h1>CSS Selectors Demo</h1>
+    
+    <p>This is a regular paragraph.</p>
+    <p class="highlight">This paragraph has a class.</p>
+    <p id="special">This paragraph has an ID.</p>
+    
+    <div class="container">
+        <h2>Nested Elements</h2>
+        <p>Paragraph inside a div.</p>
+        <ul>
+            <li>First item</li>
+            <li class="active">Active item</li>
+            <li>Third item</li>
+        </ul>
+    </div>
+    
+    <button>Normal Button</button>
+    <button class="primary">Primary Button</button>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Element Selector */
+h1 {
+    color: #333;
+    font-family: Arial, sans-serif;
+}
+
+/* Class Selector */
+.highlight {
+    background-color: yellow;
+    padding: 5px;
+}
+
+/* ID Selector */
+#special {
+    border: 2px solid red;
+    font-weight: bold;
+}
+
+/* Descendant Selector */
+.container p {
+    color: blue;
+}
+
+/* Multiple Classes */
+li.active {
+    background-color: #4CAF50;
+    color: white;
+    padding: 5px;
+}
+
+/* Pseudo-class */
+button:hover {
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+/* Attribute Selector */
+button.primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## The Box Model
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Box Model</title>
+</head>
+<body>
+    <h2>Understanding the Box Model</h2>
+    
+    <div class="box-demo">
+        <p>Content</p>
+    </div>
+    
+    <div class="box-explained">
+        <h3>Box Model Properties:</h3>
+        <ul>
+            <li>Content: The actual content</li>
+            <li>Padding: Space inside the border</li>
+            <li>Border: The border around padding</li>
+            <li>Margin: Space outside the border</li>
+        </ul>
+    </div>
+    
+    <div class="box-sizing-demo">
+        <div class="content-box">Content Box</div>
+        <div class="border-box">Border Box</div>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Visual demonstration of box model */
+.box-demo {
+    width: 300px;
+    height: 150px;
+    padding: 20px;
+    border: 5px solid #333;
+    margin: 20px;
+    background-color: #f0f0f0;
+    
+    /* Show the different parts */
+    box-shadow: 
+        0 0 0 20px rgba(255, 0, 0, 0.2),  /* margin visualization */
+        inset 0 0 0 20px rgba(0, 255, 0, 0.2); /* padding visualization */
+}
+
+.box-demo p {
+    background-color: #fff;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Box sizing comparison */
+.box-sizing-demo {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.content-box, .border-box {
+    width: 200px;
+    padding: 20px;
+    border: 10px solid #007bff;
+    background-color: #e3f2fd;
+}
+
+.content-box {
+    box-sizing: content-box;
+    /* Total width = 200px + 40px (padding) + 20px (border) = 260px */
+}
+
+.border-box {
+    box-sizing: border-box;
+    /* Total width = 200px (includes padding and border) */
+}
+
+/* Reset default margins */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Flexbox Layout
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flexbox Layout</title>
+</head>
+<body>
+    <h2>Habit Tracker Dashboard</h2>
+    
+    <!-- Flex container -->
+    <div class="habit-container">
+        <div class="habit-card">
+            <h3>Morning Run</h3>
+            <p>Streak: 5 days</p>
+            <button>Complete</button>
+        </div>
+        
+        <div class="habit-card featured">
+            <h3>Read 30 min</h3>
+            <p>Streak: 12 days</p>
+            <button>Complete</button>
+        </div>
+        
+        <div class="habit-card">
+            <h3>Meditate</h3>
+            <p>Streak: 3 days</p>
+            <button>Complete</button>
+        </div>
+    </div>
+    
+    <!-- Navigation bar example -->
+    <nav class="flex-nav">
+        <div class="nav-brand">Habit Tracker</div>
+        <ul class="nav-links">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Habits</a></li>
+            <li><a href="#">Statistics</a></li>
+        </ul>
+        <button class="nav-button">Sign Out</button>
+    </nav>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Flex container for habit cards */
+.habit-container {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.habit-card {
+    flex: 1;
+    min-width: 200px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.habit-card.featured {
+    flex: 2;
+    background-color: #e3f2fd;
+    border-color: #2196F3;
+}
+
+.habit-card h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.habit-card button {
+    align-self: flex-start;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Flexbox navigation */
+.flex-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+}
+
+.nav-brand {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+.nav-button {
+    padding: 8px 16px;
+    background-color: #ff5722;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Grid Layout
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Grid Layout</title>
+</head>
+<body>
+    <div class="dashboard-grid">
+        <header class="header">
+            <h1>Habit Tracker Dashboard</h1>
+        </header>
+        
+        <aside class="sidebar">
+            <h3>Categories</h3>
+            <ul>
+                <li>Health</li>
+                <li>Productivity</li>
+                <li>Learning</li>
+                <li>Fitness</li>
+            </ul>
+        </aside>
+        
+        <main class="main-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Total Habits</h4>
+                    <p class="stat-number">8</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Active Streaks</h4>
+                    <p class="stat-number">5</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Best Streak</h4>
+                    <p class="stat-number">30</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Completion Rate</h4>
+                    <p class="stat-number">85%</p>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2024 Habit Tracker</p>
+        </footer>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Grid container for dashboard layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+        "header header"
+        "sidebar main"
+        "footer footer";
+    min-height: 100vh;
+    gap: 0;
+}
+
+.header {
+    grid-area: header;
+    background-color: #2196F3;
+    color: white;
+    padding: 20px;
+}
+
+.sidebar {
+    grid-area: sidebar;
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar li {
+    padding: 8px 0;
+    cursor: pointer;
+}
+
+.sidebar li:hover {
+    color: #2196F3;
+}
+
+.main-content {
+    grid-area: main;
+    padding: 20px;
+}
+
+.footer {
+    grid-area: footer;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Nested grid for stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-card h4 {
+    margin: 0 0 10px 0;
+    color: #666;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.stat-number {
+    font-size: 36px;
+    font-weight: bold;
+    color: #2196F3;
+    margin: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "main"
+            "sidebar"
+            "footer";
+    }
+    
+    .sidebar {
+        border-right: none;
+        border-top: 1px solid #ddd;
+    }
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Style a Habit Tracker Card
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Card Styling Exercise</title>
+</head>
+<body>
+    <h2>Style this Habit Card</h2>
+    
+    <!-- TODO: Style this habit card to look professional and engaging -->
+    <div class="habit-card">
+        <div class="habit-header">
+            <h3 class="habit-title">Morning Meditation</h3>
+            <span class="habit-category">Wellness</span>
+        </div>
+        
+        <div class="habit-body">
+            <div class="streak-info">
+                <span class="streak-number">15</span>
+                <span class="streak-label">day streak</span>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 75%"></div>
+            </div>
+            
+            <p class="habit-time">Best time: 6:00 AM</p>
+        </div>
+        
+        <div class="habit-footer">
+            <button class="btn-complete">Mark Complete</button>
+            <button class="btn-skip">Skip Today</button>
+        </div>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* TODO: Add your styles here to make the habit card look great!
+   
+   Requirements:
+   1. Card should have rounded corners and a subtle shadow
+   2. Use flexbox or grid for layout
+   3. Category should be styled as a badge/tag
+   4. Progress bar should be visual and animated
+   5. Buttons should have hover effects
+   6. Use a color scheme (primary: #4CAF50, secondary: #2196F3)
+*/
+
+.habit-card {
+    /* Your styles here */
+}
+```
+  </File>
+  <Tests>
+    
+```javascript
+describe('Habit Card Styling', () => {
+    const card = document.querySelector('.habit-card');
+    const styles = window.getComputedStyle(card);
+    
+    it('should have rounded corners', () => {
+        expect(styles.borderRadius).to.not.equal('0px');
+    });
+    
+    it('should have a shadow', () => {
+        expect(styles.boxShadow).to.not.equal('none');
+    });
+    
+    it('should use flexbox or grid', () => {
+        const display = styles.display;
+        expect(['flex', 'grid'].includes(display)).to.be.true;
+    });
+    
+    it('should style the complete button with primary color', () => {
+        const btn = document.querySelector('.btn-complete');
+        const btnStyles = window.getComputedStyle(btn);
+        expect(btnStyles.backgroundColor).to.include('76, 175, 80'); // RGB for #4CAF50
+    });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## CSS Transitions and Animations
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Animations</title>
+</head>
+<body>
+    <h2>Interactive Habit Cards</h2>
+    
+    <div class="habits-grid">
+        <div class="habit-card">
+            <div class="card-icon">🏃‍♂️</div>
+            <h3>Morning Run</h3>
+            <p>5 day streak</p>
+            <button class="complete-btn">Complete</button>
+        </div>
+        
+        <div class="habit-card completed">
+            <div class="card-icon">📚</div>
+            <h3>Read 30 Minutes</h3>
+            <p>12 day streak</p>
+            <div class="checkmark">✓</div>
+        </div>
+        
+        <div class="habit-card">
+            <div class="card-icon">🧘‍♀️</div>
+            <h3>Meditate</h3>
+            <p>3 day streak</p>
+            <button class="complete-btn">Complete</button>
+        </div>
+    </div>
+    
+    <div class="loading-demo">
+        <h3>Loading Animation</h3>
+        <div class="spinner"></div>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Smooth transitions for hover effects */
+.habits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.habit-card {
+    padding: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.habit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    border-color: #4CAF50;
+}
+
+.card-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+    transition: transform 0.3s ease;
+}
+
+.habit-card:hover .card-icon {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* Button animations */
+.complete-btn {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.complete-btn:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+.complete-btn:active {
+    transform: scale(0.95);
+}
+
+/* Completed state animation */
+.habit-card.completed {
+    background-color: #e8f5e9;
+    border-color: #4CAF50;
+}
+
+.checkmark {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 0.5s ease;
+}
+
+/* Keyframe animations */
+@keyframes popIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Loading spinner */
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #2196F3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Pulse animation for important elements */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+}
+
+.habit-card:nth-child(2) {
+    animation: pulse 2s infinite;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Responsive Design
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Responsive Habit Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Habit Tracker</h1>
+            <button class="menu-toggle">☰</button>
+        </header>
+        
+        <nav class="app-nav">
+            <a href="#" class="nav-link active">Dashboard</a>
+            <a href="#" class="nav-link">Habits</a>
+            <a href="#" class="nav-link">Statistics</a>
+            <a href="#" class="nav-link">Settings</a>
+        </nav>
+        
+        <main class="app-main">
+            <div class="habit-grid">
+                <div class="habit-item">
+                    <h3>Exercise</h3>
+                    <p>15 day streak</p>
+                </div>
+                <div class="habit-item">
+                    <h3>Read</h3>
+                    <p>7 day streak</p>
+                </div>
+                <div class="habit-item">
+                    <h3>Meditate</h3>
+                    <p>3 day streak</p>
+                </div>
+                <div class="habit-item">
+                    <h3>Journal</h3>
+                    <p>10 day streak</p>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Mobile-first responsive design */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.app-header {
+    background-color: #2196F3;
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* Navigation - Mobile */
+.app-nav {
+    background-color: #1976D2;
+    display: none;
+    flex-direction: column;
+}
+
+.app-nav.active {
+    display: flex;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-link.active {
+    background-color: rgba(0,0,0,0.2);
+}
+
+/* Main content */
+.app-main {
+    flex: 1;
+    padding: 1rem;
+}
+
+/* Habit grid - Mobile */
+.habit-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.habit-item {
+    background-color: #f5f5f5;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.habit-item h3 {
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.habit-item p {
+    margin: 0;
+    color: #666;
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .app-header h1 {
+        font-size: 2rem;
+    }
+    
+    .menu-toggle {
+        display: none;
+    }
+    
+    .app-nav {
+        display: flex;
+        flex-direction: row;
+    }
+    
+    .nav-link {
+        border-bottom: none;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .habit-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    .app-container {
+        flex-direction: row;
+    }
+    
+    .app-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+    }
+    
+    .app-nav {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        width: 200px;
+        flex-direction: column;
+    }
+    
+    .app-main {
+        margin-left: 200px;
+        margin-top: 60px;
+        padding: 2rem;
+    }
+    
+    .habit-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+    
+    .habit-item {
+        padding: 2rem;
+        transition: transform 0.2s;
+    }
+    
+    .habit-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+}
+
+/* Large desktop */
+@media (min-width: 1440px) {
+    .app-main {
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 220px;
+    }
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

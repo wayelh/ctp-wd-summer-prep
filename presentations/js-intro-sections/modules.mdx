@@ -1,0 +1,314 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+
+<SlideLayout.Full>
+## 📦 JavaScript Modules
+### Organizing Code into Reusable Components
+
+- Understanding module systems
+- Import and export syntax
+- Creating modular applications
+- Managing dependencies
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Why Modules?</Heading>
+    <UnorderedList>
+      <ListItem>Break code into manageable pieces</ListItem>
+      <ListItem>Avoid global namespace pollution</ListItem>
+      <ListItem>Enable code reuse across projects</ListItem>
+      <ListItem>Clear dependencies and interfaces</ListItem>
+    </UnorderedList>
+    <Box marginTop="50px">
+      <Text fontSize="24px" fontWeight="bold">Real-world analogy:</Text>
+      <Text fontSize="20px">Like organizing a habit tracker into separate components:</Text>
+      <Text fontSize="20px">habits, analytics, storage, UI - each in its own module</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Module Basics: Export and Import
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// habitModel.js - Export individual pieces
+export const MAX_HABITS = 10;
+
+export function createHabit(name, category) {
+  return {
+    id: Date.now(),
+    name,
+    category,
+    streak: 0
+  };
+}
+
+export class Habit {
+  constructor(name) {
+    this.name = name;
+  }
+}
+
+// main.js - Import what you need
+import { createHabit, MAX_HABITS } from './habitModel.js';
+import { Habit } from './habitModel.js';
+
+const myHabit = createHabit('Exercise', 'health');
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Types of Exports</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Named Exports:</Text>
+      <Text fontSize="18px" marginBottom="30px">• Export multiple values from a module</Text>
+      <Text fontSize="18px" marginBottom="30px">• Import with exact names (or rename)</Text>
+      <Text fontSize="18px" marginBottom="30px">• Can export declarations or statements</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginTop="20px" marginBottom="20px">Default Export:</Text>
+      <Text fontSize="18px" marginBottom="30px">• One default export per module</Text>
+      <Text fontSize="18px" marginBottom="30px">• Import with any name</Text>
+      <Text fontSize="18px">• Good for main functionality</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Export Syntax Examples
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Named exports - multiple per file
+export const VERSION = '1.0.0';
+export function helper() {}
+export class Tool {}
+
+// Export list
+const PI = 3.14;
+const E = 2.71;
+export { PI, E };
+
+// Export with rename
+export { PI as CircleConstant };
+
+// Default export - one per file
+export default class HabitTracker {
+  // Main module functionality
+}
+
+// Mixed exports
+export default HabitTracker;
+export { VERSION, helper };
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Import Syntax Examples
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Import named exports
+import { helper, Tool } from './utils.js';
+
+// Import with rename
+import { PI as π } from './math.js';
+
+// Import all as namespace
+import * as MathUtils from './math.js';
+console.log(MathUtils.PI);
+
+// Import default
+import HabitTracker from './tracker.js';
+
+// Import default and named together
+import HabitTracker, { VERSION } from './tracker.js';
+
+// Import for side effects only
+import './initialize.js';
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Habit Storage Module
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Create a habit storage module
+// TODO: Build a module that handles habit persistence
+// Should export functions for CRUD operations
+
+// habitStorage.js
+// TODO: Create these exports:
+// 1. saveHabit(habit) - saves to localStorage
+// 2. loadHabit(id) - retrieves single habit
+// 3. loadAllHabits() - retrieves all habits
+// 4. deleteHabit(id) - removes habit
+// 5. clearAllHabits() - removes all habits
+
+// Storage key constant (don't export)
+const STORAGE_KEY = 'habit_tracker_habits';
+
+// Your implementation here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Module Systems</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">ES6 Modules (ESM):</Text>
+      <Text fontSize="18px" marginBottom="30px">• Modern standard (import/export)</Text>
+      <Text fontSize="18px" marginBottom="30px">• Static analysis possible</Text>
+      <Text fontSize="18px" marginBottom="30px">• Tree-shaking support</Text>
+      
+      <Text fontSize="24px" fontWeight="bold" marginTop="20px" marginBottom="20px">CommonJS (CJS):</Text>
+      <Text fontSize="18px" marginBottom="30px">• Node.js standard (require/module.exports)</Text>
+      <Text fontSize="18px" marginBottom="30px">• Dynamic loading</Text>
+      <Text fontSize="18px">• Synchronous by design</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## CommonJS vs ES6 Modules
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// CommonJS (Node.js)
+// math.js
+module.exports.add = (a, b) => a + b;
+module.exports.PI = 3.14159;
+
+// main.js
+const math = require('./math');
+console.log(math.add(2, 3));
+
+// ES6 Modules
+// math.mjs
+export const add = (a, b) => a + b;
+export const PI = 3.14159;
+
+// main.mjs
+import { add, PI } from './math.mjs';
+console.log(add(2, 3));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Modular Habit Tracker
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Create a modular habit tracking system
+// Split functionality into separate modules
+
+// TODO: Create these modules:
+// 1. models/habit.js - Habit class/factory
+// 2. services/analytics.js - calculateStreak, getPoints
+// 3. services/storage.js - save/load functionality
+// 4. utils/validators.js - validation functions
+// 5. index.js - main module that combines everything
+
+// models/habit.js
+export class Habit {
+  // Your implementation
+}
+
+// services/analytics.js
+export function calculateStreak(completions) {
+  // Your implementation
+}
+
+// index.js - combine modules
+import { Habit } from './models/habit.js';
+import { calculateStreak } from './services/analytics.js';
+// etc...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Module Best Practices</Heading>
+    <Box width="80%">
+      <UnorderedList>
+        <ListItem>**Single Responsibility** - One module, one purpose</ListItem>
+        <ListItem>**Clear Exports** - Be explicit about public API</ListItem>
+        <ListItem>**Avoid Circular Dependencies** - A imports B imports A</ListItem>
+        <ListItem>**Consistent Naming** - Match file and export names</ListItem>
+        <ListItem>**Documentation** - Document module purpose and exports</ListItem>
+        <ListItem>**Testing** - Test modules in isolation</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Dynamic Imports
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Static import (top of file)
+import { analyzeHabits } from './analytics.js';
+
+// Dynamic import (anywhere in code)
+async function loadAnalytics() {
+  const module = await import('./analytics.js');
+  return module.analyzeHabits(data);
+}
+
+// Conditional loading
+if (user.wantsAnalytics) {
+  const { generateReport } = await import('./reporting.js');
+  generateReport(habits);
+}
+
+// Code splitting for performance
+button.addEventListener('click', async () => {
+  const { showChart } = await import('./charts.js');
+  showChart(habitData);
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 🎯 Key Takeaways: Modules
+
+1. **Modules** organize code into reusable, maintainable pieces
+2. **ES6 modules** are the modern standard (import/export)
+3. **Named exports** for multiple values, **default** for main functionality
+4. **CommonJS** still common in Node.js (require/module.exports)
+5. **Dynamic imports** enable code splitting and lazy loading
+
+### Coming Up Next: Modern JavaScript Features
+ES6+ features that make JavaScript more powerful!
+</SlideLayout.Full>

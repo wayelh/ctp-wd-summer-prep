@@ -1,0 +1,532 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, CodePane } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.VerticalImage
+  title="HTML Basics"
+  src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXV2ZTJ3MXVpbGFiNzR2OXBpMTR5ZHBuanBmNGFxZ3J5M29mdjE3NiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vRfNA1p0rvhMSvS/giphy.gif"
+  listItems={[
+    'HTML provides the structure of web pages',
+    'Elements, attributes, and content',
+    'Semantic HTML for better accessibility',
+    'Building blocks for the habit tracker'
+  ]}
+/>
+
+<SlideLayout.Full>
+## HTML Document Structure
+
+<CodeDisplay height="400px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My First Web Page</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome to Web Development</h1>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </header>
+    
+    <main>
+        <section id="home">
+            <h2>Getting Started</h2>
+            <p>HTML is the foundation of all web pages.</p>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 My Website</p>
+    </footer>
+</body>
+</html>
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Essential HTML Elements
+
+<CodeDisplay height="450px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML Elements Demo</title>
+</head>
+<body>
+    <!-- Text Elements -->
+    <h1>Main Heading (h1)</h1>
+    <h2>Subheading (h2)</h2>
+    <p>This is a paragraph with <strong>bold</strong> and <em>italic</em> text.</p>
+    
+    <!-- Lists -->
+    <h3>Shopping List (unordered)</h3>
+    <ul>
+        <li>Milk</li>
+        <li>Eggs</li>
+        <li>Bread</li>
+    </ul>
+    
+    <h3>Steps (ordered)</h3>
+    <ol>
+        <li>Open the app</li>
+        <li>Create a habit</li>
+        <li>Track daily</li>
+    </ol>
+    
+    <!-- Links and Images -->
+    <a href="https://example.com">Visit Example</a>
+    <img src="https://via.placeholder.com/200x100" alt="Placeholder image">
+    
+    <!-- Interactive Elements -->
+    <button onclick="alert('Button clicked!')">Click Me</button>
+    <input type="text" placeholder="Enter your name">
+</body>
+</html>
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Forms and Input Elements
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Elements</title>
+</head>
+<body>
+    <h2>Create New Habit</h2>
+    <form id="habitForm">
+        <!-- Text Input -->
+        <label for="habitName">Habit Name:</label>
+        <input type="text" id="habitName" name="habitName" required>
+        
+        <!-- Select Dropdown -->
+        <label for="category">Category:</label>
+        <select id="category" name="category">
+            <option value="health">Health</option>
+            <option value="productivity">Productivity</option>
+            <option value="learning">Learning</option>
+        </select>
+        
+        <!-- Radio Buttons -->
+        <fieldset>
+            <legend>Frequency:</legend>
+            <input type="radio" id="daily" name="frequency" value="daily" checked>
+            <label for="daily">Daily</label>
+            
+            <input type="radio" id="weekly" name="frequency" value="weekly">
+            <label for="weekly">Weekly</label>
+        </fieldset>
+        
+        <!-- Checkbox -->
+        <input type="checkbox" id="reminder" name="reminder">
+        <label for="reminder">Enable reminders</label>
+        
+        <!-- Buttons -->
+        <button type="submit">Create Habit</button>
+        <button type="reset">Clear Form</button>
+    </form>
+</body>
+</html>
+```
+  </File>
+  <File name="app.js">
+```javascript
+document.getElementById('habitForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const habit = {
+        name: formData.get('habitName'),
+        category: formData.get('category'),
+        frequency: formData.get('frequency'),
+        reminder: formData.get('reminder') === 'on'
+    };
+    
+    console.log('New habit created:', habit);
+});
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Build a Habit Card
+
+<CodeDisplay height="500px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Card Exercise</title>
+</head>
+<body>
+    <!-- TODO: Create a habit card with the following elements:
+         1. A container div with class "habit-card"
+         2. An h3 for the habit name
+         3. A paragraph showing the current streak
+         4. A button to mark as complete
+         5. A small text showing last completed date
+    -->
+    
+    <div class="habit-card">
+        <h3>Morning Exercise</h3>
+        <p>Current Streak: 5 days</p>
+        <button>Mark as Complete</button>
+        <small>Last Completed: Jan 10, 2024</small>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Style your habit card here */
+.habit-card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    background-color: #f9f9f9;
+}
+```
+  </File>
+  <File name="app.js">
+```javascript
+// Add interactivity to your habit card
+document.querySelector('.habit-card button').addEventListener('click', function() {
+    alert('Habit marked as complete!');
+});
+```
+  </File>
+  <Tests>
+    
+```javascript
+describe('Habit Card Structure', () => {
+    it('should have a container with class habit-card', () => {
+        const card = document.querySelector('.habit-card');
+        expect(card).to.exist;
+    });
+    
+    it('should contain an h3 element for the habit name', () => {
+        const title = document.querySelector('.habit-card h3');
+        expect(title).to.exist;
+    });
+    
+    it('should have a paragraph for the streak', () => {
+        const streak = document.querySelector('.habit-card p');
+        expect(streak).to.exist;
+    });
+    
+    it('should have a complete button', () => {
+        const button = document.querySelector('.habit-card button');
+        expect(button).to.exist;
+        expect(button.textContent).to.include('Complete');
+    });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Semantic HTML
+
+<CodeDisplay height="450px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Semantic HTML Example</title>
+</head>
+<body>
+    <header>
+        <h1>Habit Tracker</h1>
+        <nav>
+            <ul>
+                <li><a href="#dashboard">Dashboard</a></li>
+                <li><a href="#habits">My Habits</a></li>
+                <li><a href="#stats">Statistics</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <article class="habit-summary">
+            <header>
+                <h2>Morning Exercise</h2>
+                <time datetime="2024-01-15">Started Jan 15, 2024</time>
+            </header>
+            <section>
+                <p>Current streak: <strong>15 days</strong></p>
+                <progress value="15" max="30">50%</progress>
+            </section>
+            <footer>
+                <button>Mark Complete</button>
+                <button>View Details</button>
+            </footer>
+        </article>
+        
+        <aside>
+            <h3>Quick Stats</h3>
+            <dl>
+                <dt>Total Habits</dt>
+                <dd>5</dd>
+                <dt>Longest Streak</dt>
+                <dd>30 days</dd>
+            </dl>
+        </aside>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Habit Tracker App</p>
+    </footer>
+</body>
+</html>
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Data Attributes
+
+<CodeDisplay height="450px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Attributes</title>
+</head>
+<body>
+    <h2>Using Data Attributes</h2>
+    <div class="habit-item" 
+         data-habit-id="123"
+         data-category="health"
+         data-streak="5">
+        <h3>Morning Exercise</h3>
+        <p>Current Streak: 5 days</p>
+        <button>Mark as Complete</button>
+        <small>Last Completed: Jan 10, 2024</small>
+    </div>
+</body>
+</html>
+    <!-- TODO: Create a habit card with the following elements:
+         1. A container div with class "habit-card"
+         2. An h3 for the habit name
+         3. A paragraph showing the current streak
+         4. A button to mark as complete
+         5. A small text showing last completed date
+    -->
+    
+    <div class="habit-card">
+        <!-- Your code here -->
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Style your habit card here */
+.habit-card {
+    /* Add your styles */
+}
+```
+  </File>
+  <File name="app.js">
+```javascript
+// Add interactivity to your habit card
+```
+  </File>
+  <Tests>
+    
+```javascript
+describe('Habit Card Structure', () => {
+    it('should have a container with class habit-card', () => {
+        const card = document.querySelector('.habit-card');
+        expect(card).to.exist;
+    });
+    
+    it('should contain an h3 element for the habit name', () => {
+        const title = document.querySelector('.habit-card h3');
+        expect(title).to.exist;
+    });
+    
+    it('should have a paragraph for the streak', () => {
+        const streak = document.querySelector('.habit-card p');
+        expect(streak).to.exist;
+    });
+    
+    it('should have a complete button', () => {
+        const button = document.querySelector('.habit-card button');
+        expect(button).to.exist;
+        expect(button.textContent).to.include('Complete');
+    });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Semantic HTML
+
+<CodeDisplay height="450px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Semantic HTML Example</title>
+</head>
+<body>
+    <header>
+        <h1>Habit Tracker</h1>
+        <nav>
+            <ul>
+                <li><a href="#dashboard">Dashboard</a></li>
+                <li><a href="#habits">My Habits</a></li>
+                <li><a href="#stats">Statistics</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <article class="habit-summary">
+            <header>
+                <h2>Morning Exercise</h2>
+                <time datetime="2024-01-15">Started Jan 15, 2024</time>
+            </header>
+            <section>
+                <p>Current streak: <strong>15 days</strong></p>
+                <progress value="15" max="30">50%</progress>
+            </section>
+            <footer>
+                <button>Mark Complete</button>
+                <button>View Details</button>
+            </footer>
+        </article>
+        
+        <aside>
+            <h3>Quick Stats</h3>
+            <dl>
+                <dt>Total Habits</dt>
+                <dd>5</dd>
+                <dt>Longest Streak</dt>
+                <dd>30 days</dd>
+            </dl>
+        </aside>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Habit Tracker App</p>
+    </footer>
+</body>
+</html>
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Data Attributes
+
+<CodeDisplay height="450px">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Attributes</title>
+</head>
+<body>
+    <h2>Using Data Attributes</h2>
+    
+    <!-- Data attributes store custom data -->
+    <div class="habit-item" 
+         data-habit-id="123"
+         data-category="health"
+         data-streak="7"
+         data-completed="false">
+        <h3>Drink 8 glasses of water</h3>
+        <p>Current streak: <span class="streak">7</span> days</p>
+        <button class="complete-btn">Mark Complete</button>
+    </div>
+    
+    <div class="habit-item" 
+         data-habit-id="124"
+         data-category="fitness"
+         data-streak="3"
+         data-completed="true">
+        <h3>30 minute run</h3>
+        <p>Current streak: <span class="streak">3</span> days</p>
+        <button class="complete-btn" disabled>Completed Today</button>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="app.js">
+```javascript
+// Access data attributes in JavaScript
+document.querySelectorAll('.habit-item').forEach(habit => {
+    const habitId = habit.dataset.habitId;
+    const category = habit.dataset.category;
+    const streak = parseInt(habit.dataset.streak);
+    const isCompleted = habit.dataset.completed === 'true';
+    
+    console.log(`Habit ${habitId}: ${category}, streak: ${streak}, completed: ${isCompleted}`);
+    
+    // Style based on category
+    habit.style.borderLeft = `4px solid ${
+        category === 'health' ? '#4CAF50' :
+        category === 'fitness' ? '#2196F3' :
+        '#FF9800'
+    }`;
+});
+
+// Handle complete button clicks
+document.querySelectorAll('.complete-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const habitItem = this.closest('.habit-item');
+        const habitId = habitItem.dataset.habitId;
+        const currentStreak = parseInt(habitItem.dataset.streak);
+        
+        // Update data attributes
+        habitItem.dataset.completed = 'true';
+        habitItem.dataset.streak = currentStreak + 1;
+        
+        // Update UI
+        habitItem.querySelector('.streak').textContent = currentStreak + 1;
+        this.disabled = true;
+        this.textContent = 'Completed Today';
+        
+        console.log(`Completed habit ${habitId}, new streak: ${currentStreak + 1}`);
+    });
+});
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

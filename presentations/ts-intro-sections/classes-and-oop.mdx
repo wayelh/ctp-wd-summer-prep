@@ -1,0 +1,128 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## Classes in TypeScript
+
+- TypeScript enhances JavaScript classes with types
+- Access modifiers: public, private, protected
+- Abstract classes and methods
+- Interfaces for class contracts
+
+```typescript
+class Animal {
+  protected name: string;
+  
+  constructor(name: string) {
+    this.name = name;
+  }
+  
+  move(distance: number = 0) {
+    console.log(`${this.name} moved ${distance}m`);
+  }
+}
+
+class Dog extends Animal {
+  bark() {
+    console.log('Woof! Woof!');
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Access Modifiers
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+class BankAccount {
+  private balance: number = 0;
+  public accountNumber: string;
+  protected owner: string;
+  
+  constructor(accountNumber: string, owner: string) {
+    this.accountNumber = accountNumber;
+    this.owner = owner;
+  }
+  
+  public deposit(amount: number): void {
+    if (amount > 0) {
+      this.balance += amount;
+    }
+  }
+  
+  public getBalance(): number {
+    return this.balance;
+  }
+}
+
+const account = new BankAccount("123456", "John");
+account.deposit(100);
+// account.balance; // Error! Private property
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Build a Class Hierarchy
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Test setup
+let logSpy: sinon.SinonSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Decorators (Experimental)
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Enable experimentalDecorators in tsconfig.json
+
+function Logger(target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  
+  descriptor.value = function(...args: any[]) {
+    console.log(`Calling ${propertyName} with args:`, args);
+    const result = originalMethod.apply(this, args);
+    console.log(`Result:`, result);
+    return result;
+  };
+}
+
+class Calculator {
+  @Logger
+  add(a: number, b: number): number {
+    return a + b;
+  }
+}
+
+const calc = new Calculator();
+calc.add(5, 3);
+// Logs: Calling add with args: [5, 3]
+// Logs: Result: 8
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

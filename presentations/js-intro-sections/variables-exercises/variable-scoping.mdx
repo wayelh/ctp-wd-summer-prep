@@ -1,0 +1,124 @@
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<CodeDisplay height="500px">
+  <File name="app.js">
+    
+```javascript
+// Habit Tracker: Fix scope issue in habit status check
+var habitStatus = "incomplete";
+
+if (true) {
+  var habitStatus = "complete"; // Problem: overwrites outer variable!
+  console.log("Inside block:", habitStatus);
+}
+
+console.log("Outside block:", habitStatus); // Prints "complete" - not what we want!
+```
+    
+    
+```javascript
+// Step 1: Understand the problem - var is function-scoped
+var habitStatus = "incomplete";
+
+if (true) {
+  var habitStatus = "complete"; // This overwrites the outer variable!
+  console.log("Inside block:", habitStatus);
+}
+
+console.log("Outside block:", habitStatus); // "complete" - var doesn't respect block scope
+```
+    
+    
+```javascript
+// Step 2: Fix using let for block scoping
+let habitStatus = "incomplete";
+let blockStatus = "";
+let globalStatus = "";
+
+if (true) {
+  let habitStatus = "complete"; // This creates a new block-scoped variable
+  console.log("Inside block:", habitStatus);    // "complete"
+  blockStatus = habitStatus;
+}
+
+console.log("Outside block:", habitStatus);      // "incomplete"
+globalStatus = habitStatus;
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Test: We want different values inside and outside the block
+describe('Variable Scoping Problem', () => {
+  it('should demonstrate var scoping issue', () => {
+    const outputs = [];
+    var testStatus = "incomplete";
+    
+    if (true) {
+      var testStatus = "complete";
+      outputs.push(testStatus);
+    }
+    outputs.push(testStatus);
+    
+    // This test shows the problem - both are "complete"!
+    expect(outputs).toEqual(["complete", "complete"]);
+    // We actually want ["complete", "incomplete"]
+  });
+});
+```
+    
+    
+```javascript
+// Test confirms the problem - var doesn't respect block scope
+describe('Var Scoping Issue', () => {
+  it('should show var overwrites outer scope', () => {
+    var testHabitStatus = "incomplete";
+    
+    if (true) {
+      var testHabitStatus = "complete";
+    }
+    
+    expect(testHabitStatus).to.equal("complete");
+  });
+});
+```
+    
+    
+```javascript
+// Test: Now we have proper scoping
+describe('Let Scoping Solution', () => {
+  it('should maintain separate scopes with let', () => {
+    let testHabitStatus = "incomplete";
+    let testBlockStatus = "";
+    let testGlobalStatus = "";
+    
+    if (true) {
+      let testHabitStatus = "complete";
+      testBlockStatus = testHabitStatus;
+    }
+    
+    testGlobalStatus = testHabitStatus;
+    
+    expect(testBlockStatus).to.equal("complete");
+    expect(testGlobalStatus).to.equal("incomplete");
+  });
+  
+  it('should work correctly in habit tracking', () => {
+    // Real-world example: tracking daily vs overall status
+    let overallHabitStatus = "active";
+    const dailyStatuses = [];
+    
+    for (let day = 1; day <= 3; day++) {
+      let overallHabitStatus = day === 2 ? "skipped" : "completed";
+      dailyStatuses.push(overallHabitStatus);
+    }
+    
+    expect(dailyStatuses).toEqual(["completed", "skipped", "completed"]);
+    expect(overallHabitStatus).to.equal("active"); // Unchanged!
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>

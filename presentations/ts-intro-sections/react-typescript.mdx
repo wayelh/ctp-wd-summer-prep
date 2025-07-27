@@ -1,0 +1,202 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## React with TypeScript
+
+- Type-safe components and props
+- Event handling with proper types
+- Hooks with TypeScript
+- Generic components
+
+```typescript
+// Basic functional component
+interface ButtonProps {
+  text: string;
+  onClick: () => void;
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+}
+
+const Button: React.FC<ButtonProps> = ({ 
+  text, 
+  onClick, 
+  variant = 'primary',
+  disabled = false 
+}) => {
+  return (
+    <button 
+      className={`btn btn-${variant}`}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {text}
+    </button>
+  );
+};
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Event Handling
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Properly typed event handlers
+interface FormProps {
+  onSubmit: (data: FormData) => void;
+}
+
+interface FormData {
+  username: string;
+  email: string;
+}
+
+const LoginForm: React.FC<FormProps> = ({ onSubmit }) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    onSubmit({
+      username: formData.get('username') as string,
+      email: formData.get('email') as string
+    });
+  };
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value);
+  };
+  
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="username" onChange={handleChange} />
+      <input name="email" type="email" onChange={handleChange} />
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Build a Type-Safe Todo Component
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Test setup
+let logSpy: sinon.SinonSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Hooks with TypeScript
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// useState with type inference
+const [count, setCount] = useState(0); // number inferred
+const [name, setName] = useState(''); // string inferred
+
+// useState with explicit types
+const [user, setUser] = useState<User | null>(null);
+
+// useReducer with types
+type Action = 
+  | { type: 'increment' }
+  | { type: 'decrement' }
+  | { type: 'reset'; payload: number };
+
+const reducer = (state: number, action: Action): number => {
+  switch (action.type) {
+    case 'increment': return state + 1;
+    case 'decrement': return state - 1;
+    case 'reset': return action.payload;
+  }
+};
+
+const [state, dispatch] = useReducer(reducer, 0);
+
+// Custom hooks
+function useLocalStorage<T>(key: string, initialValue: T) {
+  const [value, setValue] = useState<T>(() => {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : initialValue;
+  });
+  
+  const setStoredValue = (value: T) => {
+    setValue(value);
+    localStorage.setItem(key, JSON.stringify(value));
+  };
+  
+  return [value, setStoredValue] as const;
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Generic Components
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Generic list component
+interface ListProps<T> {
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
+  keyExtractor: (item: T) => string;
+}
+
+function List<T>({ items, renderItem, keyExtractor }: ListProps<T>) {
+  return (
+    <ul>
+      {items.map(item => (
+        <li key={keyExtractor(item)}>
+          {renderItem(item)}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Usage with different types
+const users = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }];
+const numbers = [1, 2, 3, 4, 5];
+
+<List 
+  items={users}
+  renderItem={user => <span>{user.name}</span>}
+  keyExtractor={user => user.id.toString()}
+/>
+
+<List
+  items={numbers}
+  renderItem={num => <span>{num * 2}</span>}
+  keyExtractor={num => num.toString()}
+/>
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

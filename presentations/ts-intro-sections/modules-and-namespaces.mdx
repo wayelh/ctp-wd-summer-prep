@@ -1,0 +1,148 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## TypeScript Modules
+
+- ES6 module syntax with type safety
+- Import/export types and interfaces
+- Module resolution strategies
+- Namespaces (legacy, but still used)
+
+```typescript
+// math.ts
+export interface MathOperation {
+  execute(a: number, b: number): number;
+}
+
+export class Addition implements MathOperation {
+  execute(a: number, b: number): number {
+    return a + b;
+  }
+}
+
+export const PI = 3.14159;
+export type NumberPair = [number, number];
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Importing and Exporting
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Named imports
+import { Addition, PI, NumberPair } from './math';
+
+// Import all as namespace
+import * as MathUtils from './math';
+
+// Import type only (removed at compile time)
+import type { MathOperation } from './math';
+
+// Re-export
+export { Addition as Add } from './math';
+export * from './math';
+
+// Default export/import
+export default class Calculator { }
+import Calculator from './calculator';
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Create a Module System
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Test setup
+let logSpy: sinon.SinonSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Namespaces (Legacy)
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Still used in some codebases and declaration files
+namespace Validation {
+  export interface Validator {
+    isValid(value: string): boolean;
+  }
+  
+  export class StringValidator implements Validator {
+    isValid(value: string): boolean {
+      return value.length > 0;
+    }
+  }
+}
+
+// Using namespace
+const validator = new Validation.StringValidator();
+
+// Can be split across files
+namespace Validation {
+  export class NumberValidator implements Validator {
+    isValid(value: string): boolean {
+      return !isNaN(Number(value));
+    }
+  }
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Module Resolution
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// tsconfig.json moduleResolution options
+{
+  "compilerOptions": {
+    "moduleResolution": "node", // or "classic"
+    "baseUrl": "./src",
+    "paths": {
+      "@utils/*": ["utils/*"],
+      "@components/*": ["components/*"]
+    }
+  }
+}
+
+// Now you can import with aliases
+import { Helper } from '@utils/helper';
+import { Button } from '@components/Button';
+
+// Ambient modules (for non-TS libraries)
+declare module 'some-js-library' {
+  export function doSomething(): void;
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,281 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+
+<SlideLayout.Full>
+## Asynchronous JavaScript
+### Handling Time and External Resources
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Why Asynchronous?</Heading>
+    <UnorderedList>
+      <ListItem>JavaScript is single-threaded</ListItem>
+      <ListItem>Can't block while waiting for slow operations</ListItem>
+      <ListItem>Network requests, file I/O, timers need async</ListItem>
+      <ListItem>Enables responsive user interfaces</ListItem>
+    </UnorderedList>
+    <Box marginTop="50px">
+      <Text fontSize="24px" fontWeight="bold">Real-world analogy:</Text>
+      <Text fontSize="20px">Restaurant kitchen - take orders while cooking</Text>
+      <Text fontSize="20px">Don't wait for one meal before starting next</Text>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Synchronous vs Asynchronous
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Synchronous - blocks execution
+console.log("1. Starting habit sync");
+const data = loadHabitsFromFile(); // Blocks here!
+console.log("2. Got data:", data);
+console.log("3. Done");
+
+// Asynchronous - non-blocking
+console.log("1. Starting habit sync");
+loadHabitsAsync((data) => {
+  console.log("3. Got data:", data);
+});
+console.log("2. Continuing..."); // Runs immediately!
+
+// Output order: 1, 2, 3 (not 1, 3, 2!)
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Evolution of Async Patterns</Heading>
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">1. Callbacks (Traditional)</Text>
+      <UnorderedList>
+        <ListItem>Function passed as argument</ListItem>
+        <ListItem>Called when operation completes</ListItem>
+        <ListItem>Can lead to "callback hell"</ListItem>
+      </UnorderedList>
+      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">2. Promises (ES6)</Text>
+      <UnorderedList>
+        <ListItem>Object representing future value</ListItem>
+        <ListItem>Chainable with .then() and .catch()</ListItem>
+        <ListItem>Better error handling</ListItem>
+      </UnorderedList>
+      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">3. Async/Await (ES2017)</Text>
+      <UnorderedList>
+        <ListItem>Write async code that looks synchronous</ListItem>
+        <ListItem>Built on top of Promises</ListItem>
+        <ListItem>Cleaner, more readable code</ListItem>
+      </UnorderedList>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## JavaScript's Event Loop
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="row">
+    <Image src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmFqM2x1NW84NjcxaXczNHYzbjZwbm5mbTh3ZmIwMGg5MGo4bHJnaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CHtJn4SZurPa5LtV2w/giphy.gif" />
+    - JavaScript is single-threaded but non-blocking
+    - The event loop handles asynchronous operations
+    - Callbacks, promises, and async/await manage async code
+    - Understanding async is crucial for modern JavaScript
+    </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Asynchronous JavaScript
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Understanding async patterns in habit tracking
+// TODO: Convert these examples to use modern async/await
+
+// 1. Callbacks - saving habit completion
+function saveHabitCompletion(habitId, callback) {
+  setTimeout(() => {
+    callback({ success: true, points: 10 });
+  }, 1000);
+}
+
+// 2. Promises - fetching habit data
+function getHabitData(habitId) {
+  return fetch(`/api/habits/${habitId}`)
+    .then(response => response.json());
+}
+
+// 3. TODO: Create async function to save and update
+// Should save completion, then fetch updated data
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Promise Basics
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Creating a Promise
+const myPromise = new Promise((resolve, reject) => {
+  // Async operation here
+  setTimeout(() => {
+    if (Math.random() > 0.5) {
+      resolve("Success!");
+    } else {
+      reject("Failed!");
+    }
+  }, 1000);
+});
+
+// Using a Promise
+myPromise
+  .then(result => console.log(result))
+  .catch(error => console.error(error))
+  .finally(() => console.log("Done either way"));
+
+// Promise states:
+// - Pending: initial state
+// - Fulfilled: operation completed successfully
+// - Rejected: operation failed
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    <Heading fontSize="h2">Common Async Patterns</Heading>
+    <Box width="80%">
+      <Text fontSize="20px" marginBottom="30px">Real-world scenarios in habit tracking:</Text>
+      <UnorderedList>
+        <ListItem>Fetching user habits from API</ListItem>
+        <ListItem>Saving completion to database</ListItem>
+        <ListItem>Syncing data across devices</ListItem>
+        <ListItem>Loading user preferences</ListItem>
+        <ListItem>Uploading progress photos</ListItem>
+      </UnorderedList>
+      <Box marginTop="40px" padding="20px" backgroundColor="#f0f0f0" borderRadius="8px">
+        <Text fontSize="18px" fontWeight="bold">Remember:</Text>
+        <Text fontSize="16px">• Network requests are always async</Text>
+        <Text fontSize="16px">• File operations are async in Node.js</Text>
+        <Text fontSize="16px">• setTimeout/setInterval are async</Text>
+      </Box>
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Promise Chain to Async/Await
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Convert habit sync promise chain to async/await
+// TODO: This function syncs habit data with a server
+// Convert the promise chain to use async/await
+
+function syncHabitData(habitId) {
+  // First, get local habit data
+  return getLocalHabitData(habitId)
+    .then(localData => {
+      // Then, send to server
+      return fetch(`/api/habits/${habitId}/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(localData)
+      });
+    })
+    .then(response => response.json())
+    .then(serverData => {
+      // Update local storage with server response
+      localStorage.setItem(`habit_${habitId}`, JSON.stringify(serverData));
+      console.log('Sync complete:', serverData);
+      return serverData;
+    })
+    .catch(error => {
+      console.error('Sync failed:', error);
+      throw error;
+    });
+}
+
+// Helper function (given)
+function getLocalHabitData(habitId) {
+  return Promise.resolve({
+    id: habitId,
+    completions: ["2024-01-01", "2024-01-02"],
+    lastSync: new Date().toISOString()
+  });
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Async/Await Best Practices
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// DO: Use try/catch for error handling
+async function saveHabit() {
+  try {
+    const result = await api.save(habit);
+    return result;
+  } catch (error) {
+    console.error('Save failed:', error);
+    throw error;
+  }
+}
+
+// DO: Run independent operations in parallel
+const [habits, user, settings] = await Promise.all([
+  fetchHabits(),
+  fetchUser(),
+  fetchSettings()
+]);
+
+// DON'T: Await in loops (slow)
+for (const habit of habits) {
+  await saveHabit(habit); // Sequential - slow!
+}
+
+// DO: Use Promise.all for parallel operations
+await Promise.all(habits.map(habit => saveHabit(habit)));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Key Takeaways: Asynchronous JavaScript
+
+<Box width="80%">
+  <Text fontSize="24px" fontWeight="bold" marginBottom="30px">Remember:</Text>
+  <UnorderedList>
+    <ListItem>JavaScript is single-threaded but non-blocking</ListItem>
+    <ListItem>Callbacks → Promises → Async/Await (evolution)</ListItem>
+    <ListItem>Always handle errors in async code</ListItem>
+    <ListItem>Use Promise.all() for parallel operations</ListItem>
+    <ListItem>Async/await makes code more readable</ListItem>
+  </UnorderedList>
+  
+  <Box marginTop="40px" padding="20px" backgroundColor="#e8f5e9" borderRadius="8px">
+    <Text fontSize="20px" fontWeight="bold">Common Pitfalls:</Text>
+    <Text fontSize="18px">• Forgetting to await async functions</Text>
+    <Text fontSize="18px">• Not handling promise rejections</Text>
+    <Text fontSize="18px">• Creating sequential code when parallel would work</Text>
+  </Box>
+  
+  <Text fontSize="20px" fontStyle="italic" marginTop="40px">Master async patterns for responsive, modern web apps!</Text>
+</Box>
+</SlideLayout.Full>

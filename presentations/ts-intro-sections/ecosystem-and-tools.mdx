@@ -1,0 +1,52 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## TypeScript Ecosystem
+
+- **tsc**: The TypeScript compiler
+- **tsconfig.json**: Configuration file for TypeScript projects
+- **@types**: Community type definitions for JavaScript libraries
+- **ts-node**: Run TypeScript directly without compiling
+- **ESLint**: Linting for TypeScript code
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Gotchas
+
+1. **Type vs Runtime**: Types don't exist at runtime
+2. **Type Assertions**: Use sparingly, they bypass checks
+3. **any**: The escape hatch that defeats the purpose
+4. **Structural Typing**: TypeScript cares about shape, not names
+
+```typescript
+// This works because shapes match!
+interface Point { x: number; y: number; }
+interface Coordinate { x: number; y: number; }
+
+let point: Point = { x: 1, y: 2 };
+let coord: Coordinate = point; // ✅ No error!
+```
+</SlideLayout.Full>
+
+<SlideLayout.VerticalImage
+  title="TypeScript Best Practices"
+  src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnVhdm9wOHRibHNmcDdqcDRxaWg4M2I0M3J2c3cwcGprM3JyM3czNCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26tn33aiTi1jkl6H6/giphy.gif"
+  listItems={[
+    'Start with strict mode enabled',
+    'Let TypeScript infer when possible',
+    'Use union types instead of any',
+    'Define types for external data',
+    'Use const assertions for literals',
+  ]}
+/>

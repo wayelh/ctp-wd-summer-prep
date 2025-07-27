@@ -1,0 +1,113 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## JavaScript's Type Problem
+
+<FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+
+What's wrong with this picture?
+
+```javascript
+function calculateDiscount(price, discount) {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, "20%")); // Oops!
+```
+</FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.VerticalImage
+  title="The Price is NaN, Bob"
+  src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHAxempuYnNlc29zbnQ0NHBmd2lwdjhjdnpqYnZwdGhmZ2NjeXJieCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/fpFPWzrXhLOo6uFXGg/giphy.gif"
+  listItems={[
+    'In JavaScript, we can pass any value to a function',
+    'JavaScript will try to do the non-sensical math',
+    'This results in `NaN` (Not a Number)',
+    'This bug that can be hard to find',
+  ]}
+/>
+
+<SlideLayout.Full>
+## TypeScript can predict the future
+
+- On the other hand, TypeScript can tell us about this mistake beforehand
+- If we say its a number, TypeScript will complain if we try to give a string
+- These bugs happen all the time in JavaScript, as we pass values around
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## With TypeScript...
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+function calculateDiscount(price: number, discount: number): number {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, "20%"));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## A Silver Bullet in a Foot Gun
+
+- TypeScript guarantees the values ***you assign*** will be of the expected type
+- However, values ***you don't assign***, like those that come from API's and users may be incorrect
+- Understanding this loophole is important to knowing where to validate, or check data
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## The Type Layer
+- TypeScript is really two languages in one file
+- There's JavaScript, this describes what does happen at runtime
+- There's TypeScript, this annotates the JavaScript, describes what should happen at runtime
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## JavaScript vs. TypeScript
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// JavaScript
+function calculateDiscount(price, discount) {
+  return price - (price * discount);
+}
+
+console.log(calculateDiscount(100, "20%"));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Fix the Type Errors
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Fix the type errors in this code
+function processOrder(order) {
+  const tax = order.total * 0.08;
+  const shipping = order.express ? 15 : 5;
+  return order.total + tax + shipping;
+}
+
+const myOrder = {
+  items: ["shirt", "pants"],
+  total: "50", // Oops, this is a string!
+  express: "yes" // This should be boolean
+};
+
+console.log(processOrder(myOrder));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

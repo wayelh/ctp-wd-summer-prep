@@ -1,0 +1,108 @@
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<CodeDisplay height="500px">
+  <File name="app.js">
+    
+```javascript
+// Exercise: Create variables for a habit tracker app
+// TODO: Declare variables for:
+// 1. User's name (can change)
+// 2. Current streak count (can change)
+// 3. Maximum habits allowed (constant)
+// 4. A habit object with name and streak properties
+
+// Your code here...
+```
+    
+    
+```javascript
+// Step 1: Start with basic variable declarations
+var userName = "Alice";  // Using var (old way)
+var currentStreak = 0;
+var MAX_HABITS = 10;
+var habit = { name: "Drink Water", streak: 0 };
+```
+    
+    
+```javascript
+// Step 2: Modernize with let and const
+let userName = "Alice";      // let for values that change
+let currentStreak = 0;      // let for mutable numbers
+const MAX_HABITS = 10;      // const for constants
+const habit = {             // const for objects (reference won't change)
+  name: "Drink Water", 
+  streak: 0 
+};
+
+// Demonstrate mutation
+currentStreak = 5;          // ✅ Works with let
+habit.streak = 5;          // ✅ Works - modifying property
+// habit = {};              // ❌ Error - can't reassign const
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Test: Check if variables are declared correctly
+describe('Variable Declarations', () => {
+  it('should have userName as a string', () => {
+    expect(typeof userName).to.equal('string');
+  });
+  
+  it('should have currentStreak as a number', () => {
+    expect(typeof currentStreak).to.equal('number');
+  });
+  
+  it('should have MAX_HABITS as a constant number', () => {
+    expect(typeof MAX_HABITS).to.equal('number');
+    expect(MAX_HABITS).to.be.greaterThan(0);
+  });
+  
+  it('should have habit object with correct properties', () => {
+    expect(habit).to.have.property('name');
+    expect(habit).to.have.property('streak');
+  });
+});
+```
+    
+    
+```javascript
+// Test: Basic variables exist
+describe('Basic Variables', () => {
+  it('should have all variables defined', () => {
+    expect(userName).to.equal("Alice");
+    expect(currentStreak).to.equal(0);
+    expect(MAX_HABITS).to.equal(10);
+    expect(habit.name).to.equal("Drink Water");
+  });
+});
+```
+    
+    
+```javascript
+// Test: Modern variables work correctly
+describe('Modern Variables', () => {
+  it('should allow let variables to be reassigned', () => {
+    expect(currentStreak).to.equal(5);
+    userName = "Bob";
+    expect(userName).to.equal("Bob");
+  });
+  
+  it('should allow const object properties to be modified', () => {
+    expect(habit.streak).to.equal(5);
+    habit.name = "Exercise";
+    expect(habit.name).to.equal("Exercise");
+  });
+  
+  it('should not allow const reassignment', () => {
+    // This would throw an error if uncommented:
+    // MAX_HABITS = 20; // TypeError
+    // habit = {};      // TypeError
+    expect(MAX_HABITS).to.equal(10);
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>

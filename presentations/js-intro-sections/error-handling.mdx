@@ -1,0 +1,199 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## ⚠️ Error Handling: Building Robust Applications
+### Making Your Habit Tracker Resilient
+
+- Understanding errors in JavaScript
+- Try/catch/finally blocks
+- Creating custom error types
+- Error recovery strategies
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Why Error Handling Matters
+
+<FlexBox alignItems="center" justifyContent="space-between">
+  <Box width="50%">
+    **Common Habit Tracker Errors:**
+    - Invalid user input
+    - Network failures when syncing
+    - Storage quota exceeded
+    - Missing or corrupted data
+    - API rate limits
+  </Box>
+  <Box width="45%">
+    ```javascript
+    // Without error handling
+    const data = JSON.parse(userInput); // 💥 Crash!
+    
+    // With error handling
+    try {
+      const data = JSON.parse(userInput);
+    } catch (error) {
+      showMessage("Invalid data format");
+    }
+    ```
+  </Box>
+</FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Try/Catch/Finally Basics
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+function saveHabitData(habitData) {
+  let file = null;
+  
+  try {
+    // Risky operations
+    file = openFile('habits.json');
+    const data = JSON.parse(file.read());
+    data.habits.push(habitData);
+    file.write(JSON.stringify(data));
+    return true;
+    
+  } catch (error) {
+    // Handle errors
+    console.error('Failed to save:', error.message);
+    return false;
+    
+  } finally {
+    // Cleanup - always runs
+    if (file) {
+      file.close();
+    }
+  }
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Types of Errors
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Syntax Error - caught at parse time
+// const habit = { name: "Exercise" // Missing }
+
+// Reference Error - using undefined variables
+console.log(undefinedVariable); // ReferenceError
+
+// Type Error - wrong type operations
+const num = 42;
+num.forEach(x => x); // TypeError: not a function
+
+// Range Error - invalid numeric values
+const arr = new Array(-1); // RangeError
+
+// Custom Errors - your own error types
+throw new Error("Habit name is required");
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Error Handling Deep Dive
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Basic error handling for habit tracker
+try {
+  const habit = createHabit(userInput);
+  saveToDatabase(habit);
+  updateUI(habit);
+} catch (error) {
+  console.error('Failed to create habit:', error.message);
+  showUserError('Could not save your habit. Please try again.');
+} finally {
+  hideLoadingSpinner(); // Always hide spinner
+}
+
+// Throwing custom errors
+function createHabit(data) {
+  if (!data.name) {
+    throw new Error('Habit name is required');
+  }
+  if (data.targetDays < 1 || data.targetDays > 365) {
+    throw new RangeError('Target days must be between 1 and 365');
+  }
+  return new Habit(data);
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Custom Error Classes for Habit Tracker
+<CodeDisplay height="500px">
+  <File name="example.js">
+    
+```javascript
+// Exercise: Create custom error classes for habit tracking
+// TODO: Implement these error classes for our habit tracker
+
+class HabitError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'HabitError';
+  }
+}
+
+// TODO: Create specific error classes
+class HabitValidationError extends HabitError {
+  // Your code here - for invalid habit data
+}
+
+class HabitStorageError extends HabitError {
+  // Your code here - for storage issues
+}
+
+class HabitSyncError extends HabitError {
+  // Your code here - for sync failures
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Error Handling Best Practices
+
+### Do's ✅
+- Use specific error types for different failures
+- Provide helpful error messages for debugging
+- Log errors with context for troubleshooting
+- Implement retry logic for transient failures
+- Show user-friendly messages
+
+### Don'ts ❌
+- Don't swallow errors silently
+- Don't expose sensitive info in error messages
+- Don't retry non-recoverable errors
+- Don't use generic catch-all handlers everywhere
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 🎯 Key Takeaways: Error Handling
+
+1. **Use try/catch/finally** for error-prone operations
+2. **Create custom error classes** for different scenarios
+3. **Make errors recoverable** when appropriate
+4. **Log errors with context** for debugging
+5. **Show user-friendly messages** not technical details
+
+### Coming Up Next: Advanced Functions
+Closures, higher-order functions, and functional programming!
+</SlideLayout.Full>

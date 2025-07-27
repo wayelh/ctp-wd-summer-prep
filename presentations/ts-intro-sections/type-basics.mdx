@@ -1,0 +1,202 @@
+import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## The Power of Intellisense
+
+- TypeScript tells us about values as we type
+- As you're typing `'20%'`, VSCode will give you the error inline
+- TypeScript gives your editor additional super-powers, like:
+  - Finding all references to a value
+  - Seeing what properties an object has
+  - Renaming a property across the entire codebase
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Intellisense in Action
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+type User = {
+  /** The name of the user, duh */
+  name: string;
+  /** How old they be */
+  age: number;
+  /** Are they the creator of the multiverse? */
+  isAdmin: boolean;
+}
+
+const user: User = {
+  name: "Ryan",
+  age: 30,
+  isAdmin: false,
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## TypeScript's Type System
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="row">
+    <Box width="100%" height="100%">
+      - `undefined`
+      - `null`
+      - `boolean`
+      - `number`
+      - `bigint`
+      - `string`
+      - `symbol`
+    </Box>
+    <Box width="100%" height="100%">
+      - `object`
+      - `Function`
+      - `Array`
+      - `Tuple`
+      - `any`
+      - `unknown`
+      - `never`
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>
+<SlideLayout.Full>
+## TypeScript's Type System In Action
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+let undef: undefined
+let nil = null
+let bool = true
+let num = 42
+let big = 9007199254740991n
+let str = "Hello, TypeScript!"
+let sym = Symbol("unique")
+let obj = { key: "value" }
+let func = () => console.log("Hello, Function!")
+let arr = [1, 2, 3]
+let tuple = ["TypeScript", 4] as [string, number]
+let anyValue = "Can be anything" as any
+let unknownValue = "Could be anything, but we don't know yet" as unknown
+let neverValue = (() => { throw new Error("This should never happen") })()
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Type Inference
+
+- TypeScript is smart enough to figure out types on its own
+- You don't always need to explicitly write types
+- TypeScript will infer types from the values you assign
+- This makes TypeScript feel more like JavaScript
+
+```typescript
+// TypeScript knows this is a string
+let message = "Hello, TypeScript!";
+
+// TypeScript knows this returns a number
+function add(a: number, b: number) {
+  return a + b;
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Type Inference Challenge
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// Test setup
+let logSpy: sinon.SinonSpy;
+
+before(() => {
+  logSpy = sinon.spy(console, 'log');
+});
+
+afterEach(() => {
+  logSpy.resetHistory();
+});
+
+after(() => {
+  logSpy.restore();
+});
+
+//***
+// What types does TypeScript infer for these?
+// Try to guess before checking!
+const score = 100;
+const name = "Player One";
+const isWinner = score > 50;
+const items = [1, 2, 3];
+const mixed = [1, "two", true];
+
+function multiply(x: number, y: number) {
+  return x * y;
+}
+
+const result = multiply(5, 10);
+
+//***
+describe('Type Inference Challenge', () => {
+  it('should infer primitive types correctly', () => {
+    expect(typeof score).to.equal('number');
+    expect(typeof name).to.equal('string');
+    expect(typeof isWinner).to.equal('boolean');
+  });
+  
+  it('should infer array types', () => {
+    expect(Array.isArray(items)).to.be.true;
+    expect(items.every(item => typeof item === 'number')).to.be.true;
+    
+    expect(Array.isArray(mixed)).to.be.true;
+    expect(mixed.length).to.equal(3);
+  });
+  
+  it('should infer function return types', () => {
+    expect(typeof result).to.equal('number');
+    expect(result).to.equal(50);
+  });
+  
+  it('should handle const assertions', () => {
+    // TypeScript infers literal types for const
+    const literalScore = 100 as const;
+    expect(literalScore).to.equal(100);
+  });
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## The Special Types: any, unknown, never
+<CodeDisplay height="500px">
+  <File name="example.typescript">
+    
+```typescript
+// any: Turns off type checking (avoid when possible!)
+let anything: any = 42;
+anything = "now I'm a string";
+anything = { surprise: true };
+
+// unknown: Safe any - must check before use
+let mystery: unknown = getValue();
+if (typeof mystery === 'string') {
+  console.log(mystery.toUpperCase()); // OK after check
+}
+
+// never: Represents values that never occur
+function throwError(message: string): never {
+  throw new Error(message);
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
