@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
 
 <SlideLayout.Full>
 ## 🚀 Modern JavaScript Features
@@ -13,24 +13,21 @@ import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Tex
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Why Modern JavaScript?</Heading>
-    <UnorderedList>
-      <ListItem>Cleaner, more expressive syntax</ListItem>
-      <ListItem>Better error handling and safety</ListItem>
-      <ListItem>Improved performance optimizations</ListItem>
-      <ListItem>Enhanced developer productivity</ListItem>
-    </UnorderedList>
-    <Box marginTop="50px">
-      <Text fontSize="24px" fontWeight="bold">The Evolution:</Text>
-      <Text fontSize="20px">ES5 (2009) → ES6/ES2015 → Annual releases</Text>
-      <Text fontSize="20px">Each version adds powerful new features</Text>
-    </Box>
+    ## Why Modern JavaScript?
+    - Cleaner, more expressive syntax
+    - Better error handling and safety
+    - Improved performance optimizations
+    - Enhanced developer productivity
+    
+**The Evolution:**
+- ES5 (2009) → ES6/ES2015 → Annual releases
+- Each version adds powerful new features
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Destructuring: Unpack Values Elegantly
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -63,24 +60,122 @@ const { user: { preferences: { theme } } } = data;
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Spread and Rest Operators</Heading>
-    <Box width="80%">
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Spread (...) - Expand</Text>
-      <Text fontSize="18px" marginBottom="30px">• Arrays: [...array1, ...array2]</Text>
-      <Text fontSize="18px" marginBottom="30px">• Objects: {`{...obj1, ...obj2}`}</Text>
-      <Text fontSize="18px" marginBottom="30px">• Function calls: fn(...args)</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginTop="20px" marginBottom="20px">Rest (...) - Collect</Text>
-      <Text fontSize="18px" marginBottom="30px">• Function parameters: (...args)</Text>
-      <Text fontSize="18px" marginBottom="30px">• Destructuring: [first, ...rest]</Text>
-      <Text fontSize="18px">• Flexible function signatures</Text>
-    </Box>
+    ## Spread and Rest Operators
+**Spread (...) - Expand**
+- Arrays: [...array1, ...array2]
+- Objects: {...obj1, ...obj2}
+- Function calls: fn(...args)
+
+**Rest (...) - Collect**
+- Function parameters: (...args)
+- Destructuring: [first, ...rest]
+- Flexible function signatures
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Destructuring Benefits
+
+**Extract exactly what you need:**
+- Extract only the data you need
+- Rename properties during extraction
+- Provide default values for missing data
+- Works in function parameters for cleaner APIs
+
+```javascript
+// Object destructuring with defaults and renaming
+const { name, streak = 0, isActive: active } = habit;
+
+// Array destructuring
+const [first, second, ...rest] = habits;
+
+// Function parameter destructuring
+function displayHabit({ name, category, streak = 0 }) {
+  return `${name} (${category}): ${streak} days`;
+}
+
+// Nested destructuring
+const { user: { preferences: { theme } } } = appData;
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Spread/Rest Operator Benefits
+
+**Flexible data manipulation:**
+- Immutable updates: `{...obj, newProp: value}`
+- Array combining: `[...arr1, ...arr2]`
+- Function flexibility: `function fn(...args)`
+- Clean object copying without mutation
+
+```javascript
+// Object spread for immutable updates
+const updatedHabit = { ...habit, streak: habit.streak + 1 };
+
+// Array spread for combining
+const allHabits = [...healthHabits, ...learningHabits];
+
+// Rest parameters for flexible functions
+function logHabits(first, ...others) {
+  console.log('Primary habit:', first);
+  console.log('Other habits:', others);
+}
+
+// Spread in function calls
+const points = [10, 20, 15];
+const max = Math.max(...points); // instead of Math.max.apply()
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Modern Array and Object Methods
+
+**Powerful built-in methods:**
+- `flatMap()` - map and flatten in one step
+- `Object.entries()` - convert object to [key, value] pairs
+- `Object.fromEntries()` - convert pairs back to object
+
+```javascript
+// flatMap - map and flatten
+const habitsByCategory = [
+  ['exercise', 'reading'],
+  ['meditation', 'journaling']
+];
+const allHabits = habitsByCategory.flatMap(habits => habits);
+// ['exercise', 'reading', 'meditation', 'journaling']
+
+// Object.entries and Object.fromEntries
+const scores = { exercise: 10, reading: 8, meditation: 12 };
+const doubled = Object.fromEntries(
+  Object.entries(scores).map(([habit, score]) => [habit, score * 2])
+);
+// { exercise: 20, reading: 16, meditation: 24 }
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise Overview: Modern Habit Analytics
+
+You'll build analytics functions using modern JavaScript features:
+
+1. **mergeHabits()** - Combine habit objects using spread syntax
+2. **getTopHabits()** - Extract top performers using modern array methods
+3. **calculateStats()** - Use destructuring and reduce for aggregation
+4. **transformHabitData()** - Reshape data with destructuring and object shorthand
+
+**Modern Features You'll Apply:**
+- Destructuring in function parameters
+- Spread operator for object/array operations  
+- Template literals for string formatting
+- Modern array methods (filter, map, reduce, sort)
+- Optional chaining for safe property access
+
+**Goal**: Write cleaner, more expressive code using ES6+ features
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Modern Habit Analytics
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -108,7 +203,7 @@ const habitData = [
 
 <SlideLayout.Full>
 ## Template Literals: Beyond String Concatenation
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -143,7 +238,7 @@ const query = sql`
 
 <SlideLayout.Full>
 ## Optional Chaining & Nullish Coalescing
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -172,28 +267,24 @@ score ??= 1;   // score = score ?? 1
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Modern Array Methods</Heading>
+    ## Modern Array Methods
     <Box width="80%">
       <Text fontSize="20px" fontWeight="bold" marginBottom="20px">ES6+:</Text>
-      <UnorderedList>
-        <ListItem>find() / findIndex() - get first match</ListItem>
-        <ListItem>includes() - check existence</ListItem>
-        <ListItem>flat() / flatMap() - flatten arrays</ListItem>
-        <ListItem>from() - create from iterables</ListItem>
-      </UnorderedList>
+      - find() / findIndex() - get first match
+      - includes() - check existence
+      - flat() / flatMap() - flatten arrays
+      - from() - create from iterables
       <Text fontSize="20px" fontWeight="bold" marginTop="30px" marginBottom="20px">ES2023:</Text>
-      <UnorderedList>
-        <ListItem>toSorted() - sort without mutation</ListItem>
-        <ListItem>toReversed() - reverse without mutation</ListItem>
-        <ListItem>with() - update element immutably</ListItem>
-      </UnorderedList>
+      - toSorted() - sort without mutation
+      - toReversed() - reverse without mutation
+      - with() - update element immutably
     </Box>
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Exercise: Modern Habit Dashboard
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -226,20 +317,18 @@ const dashboard = new HabitDashboard();
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Modern JavaScript Ecosystem</Heading>
-    <Box width="80%">
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Build Tools:</Text>
-      <Text fontSize="18px" marginBottom="30px">• Vite, Webpack, Parcel, esbuild</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Package Managers:</Text>
-      <Text fontSize="18px" marginBottom="30px">• npm, yarn, pnpm</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Frameworks:</Text>
-      <Text fontSize="18px" marginBottom="30px">• React, Vue, Angular, Svelte</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Testing:</Text>
-      <Text fontSize="18px">• Jest, Vitest, Mocha, Cypress</Text>
-    </Box>
+    ## Modern JavaScript Ecosystem
+**Build Tools:**
+- Vite, Webpack, Parcel, esbuild
+
+**Package Managers:**
+- npm, yarn, pnpm
+
+**Frameworks:**
+- React, Vue, Angular, Svelte
+
+**Testing:**
+- Jest, Vitest, Mocha, Cypress
   </FlexBox>
 </SlideLayout.Full>
 

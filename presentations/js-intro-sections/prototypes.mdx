@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
 
 <SlideLayout.Full>
 ## 🧬 Prototypes and Inheritance
@@ -12,24 +12,41 @@ import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Tex
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">What Are Prototypes?</Heading>
-    <UnorderedList>
-      <ListItem>Every JavaScript object has a hidden [[Prototype]] property</ListItem>
-      <ListItem>Objects inherit properties and methods from their prototype</ListItem>
-      <ListItem>Creates a chain of inheritance (prototype chain)</ListItem>
-      <ListItem>Enables code reuse without copying</ListItem>
-    </UnorderedList>
-    <Box marginTop="50px">
-      <Text fontSize="24px" fontWeight="bold">Real-world analogy:</Text>
-      <Text fontSize="20px">A habit template that specific habits inherit from</Text>
-      <Text fontSize="20px">All habits share common behaviors</Text>
-    </Box>
+    ## What Are Prototypes?
+    - Every JavaScript object has a hidden [[Prototype]] property
+    - Objects inherit properties and methods from their prototype
+    - Creates a chain of inheritance (prototype chain)
+    - Enables code reuse without copying
+    
+    **Real-world analogy:**
+    - A habit template that specific habits inherit from
+    - All habits share common behaviors
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Object.create()
+
+Before diving into prototype chains, understand the `Object.create()` method:
+
+**What it does:**
+- Creates a new object with a specified prototype
+- Unlike `{}` which inherits from Object.prototype
+- Allows explicit control over inheritance hierarchy
+
+**Syntax pattern:**
+```javascript
+const child = Object.create(parent);
+// child.__proto__ === parent
+```
+
+**Key insight:** This is how we manually set up the prototype relationship that classes do automatically.
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## The Prototype Chain
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -58,28 +75,23 @@ exerciseHabit.complete();              // "Morning Run completed!" (inherited me
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">How Prototypes Work</Heading>
-    <Box width="80%">
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Property Lookup Process:</Text>
-      <UnorderedList>
-        <ListItem>1. Check if object has own property</ListItem>
-        <ListItem>2. If not, check object's prototype</ListItem>
-        <ListItem>3. Continue up the chain until found or null</ListItem>
-        <ListItem>4. Return undefined if not found</ListItem>
-      </UnorderedList>
-      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">Benefits:</Text>
-      <UnorderedList>
-        <ListItem>Memory efficient - methods stored once</ListItem>
-        <ListItem>Dynamic - changes to prototype affect all instances</ListItem>
-        <ListItem>Flexible inheritance patterns</ListItem>
-      </UnorderedList>
-    </Box>
+## How Prototypes Work
+    **Property Lookup Process:**
+    1. Check if object has own property
+    2. If not, check object's prototype
+    3. Continue up the chain until found or null
+    4. Return undefined if not found
+    
+    **Benefits:**
+    - Memory efficient - methods stored once
+    - Dynamic - changes to prototype affect all instances
+    - Flexible inheritance patterns
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Exercise: Habit Prototype System
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -111,22 +123,19 @@ console.log(morningRun.getStatus()); // Should work!
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Constructor Functions</Heading>
-    <Box width="80%">
-      <Text fontSize="20px" marginBottom="30px">Before ES6 classes, constructor functions were the standard way to create objects with shared methods:</Text>
-      <UnorderedList>
-        <ListItem>Functions that create and initialize objects</ListItem>
-        <ListItem>Used with 'new' keyword</ListItem>
-        <ListItem>Prototype property holds shared methods</ListItem>
-        <ListItem>Capital letter convention (e.g., Habit)</ListItem>
-      </UnorderedList>
-    </Box>
+## Constructor Functions
+    **Before ES6 classes, constructor functions were the standard way to create objects with shared methods:**
+    
+    - Functions that create and initialize objects
+    - Used with 'new' keyword
+    - Prototype property holds shared methods
+    - Capital letter convention (e.g., Habit)
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Constructor Function Pattern
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -163,7 +172,7 @@ console.log(exercise.complete()); // Methods are shared!
 
 <SlideLayout.Full>
 ## Exercise: Habit Constructor System
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -199,7 +208,7 @@ meditation.complete(20); // Complete with 20 minutes
 
 <SlideLayout.Full>
 ## ES6 Classes: Modern Syntax
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -240,18 +249,16 @@ console.log(meditation instanceof Habit); // true
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Prototypes vs Classes</Heading>
-    <Box width="80%">
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Constructor Functions:</Text>
-      <Text fontSize="18px" marginBottom="30px">• Traditional JavaScript approach</Text>
-      <Text fontSize="18px" marginBottom="30px">• More flexible and explicit</Text>
-      <Text fontSize="18px" marginBottom="30px">• Shows how inheritance really works</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginTop="20px" marginBottom="20px">ES6 Classes:</Text>
-      <Text fontSize="18px" marginBottom="30px">• Cleaner, more familiar syntax</Text>
-      <Text fontSize="18px" marginBottom="30px">• Built on top of prototypes</Text>
-      <Text fontSize="18px">• Better for complex hierarchies</Text>
-    </Box>
+## Prototypes vs Classes
+    **Constructor Functions:**
+    - Traditional JavaScript approach
+    - More flexible and explicit
+    - Shows how inheritance really works
+    
+    **ES6 Classes:**
+    - Cleaner, more familiar syntax
+    - Built on top of prototypes
+    - Better for complex hierarchies
   </FlexBox>
 </SlideLayout.Full>
 

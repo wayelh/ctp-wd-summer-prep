@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.Full>
 ## TypeScript Modules
@@ -27,7 +27,7 @@ export type NumberPair = [number, number];
 
 <SlideLayout.Full>
 ## Importing and Exporting
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -54,8 +54,30 @@ import Calculator from './calculator';
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Overview: Module System Design
+
+Before building a module system, understand these key concepts:
+
+**Module Boundaries:**
+- What functionality belongs together?
+- How to expose public APIs while hiding implementation details
+- Planning dependencies and avoiding circular imports
+
+**Type Organization:**
+- Group related interfaces and types in the same module
+- Use `export type` for type-only exports to optimize compilation
+- Consider re-exporting patterns for cleaner consumer APIs
+
+**Testing Strategy:**
+- Plan how to mock external dependencies
+- Design modules to be testable in isolation
+- Consider dependency injection for better testability
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Create a Module System
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -81,7 +103,7 @@ after(() => {
 
 <SlideLayout.Full>
 ## Namespaces (Legacy)
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -117,7 +139,7 @@ namespace Validation {
 
 <SlideLayout.Full>
 ## Module Resolution
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript

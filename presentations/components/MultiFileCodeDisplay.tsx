@@ -137,7 +137,7 @@ const getLanguageFromExtension = (ext: string): FileContent['language'] => {
 export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.memo(({
   files: propFiles,
   code,
-  height = "400px",
+  height = "50vh",
   theme = 'vs-dark',
   readOnly = false,
   onChange,
@@ -175,12 +175,156 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
     return savedTheme === 'solarized-light' ? 'solarized-light' : 'solarized-dark';
   });
   
+  // Pane state
+  const [isPaneCollapsed, setIsPaneCollapsed] = useState(false);
+  const [isPaneExpanded, setIsPaneExpanded] = useState(false);
+  const [paneHeight, setPaneHeight] = useState(55); // percentage
+  const [isResizing, setIsResizing] = useState(false);
+  
+  // Preview responsive state
+  const [previewWidth, setPreviewWidth] = useState<number | string>('100%');
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile' | 'custom'>('desktop');
+  const [isRotated, setIsRotated] = useState(false);
+  
+  // Device presets
+  const devicePresets = {
+    desktop: { width: '100%', label: 'Desktop', icon: '🖥️' },
+    tablet: { width: '768px', label: 'Tablet', icon: '💻' },
+    mobile: { width: '375px', label: 'Mobile', icon: '📱' },
+    custom: { width: previewWidth, label: 'Custom', icon: '⚙️' }
+  };
+  
+  // Additional common breakpoints for reference
+  const commonBreakpoints = [
+    { name: 'iPhone SE', width: '375px' },
+    { name: 'iPhone 12 Pro', width: '390px' },
+    { name: 'Pixel 5', width: '393px' },
+    { name: 'Samsung Galaxy S20', width: '412px' },
+    { name: 'iPad Mini', width: '768px' },
+    { name: 'iPad Air', width: '820px' },
+    { name: 'Desktop', width: '1280px' },
+    { name: 'Wide', width: '1920px' }
+  ];
+  
   // Update global Monaco styles when theme changes
   useEffect(() => {
     const existingStyle = document.getElementById('monaco-theme-overrides');
     if (existingStyle) {
       existingStyle.remove();
     }
+    
+    // Force context menu backgrounds with MutationObserver
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) {
+            // Check for context menu containers
+            if (node.classList.contains('context-view') || 
+                node.classList.contains('monaco-menu-container') ||
+                node.classList.contains('monaco-menu')) {
+              // Force background color
+              node.style.backgroundColor = currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5';
+              node.style.opacity = '1';
+              node.style.border = '1px solid #ffffff';
+              node.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+              
+              // Apply to all descendants
+              const applyBackground = (element: HTMLElement) => {
+                if (element.classList.contains('monaco-menu') ||
+                    element.classList.contains('monaco-scrollable-element') ||
+                    element.classList.contains('monaco-list') ||
+                    element.classList.contains('monaco-list-rows') ||
+                    element.classList.contains('monaco-action-bar')) {
+                  element.style.backgroundColor = currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5';
+                }
+                
+                // Apply to menu items
+                if (element.classList.contains('monaco-list-row') ||
+                    element.classList.contains('action-item')) {
+                  element.style.backgroundColor = currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5';
+                  element.style.color = currentTheme === 'solarized-dark' ? '#ffffff' : '#000000';
+                }
+                
+                // Apply to labels
+                if (element.classList.contains('action-label') ||
+                    element.classList.contains('monaco-icon-label') ||
+                    element.classList.contains('label-name') ||
+                    element.classList.contains('label-description')) {
+                  element.style.color = currentTheme === 'solarized-dark' ? '#ffffff' : '#000000';
+                }
+                
+                // Recursively apply to children
+                Array.from(element.children).forEach(child => {
+                  if (child instanceof HTMLElement) {
+                    applyBackground(child);
+                  }
+                });
+              };
+              
+              applyBackground(node);
+              
+              // Also observe changes to this node
+              observer.observe(node, { childList: true, subtree: true });
+            }
+          }
+        });
+      });
+    });
+    
+    // Start observing
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // Also check for shadow roots periodically
+    const shadowRootInterval = setInterval(() => {
+      // Find all elements that might have shadow roots
+      document.querySelectorAll('*').forEach(element => {
+        if (element.shadowRoot) {
+          // Apply styles to shadow root
+          const shadowStyle = document.createElement('style');
+          shadowStyle.textContent = `
+            .monaco-menu,
+            .monaco-menu-container,
+            .context-view {
+              background-color: ${currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5'} !important;
+              opacity: 1 !important;
+              border: 1px solid #ffffff !important;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+            }
+            
+            .monaco-list,
+            .monaco-scrollable-element,
+            .monaco-action-bar {
+              background-color: ${currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5'} !important;
+              opacity: 1 !important;
+            }
+            
+            .monaco-list-row,
+            .action-item {
+              background-color: ${currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5'} !important;
+              color: ${currentTheme === 'solarized-dark' ? '#ffffff' : '#000000'} !important;
+            }
+            
+            .monaco-list-row:hover,
+            .action-item:hover {
+              background-color: ${currentTheme === 'solarized-dark' ? '#586e75' : '#93a1a1'} !important;
+              color: ${currentTheme === 'solarized-dark' ? '#ffffff' : '#000000'} !important;
+            }
+            
+            .action-label,
+            .monaco-list-row .monaco-icon-label,
+            .monaco-list-row .label-name,
+            .monaco-list-row .label-description {
+              color: ${currentTheme === 'solarized-dark' ? '#ffffff' : '#000000'} !important;
+            }
+          `;
+          
+          if (!element.shadowRoot.querySelector('#monaco-shadow-style')) {
+            shadowStyle.id = 'monaco-shadow-style';
+            element.shadowRoot.appendChild(shadowStyle);
+          }
+        }
+      });
+    }, 100);
     
     const style = document.createElement('style');
     style.id = 'monaco-theme-overrides';
@@ -263,6 +407,15 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
       }
     `;
     document.head.appendChild(style);
+    
+    // Cleanup
+    return () => {
+      observer.disconnect();
+      clearInterval(shadowRootInterval);
+      if (style.parentNode) {
+        style.parentNode.removeChild(style);
+      }
+    };
   }, [currentTheme]);
   
   // Theme colors helper
@@ -294,7 +447,7 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewIframeRef = useRef<HTMLIFrameElement>(null);
   const editorRef = useRef<any>(null);
-  const modelsRef = useRef<Map<string, any>>(new Map());
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Track slide state
   const { isSlideActive, slideId } = slideContext;
@@ -345,36 +498,12 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
   // Always use scratch pad content for the main editor
   const currentContent = currentFile ? (scratchPadContents[currentFile.fileName] || '') : '';
 
-  // Dispose models when component unmounts
+  // Clean up editor reference when component unmounts
   useEffect(() => {
     return () => {
-      // Clear editor reference first to prevent further operations
       editorRef.current = null;
-      
-      if (monaco) {
-        try {
-          // Test if Monaco is still working before disposing models
-          monaco.languages.getLanguages();
-          
-          modelsRef.current.forEach(model => {
-            try {
-              // Check if the model is still valid before disposing
-              if (model && typeof model.dispose === 'function') {
-                model.dispose();
-              }
-            } catch (e) {
-              console.warn('Error disposing model:', e);
-            }
-          });
-          modelsRef.current.clear();
-        } catch (e) {
-          console.warn('Monaco appears to be already disposed, skipping model cleanup');
-          // Just clear the references
-          modelsRef.current.clear();
-        }
-      }
     };
-  }, [monaco, currentTheme]);
+  }, []);
 
   const handleEditorChange = (value: string | undefined) => {
     if (!currentFile) return;
@@ -443,10 +572,42 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
     setTestResults(prev => [...prev, result]);
   };
 
+  // Handle pane resize
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const newHeight = ((containerRect.bottom - e.clientY) / containerRect.height) * 100;
+      
+      // Limit between 20% and 80%
+      setPaneHeight(Math.max(20, Math.min(80, newHeight)));
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
+
   const runCode = useCallback(async () => {
     setIsRunning(true);
     clearConsole();
-    setActiveTab(hasHtmlFiles ? 'preview' : 'console');
+    // Don't change the active tab - let the user control which pane they want to see
     
     try {
       // Get all file contents
@@ -473,14 +634,32 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
       
       // Compile and create blob URLs for each file
       for (const jsFile of jsFiles) {
+        // Skip test files for module creation
+        if (jsFile.fileName.startsWith('tests.')) continue;
+        
         // Use scratch pad content for all files
         const content = scratchPadContents[jsFile.fileName] || fileContents[jsFile.fileName] || '';
-        let compiled = content;
+        
+        // Transform the code to export all top-level declarations
+        let moduleContent = content;
+        
+        // Add exports for all top-level const/let/var declarations
+        moduleContent = moduleContent.replace(
+          /^(const|let|var)\s+(\w+)\s*=/gm,
+          'export $1 $2 ='
+        );
+        
+        // Add exports for all top-level function declarations
+        moduleContent = moduleContent.replace(
+          /^function\s+(\w+)/gm,
+          'export function $1'
+        );
+        
+        let compiled = moduleContent;
         
         if (jsFile.language === 'typescript' || jsFile.language === 'tsx') {
-          compiled = compileTypeScript(content, jsFile.fileName);
+          compiled = compileTypeScript(moduleContent, jsFile.fileName);
         }
-        
         
         // Create blob URL for this module
         const moduleBlob = new Blob([compiled], { type: 'application/javascript' });
@@ -620,8 +799,8 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
           window.assert = chai.assert;
           window.sinon = sinon;
           
-          // Configure Mocha with JSON reporter
-          mocha.setup({ ui: 'bdd', reporter: 'json' });
+          // Configure Mocha
+          mocha.setup({ ui: 'bdd' });
           
           // Pass files data to iframe context
           window.files = ${JSON.stringify(files)};
@@ -636,61 +815,43 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
             ${JSON.stringify(importMap, null, 2)}
           </script>
         ` : ''}
-        <script>
-          // Execute non-test files in global scope first
+        <script type="module">
+          // Import and execute all non-test modules
           ${jsFiles.filter(f => !f.fileName.startsWith('tests.')).map(jsFile => {
+            const moduleName = jsFile.fileName.replace(/\.(js|ts|jsx|tsx)$/, '');
             return `
-              // Execute ${jsFile.fileName} in global scope
-              console.log('Executing ${jsFile.fileName}...');
-              try {
-                // Use scratch pad content
-                const content = window.scratchPadContents['${jsFile.fileName}'] || window.fileContents['${jsFile.fileName}'] || '';
-                console.log('Content source:', window.scratchPadContents['${jsFile.fileName}'] ? 'scratch pad' : 'original file');
-                console.log('Content length:', content.length);
-                
-                // Execute using Function constructor with sourceURL for better debugging
-                const executeCode = new Function(content + '\\n//# sourceURL=${jsFile.fileName}');
-                executeCode.call(window);
-                
-                // Log what variables were created
-                const createdVars = [];
-                if (typeof userName !== 'undefined') createdVars.push('userName=' + JSON.stringify(userName));
-                if (typeof currentStreak !== 'undefined') createdVars.push('currentStreak=' + currentStreak);
-                if (typeof MAX_HABITS !== 'undefined') createdVars.push('MAX_HABITS=' + MAX_HABITS);
-                if (typeof habit !== 'undefined') createdVars.push('habit=' + JSON.stringify(habit));
-                if (typeof habitStatus !== 'undefined') createdVars.push('habitStatus=' + JSON.stringify(habitStatus));
-                if (typeof blockStatus !== 'undefined') createdVars.push('blockStatus=' + JSON.stringify(blockStatus));
-                if (typeof globalStatus !== 'undefined') createdVars.push('globalStatus=' + JSON.stringify(globalStatus));
-                if (typeof calculateHabitPoints !== 'undefined') createdVars.push('calculateHabitPoints=function');
-                
-                if (createdVars.length > 0) {
-                  console.log('Created variables:', createdVars.join(', '));
-                }
-                
-                console.log('Finished executing ${jsFile.fileName}');
-              } catch (e) {
-                console.error('Error executing ${jsFile.fileName}:', e.message);
-              }
+          console.log('Importing ${jsFile.fileName}...');
+          import * as ${moduleName.replace(/[^a-zA-Z0-9]/g, '_')} from './${moduleName}';
+          
+          // Make all exports available globally for tests
+          Object.entries(${moduleName.replace(/[^a-zA-Z0-9]/g, '_')}).forEach(([key, value]) => {
+            window[key] = value;
+            console.log(\`Exported \${key} to window\`);
+          });
             `;
           }).join('\n')}
+          
+          // After all modules are loaded, run tests
+          window.addEventListener('load', () => {
+            // Signal that modules are loaded
+            window.modulesLoaded = true;
+            console.log('All modules loaded, ready for tests');
+          });
         </script>
         
-        <script type="module">
-          // Import modules that need module features (React components, etc)
-          ${jsFiles.filter(f => !f.fileName.startsWith('tests.')).map(jsFile => {
-            // Only import files that actually use imports/exports
-            if (jsFile.fileName.includes('app') || jsFile.fileName.includes('main') || jsFile.fileName === 'index.js') {
-              const content = fileContents[jsFile.fileName] || '';
-              if (content.includes('import ') || content.includes('export ')) {
-                return `import './${jsFile.fileName}';`;
+        <script>
+          // Wait for modules to load, then execute test files
+          ${jsFiles.some(f => f.fileName.startsWith('tests.')) ? `
+            // Wait for modules to be loaded
+            function waitForModules() {
+              if (window.modulesLoaded) {
+                runTests();
+              } else {
+                setTimeout(waitForModules, 100);
               }
             }
-            return '';
-          }).filter(Boolean).join('\n')}
-          
-          // Execute test files after a delay
-          ${jsFiles.some(f => f.fileName.startsWith('tests.')) ? `
-            setTimeout(async () => {
+            
+            function runTests() {
               try {
                 // Load test files (no versions, just single test suite)
                 ${jsFiles.filter(f => f.fileName.startsWith('tests.')).map(f => {
@@ -704,24 +865,34 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
                         console.log('Executing test file ${f.fileName}');
                         
                         // Debug what variables are available before tests
-                        console.log('Before tests - checking available variables:');
+                        console.log('Before tests - checking available variables on window:');
                         const availableVars = [];
-                        if (typeof userName !== 'undefined') availableVars.push('userName=' + JSON.stringify(userName));
-                        if (typeof currentStreak !== 'undefined') availableVars.push('currentStreak=' + currentStreak);
-                        if (typeof MAX_HABITS !== 'undefined') availableVars.push('MAX_HABITS=' + MAX_HABITS);
-                        if (typeof habit !== 'undefined') availableVars.push('habit=' + JSON.stringify(habit));
-                        if (typeof habitStatus !== 'undefined') availableVars.push('habitStatus=' + JSON.stringify(habitStatus));
-                        if (typeof blockStatus !== 'undefined') availableVars.push('blockStatus=' + JSON.stringify(blockStatus));
-                        if (typeof globalStatus !== 'undefined') availableVars.push('globalStatus=' + JSON.stringify(globalStatus));
-                        if (typeof totalPoints !== 'undefined') availableVars.push('totalPoints=' + JSON.stringify(totalPoints));
-                        if (typeof currentStreakInput !== 'undefined') availableVars.push('currentStreakInput=' + JSON.stringify(currentStreakInput));
-                        if (typeof bonusPoints !== 'undefined') availableVars.push('bonusPoints=' + bonusPoints);
-                        if (typeof calculateHabitPoints !== 'undefined') availableVars.push('calculateHabitPoints=function');
+                        if (window.userName !== undefined) availableVars.push('userName=' + JSON.stringify(window.userName));
+                        if (window.currentStreak !== undefined) availableVars.push('currentStreak=' + window.currentStreak);
+                        if (window.MAX_HABITS !== undefined) availableVars.push('MAX_HABITS=' + window.MAX_HABITS);
+                        if (window.habit !== undefined) availableVars.push('habit=' + JSON.stringify(window.habit));
+                        if (window.habitStatus !== undefined) availableVars.push('habitStatus=' + JSON.stringify(window.habitStatus));
+                        if (window.totalPoints !== undefined) availableVars.push('totalPoints=' + window.totalPoints);
+                        if (window.currentStreakInput !== undefined) availableVars.push('currentStreakInput=' + JSON.stringify(window.currentStreakInput));
+                        if (window.bonusPoints !== undefined) availableVars.push('bonusPoints=' + window.bonusPoints);
+                        if (window.calculateHabitPoints !== undefined) availableVars.push('calculateHabitPoints=function');
                         console.log('Available variables for tests:', availableVars.length > 0 ? availableVars.join(', ') : 'NONE');
                         
-                        // Execute test code with sourceURL for better debugging
-                        const executeTest = new Function(testCode + '\\n//# sourceURL=${f.fileName}');
-                        executeTest.call(window);
+                        // Create a wrapper that imports variables from window
+                        const windowVars = ['userName', 'currentStreak', 'MAX_HABITS', 'habit', 'habitStatus', 
+                                          'totalPoints', 'currentStreakInput', 'bonusPoints', 'calculateHabitPoints'];
+                        const availableWindowVars = windowVars.filter(v => window[v] !== undefined);
+                        
+                        const testWrapper = availableWindowVars.length > 0 
+                          ? \`// Import all window variables for test access
+const { \${availableWindowVars.join(', ')} } = window;
+
+\${testCode}\`
+                          : testCode;
+                        
+                        // Execute test code with eval to access global variables
+                        // Add sourceURL for better debugging
+                        eval(testWrapper + '\\n//# sourceURL=${f.fileName}');
                       } catch (evalError) {
                         console.error('Error evaluating test file ${f.fileName}:', evalError);
                       }
@@ -729,47 +900,40 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
                   `;
                 }).join('\n')}
                 
-                // Capture JSON output from Mocha
-                let jsonOutput = '';
-                const originalLog = console.log;
-                
-                // Capture console output for JSON results
-                console.log = function(...args) {
-                  const output = args.join(' ');
-                  if (output.startsWith('{') && output.includes('"tests"')) {
-                    jsonOutput = output;
-                  }
-                  originalLog.apply(console, args);
-                };
-                
                 const runner = mocha.run();
                 
                 runner.on('end', () => {
                   try {
-                    let mochaResults;
-                    if (jsonOutput) {
-                      mochaResults = JSON.parse(jsonOutput);
-                    } else {
-                      // Fallback: construct results from runner
-                      mochaResults = {
-                        tests: runner.suite.tests || [],
-                        failures: runner.failures || [],
-                        passes: runner.passes || []
-                      };
-                    }
-                    
-                    // Format all results since we only loaded current versions
                     const testResults = [];
                     
-                    if (mochaResults.tests) {
-                      mochaResults.tests.forEach(test => {
-                        testResults.push({
-                          passed: test.state === 'passed' || !test.err,
-                          description: test.title,
-                          error: test.err ? test.err.message || test.err : undefined
-                        });
+                    // Get all tests from the runner
+                    const allTests = [];
+                    
+                    // Recursively collect all tests from suites
+                    function collectTests(suite) {
+                      // Add tests from this suite
+                      suite.tests.forEach(test => {
+                        allTests.push(test);
+                      });
+                      
+                      // Recursively collect from child suites
+                      suite.suites.forEach(childSuite => {
+                        collectTests(childSuite);
                       });
                     }
+                    
+                    // Start from the root suite
+                    collectTests(runner.suite);
+                    
+                    // Process all collected tests
+                    allTests.forEach(test => {
+                      console.log(\`Test: \${test.title}, State: \${test.state}, Passed: \${test.state === 'passed'}\`);
+                      testResults.push({
+                        passed: test.state === 'passed',
+                        description: test.title,
+                        error: test.err ? (test.err.message || test.err.toString()) : undefined
+                      });
+                    });
                     
                     // Send formatted results
                     window.parent.postMessage({
@@ -800,7 +964,10 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
                   }]
                 }, '*');
               }
-            }, 50);
+            }
+            
+            // Start waiting for modules to load
+            waitForModules();
           ` : ''}
         </script>
       `;
@@ -821,10 +988,7 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
           event.data.results.forEach((result: TestResult) => {
             addTestResult(result);
           });
-          // Only switch to tests tab if we're not already viewing diff
-          if (event.data.results.length > 0 && activeTab !== 'diff') {
-            setActiveTab('tests');
-          }
+          // Don't automatically switch tabs - let the user control what they want to see
         }
       };
       
@@ -872,86 +1036,37 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
 
   // Removed auto-run - users must click Run button to execute tests
 
-  // Create or get Monaco model for current file
-  useEffect(() => {
-    if (!monaco || !isSlideActive || !currentFile) {
-      return;
-    }
-
-    // Check if Monaco is disposed
-    try {
-      // Test if Monaco is still working by checking if we can access languages
-      monaco.languages.getLanguages();
-    } catch (error) {
-      console.warn('Monaco appears to be disposed, skipping model creation');
-      return;
-    }
-
-    // Don't proceed if we don't have a valid editor reference
-    if (!editorRef.current) {
-      return;
-    }
-
-    // Add a small delay to ensure the editor is fully initialized
-    const timeoutId = setTimeout(() => {
-      const fileName = currentFile.fileName;
-      let model = modelsRef.current.get(fileName);
-      
-      if (!model) {
-        const uri = monaco.Uri.parse(`inmemory://model/${instanceId}/${fileName}`);
-        
-        try {
-          // Check if a model with this URI already exists
-          const existingModel = monaco.editor.getModel(uri);
-          if (existingModel) {
-            // Only update if content is defined
-            if (currentContent !== null && currentContent !== undefined) {
-              existingModel.setValue(currentContent);
-            }
-            model = existingModel;
-          } else {
-            const language = getLanguageForFile(fileName);
-            // Use empty string if content is null/undefined
-            const safeContent = currentContent ?? '';
-            model = monaco.editor.createModel(safeContent, language, uri);
-          }
-        } catch (error) {
-          console.warn('Error creating or updating Monaco model:', error);
-          return; // Exit early if we can't create a model
-        }
-        
-        modelsRef.current.set(fileName, model);
-      } else {
-        // Update existing model content if it changed
-        if (currentContent !== null && currentContent !== undefined && model.getValue() !== currentContent) {
-          model.setValue(currentContent);
-        }
-      }
-      
-      if (editorRef.current && model && isSlideActive) {
-        try {
-          // Double-check that the editor is still valid and Monaco is not disposed
-          if (editorRef.current.getModel !== undefined && monaco) {
-            monaco.languages.getLanguages(); // Test if Monaco is still working
-            editorRef.current.setModel(model);
-          }
-        } catch (error) {
-          console.warn('Error setting model on editor:', error);
-          // If we can't set the model, clear the editor reference
-          editorRef.current = null;
-        }
-      }
-    }, 100); // 100ms delay
-
-    // Cleanup timeout on unmount or dependency change
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [monaco, isSlideActive, currentFile, currentContent]);
+  // Remove the complex model management - let the Editor component handle it
 
   // Configure TypeScript compiler options and themes
   useEffect(() => {
     if (monaco) {
+      // Intercept Monaco's context menu styling
+      const originalCreateContextView = (window as any).monaco?.contextview?.createContextView;
+      if (originalCreateContextView) {
+        (window as any).monaco.contextview.createContextView = function(...args: any[]) {
+          const result = originalCreateContextView.apply(this, args);
+          
+          // Force background on context menus after creation
+          setTimeout(() => {
+            document.querySelectorAll('.context-view, .monaco-menu-container, .monaco-menu').forEach((el: Element) => {
+              if (el instanceof HTMLElement) {
+                el.style.backgroundColor = currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5';
+                el.style.opacity = '1';
+                
+                // Apply to all children
+                el.querySelectorAll('*').forEach((child: Element) => {
+                  if (child instanceof HTMLElement) {
+                    child.style.backgroundColor = 'inherit';
+                  }
+                });
+              }
+            });
+          }, 0);
+          
+          return result;
+        };
+      }
       // Load themes from monaco-themes package
       Promise.all([
         import('monaco-themes/themes/Solarized-dark.json'),
@@ -1040,7 +1155,17 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
   }
 
   return (
-    <div className="multi-file-code-display" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: themeColors.background }}>
+    <div 
+      ref={containerRef}
+      className="multi-file-code-display" 
+      style={{ 
+        width: '100%', 
+        height: height, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        backgroundColor: themeColors.background,
+        position: 'relative'
+      }}>
       <div className="editor-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, backgroundColor: themeColors.background }}>
         {/* File tabs */}
         <div className="file-tabs" style={{ 
@@ -1152,10 +1277,17 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
         {/* Editor and output area */}
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
           {/* Code editor */}
-          <div style={{ flex: '0 0 45%', borderBottom: `1px solid ${themeColors.border}`, position: 'relative', minHeight: 0, backgroundColor: themeColors.background }}>
+          <div style={{ 
+            flex: isPaneExpanded ? '0 0 0%' : isPaneCollapsed ? '1 1 100%' : `0 0 ${100 - paneHeight}%`,
+            borderBottom: !isPaneCollapsed ? `1px solid ${themeColors.border}` : 'none',
+            position: 'relative',
+            minHeight: 0,
+            backgroundColor: themeColors.background,
+            transition: isResizing ? 'none' : 'flex 0.3s ease'
+          }}>
             {isSlideActive ? (
               <Editor
-                key={`editor-${currentTheme}`}
+                key={`editor-${currentTheme}-${currentFile?.fileName || 'default'}-${currentFileIndex}`}
                 height="100%"
                 language={currentFile ? getLanguageForFile(currentFile.fileName) : 'javascript'}
                 value={currentContent}
@@ -1362,13 +1494,39 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
             )}
           </div>
           
+          {/* Resize handle */}
+          {!isPaneCollapsed && !isPaneExpanded && (
+            <div
+              onMouseDown={handleMouseDown}
+              style={{
+                height: '4px',
+                backgroundColor: themeColors.border,
+                cursor: 'ns-resize',
+                position: 'relative',
+                transition: 'background-color 0.2s',
+                '&:hover': {
+                  backgroundColor: themeColors.info
+                }
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = themeColors.info}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = themeColors.border}
+            />
+          )}
+          
           {/* Output panel */}
-          <div style={{ flex: '1 1 55%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div style={{ 
+            flex: isPaneExpanded ? '1 1 100%' : isPaneCollapsed ? '0 0 0%' : `1 1 ${paneHeight}%`,
+            display: isPaneCollapsed ? 'none' : 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            transition: isResizing ? 'none' : 'flex 0.3s ease'
+          }}>
             {/* Output tabs */}
             <div style={{ 
               display: 'flex', 
               backgroundColor: themeColors.backgroundSecondary, 
-              borderBottom: '1px solid #333' 
+              borderBottom: '1px solid #333',
+              position: 'relative'
             }}>
               {hasHtmlFiles && (
                 <button
@@ -1426,6 +1584,57 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
                   Solutions
                 </button>
               )}
+              
+              {/* Collapse/Expand controls */}
+              <div style={{ 
+                marginLeft: 'auto', 
+                display: 'flex', 
+                gap: '4px',
+                paddingRight: '8px'
+              }}>
+                <button
+                  onClick={() => {
+                    setIsPaneCollapsed(!isPaneCollapsed);
+                    if (isPaneExpanded) setIsPaneExpanded(false);
+                  }}
+                  style={{
+                    padding: '4px 8px',
+                    backgroundColor: 'transparent',
+                    color: themeColors.foreground,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    opacity: 0.7,
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                  onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+                  title={isPaneCollapsed ? 'Show output panel' : 'Hide output panel'}
+                >
+                  {isPaneCollapsed ? '▲' : '▼'}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsPaneExpanded(!isPaneExpanded);
+                    if (isPaneCollapsed) setIsPaneCollapsed(false);
+                  }}
+                  style={{
+                    padding: '4px 8px',
+                    backgroundColor: 'transparent',
+                    color: themeColors.foreground,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    opacity: 0.7,
+                    transition: 'opacity 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+                  onMouseOut={(e) => e.currentTarget.style.opacity = '0.7'}
+                  title={isPaneExpanded ? 'Restore panel size' : 'Maximize output panel'}
+                >
+                  {isPaneExpanded ? '⊟' : '⊞'}
+                </button>
+              </div>
             </div>
             
             {/* Output content */}
@@ -1439,21 +1648,244 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
               fontFamily: 'monospace',
               fontSize: '12px'
             }}>
-              {activeTab === 'preview' && hasHtmlFiles && (
-                <iframe
-                  ref={previewIframeRef}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    border: 'none',
-                    backgroundColor: 'white'
-                  }}
-                  sandbox="allow-scripts allow-same-origin"
-                  title="HTML Preview"
-                />
+              {/* Preview pane - always mounted but hidden when not active */}
+              {hasHtmlFiles && (
+                <div style={{ 
+                  display: activeTab === 'preview' ? 'flex' : 'none',
+                  flexDirection: 'column',
+                  height: '100%'
+                }}>
+                  {/* Responsive controls */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px',
+                    backgroundColor: themeColors.backgroundSecondary,
+                    borderBottom: `1px solid ${themeColors.border}`
+                  }}>
+                    {/* Device preset buttons */}
+                    {Object.entries(devicePresets).slice(0, 3).map(([key, preset]) => (
+                      <button
+                        key={key}
+                        onClick={() => {
+                          setPreviewDevice(key as typeof previewDevice);
+                          setPreviewWidth(preset.width);
+                        }}
+                        style={{
+                          padding: '4px 12px',
+                          backgroundColor: previewDevice === key ? themeColors.info : 'transparent',
+                          color: previewDevice === key ? 'white' : themeColors.foreground,
+                          border: `1px solid ${previewDevice === key ? themeColors.info : themeColors.border}`,
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span>{preset.icon}</span>
+                        <span>{preset.label}</span>
+                      </button>
+                    ))}
+                    
+                    {/* Custom width input */}
+                    <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', color: themeColors.muted }}>Width:</span>
+                      <input
+                        type="text"
+                        value={previewDevice === 'custom' ? previewWidth : devicePresets[previewDevice].width}
+                        onChange={(e) => {
+                          setPreviewDevice('custom');
+                          setPreviewWidth(e.target.value);
+                        }}
+                        style={{
+                          width: '80px',
+                          padding: '4px 8px',
+                          backgroundColor: themeColors.background,
+                          color: themeColors.foreground,
+                          border: `1px solid ${themeColors.border}`,
+                          borderRadius: '4px',
+                          fontSize: '12px'
+                        }}
+                        placeholder="e.g., 480px"
+                      />
+                      
+                      {/* Rotate orientation button */}
+                      <button
+                        onClick={() => {
+                          setIsRotated(!isRotated);
+                        }}
+                        style={{
+                          padding: '4px 8px',
+                          backgroundColor: 'transparent',
+                          color: themeColors.foreground,
+                          border: `1px solid ${themeColors.border}`,
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '16px',
+                          transition: 'transform 0.2s'
+                        }}
+                        title="Rotate device"
+                      >
+                        🔄
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Preview iframe container */}
+                  <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'flex-start',
+                    padding: '40px',
+                    backgroundColor: '#e0e0e0',
+                    overflow: 'auto'
+                  }}>
+                    <div style={{
+                      width: previewDevice === 'desktop' ? '768px' : 
+                            previewDevice === 'tablet' ? (isRotated ? '716.8px' : '537.6px') :
+                            previewDevice === 'mobile' ? (isRotated ? '649.6px' : '300px') : '100%',
+                      height: previewDevice === 'desktop' ? '432px' : 
+                             previewDevice === 'tablet' ? (isRotated ? '537.6px' : '716.8px') :
+                             previewDevice === 'mobile' ? (isRotated ? '300px' : '649.6px') : 'auto',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'flex-start',
+                      position: 'relative'
+                    }}>
+                      <div style={{
+                        width: previewDevice === 'custom' ? previewWidth : 
+                              previewDevice === 'desktop' ? '1280px' : 
+                              previewDevice === 'mobile' ? (isRotated ? '812px' : '375px') :
+                              previewDevice === 'tablet' ? (isRotated ? '1024px' : '768px') : 
+                              devicePresets[previewDevice].width,
+                        height: previewDevice === 'mobile' ? (isRotated ? '375px' : '812px') : 
+                               previewDevice === 'tablet' ? (isRotated ? '768px' : '1024px') : 
+                               previewDevice === 'desktop' ? '720px' : '100%',
+                        maxHeight: 'none',
+                        backgroundColor: currentTheme === 'solarized-dark' ? '#1a1a1a' : '#2d2d2d',
+                        boxShadow: '0 0 40px rgba(0, 0, 0, 0.3)',
+                        position: 'relative',
+                        borderRadius: previewDevice === 'mobile' ? '36px' : 
+                                     previewDevice === 'tablet' ? '18px' : 
+                                     previewDevice === 'desktop' ? '8px' : '0',
+                        padding: previewDevice === 'mobile' ? '12px' : 
+                                previewDevice === 'tablet' ? '24px' : 
+                                previewDevice === 'desktop' ? '3px' : '0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        marginBottom: previewDevice === 'desktop' ? '60px' : '0',
+                        transform: previewDevice === 'desktop' ? 'scale(0.6)' : 
+                                  previewDevice === 'tablet' ? 'scale(0.7)' :
+                                  previewDevice === 'mobile' ? 'scale(0.8)' : 'none',
+                        transformOrigin: 'top center'
+                      }}>
+                      {/* Device frame decorations */}
+                      {previewDevice === 'mobile' && (
+                        <>
+                          {/* Notch */}
+                          <div style={{
+                            position: 'absolute',
+                            top: '12px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '120px',
+                            height: '24px',
+                            backgroundColor: currentTheme === 'solarized-dark' ? '#1a1a1a' : '#2d2d2d',
+                            borderRadius: '0 0 20px 20px',
+                            zIndex: 2
+                          }} />
+                          {/* Home indicator */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '8px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '100px',
+                            height: '4px',
+                            backgroundColor: currentTheme === 'solarized-dark' ? '#4a4a4a' : '#666',
+                            borderRadius: '2px',
+                            zIndex: 2
+                          }} />
+                        </>
+                      )}
+                      
+                      {previewDevice === 'tablet' && (
+                        <>
+                          {/* Camera */}
+                          <div style={{
+                            position: 'absolute',
+                            top: '8px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '8px',
+                            height: '8px',
+                            backgroundColor: currentTheme === 'solarized-dark' ? '#4a4a4a' : '#666',
+                            borderRadius: '50%',
+                            zIndex: 2
+                          }} />
+                        </>
+                      )}
+                      
+                      {previewDevice === 'desktop' && (
+                        <>
+                          {/* Stand/Base */}
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-40px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '200px',
+                            height: '40px',
+                            backgroundColor: currentTheme === 'solarized-dark' ? '#4a4a4a' : '#666',
+                            clipPath: 'polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)'
+                          }} />
+                          <div style={{
+                            position: 'absolute',
+                            bottom: '-50px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '300px',
+                            height: '10px',
+                            backgroundColor: currentTheme === 'solarized-dark' ? '#4a4a4a' : '#666',
+                            borderRadius: '5px'
+                          }} />
+                        </>
+                      )}
+                      
+                      {/* Screen container */}
+                      <div style={{
+                        flex: 1,
+                        borderRadius: previewDevice === 'mobile' ? '24px' : 
+                                     previewDevice === 'tablet' ? '8px' : '4px',
+                        overflow: 'hidden',
+                        backgroundColor: 'white',
+                        position: 'relative'
+                      }}>
+                        <iframe
+                          ref={previewIframeRef}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            border: 'none',
+                            backgroundColor: 'white'
+                          }}
+                          sandbox="allow-scripts allow-same-origin"
+                          title="HTML Preview"
+                        />
+                      </div>
+                    </div>
+                    </div>
+                  </div>
+                </div>
               )}
               
-              {activeTab === 'console' && (
+              {/* Console pane - always mounted but hidden when not active */}
+              <div style={{ display: activeTab === 'console' ? 'block' : 'none', height: '100%' }}>
                 <div className="console-output" style={{ 
                   flex: 1, 
                   overflowY: 'auto',
@@ -1481,9 +1913,10 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
                     ))
                   )}
                 </div>
-              )}
+              </div>
               
-              {activeTab === 'tests' && (
+              {/* Tests pane - always mounted but hidden when not active */}
+              <div style={{ display: activeTab === 'tests' ? 'block' : 'none', height: '100%' }}>
                 <div className="test-results" style={{ 
                   flex: 1, 
                   overflowY: 'auto',
@@ -1526,10 +1959,15 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
                     ))
                   )}
                 </div>
-              )}
+              </div>
               
-              {activeTab === 'diff' && currentFile && currentFile.versions && currentFile.versions.length > 1 && (
-                <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              {/* Diff pane - conditionally rendered since it depends on current file */}
+              {currentFile && currentFile.versions && currentFile.versions.length > 1 && (
+                <div style={{ 
+                  height: '100%', 
+                  display: activeTab === 'diff' ? 'flex' : 'none', 
+                  flexDirection: 'column' 
+                }}>
                   {/* Solution version selector */}
                   <div style={{ 
                     padding: '10px', 
@@ -1581,6 +2019,39 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
             </div>
           </div>
         </div>
+        
+        {/* Collapsed panel indicator */}
+        {isPaneCollapsed && (
+          <div
+            onClick={() => setIsPaneCollapsed(false)}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '24px',
+              backgroundColor: themeColors.backgroundSecondary,
+              borderTop: `1px solid ${themeColors.border}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '12px',
+              color: themeColors.muted,
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = themeColors.border;
+              e.currentTarget.style.color = themeColors.foreground;
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = themeColors.backgroundSecondary;
+              e.currentTarget.style.color = themeColors.muted;
+            }}
+          >
+            ▲ Output Panel (click to show)
+          </div>
+        )}
       </div>
       
       {/* Hidden iframe */}

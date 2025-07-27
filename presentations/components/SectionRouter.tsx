@@ -86,18 +86,18 @@ const SectionRouter: React.FC<SectionRouterProps> = ({ sectionId }) => {
 
   if (error) {
     return (
-      <SlideLayout.Center>
+      <SlideLayout.Full>
         <Heading>Error</Heading>
         <Text>{error}</Text>
-      </SlideLayout.Center>
+      </SlideLayout.Full>
     );
   }
 
   if (!sectionModule) {
     return (
-      <SlideLayout.Center>
+      <SlideLayout.Full>
         <Heading>Loading...</Heading>
-      </SlideLayout.Center>
+      </SlideLayout.Full>
     );
   }
 

@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.Full>
 ## JavaScript's Type Problem
@@ -38,7 +38,7 @@ console.log(calculateDiscount(100, "20%")); // Oops!
 
 <SlideLayout.Full>
 ## With TypeScript...
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -70,7 +70,7 @@ console.log(calculateDiscount(100, "20%"));
 
 <SlideLayout.Full>
 ## JavaScript vs. TypeScript
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -87,8 +87,35 @@ console.log(calculateDiscount(100, "20%"));
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Overview: Type Error Diagnosis
+
+Before fixing type errors, analyze the root causes:
+
+**Data Type Mismatches:**
+- String vs number confusion in calculations
+- Boolean vs string in conditional logic
+- Understanding JavaScript's type coercion vs TypeScript's strict checking
+
+**Interface Design:**
+- What properties should be required vs optional?
+- How to model data that comes from external sources
+- Planning for type safety at API boundaries
+
+**Conversion Strategy:**
+```typescript
+// Common pattern: validate and convert
+function processOrder(order: { total: string; express: string }) {
+  const total = parseFloat(order.total);
+  const express = order.express === 'true' || order.express === 'yes';
+  // Now we have proper types
+}
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Fix the Type Errors
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -106,6 +133,63 @@ const myOrder = {
 };
 
 console.log(processOrder(myOrder));
+```
+    
+    
+```typescript
+// Solution 1: Add type annotations
+interface Order {
+  items: string[];
+  total: number;
+  express: boolean;
+}
+
+function processOrder(order: Order): number {
+  const tax = order.total * 0.08;
+  const shipping = order.express ? 15 : 5;
+  return order.total + tax + shipping;
+}
+
+const myOrder: Order = {
+  items: ["shirt", "pants"],
+  total: 50,      // Now a number
+  express: true   // Now a boolean
+};
+
+console.log(processOrder(myOrder)); // 59 (50 + 4 + 5)
+```
+    
+    
+```typescript
+// Solution 2: Handle data conversion
+interface RawOrder {
+  items: string[];
+  total: string;   // Accept string from forms/API
+  express: string; // Accept string from forms/API
+}
+
+function processOrder(rawOrder: RawOrder): number {
+  // Convert and validate data
+  const total = parseFloat(rawOrder.total);
+  if (isNaN(total)) {
+    throw new Error("Invalid total amount");
+  }
+  
+  const express = rawOrder.express === "yes" || 
+                  rawOrder.express === "true";
+  
+  const tax = total * 0.08;
+  const shipping = express ? 15 : 5;
+  return total + tax + shipping;
+}
+
+const myOrder = {
+  items: ["shirt", "pants"],
+  total: "50",
+  express: "yes"
+};
+
+console.log(processOrder(myOrder)); // 59
 ```
     
   </File>

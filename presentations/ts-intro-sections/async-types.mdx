@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.Full>
 ## Async/Await Types
@@ -21,8 +21,43 @@ console.log(user.invalid); // ❌ Error!
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Async Types and Error Handling
+
+Working with async code requires careful type management:
+
+**Promise Types:**
+```typescript
+// Promise<T> - T is what the promise resolves to
+function fetchData(): Promise<User> { /* ... */ }
+
+// Async function automatically returns Promise<T>
+async function getUser(): Promise<User> {
+  return await fetchData(); // Still Promise<User>
+}
+```
+
+**Error Handling Patterns:**
+```typescript
+// Option 1: Try/catch with typed errors
+async function safeApiCall(): Promise<User | null> {
+  try {
+    return await api.getUser();
+  } catch (error) {
+    console.error('API error:', error);
+    return null;
+  }
+}
+
+// Option 2: Result type pattern
+type ApiResult<T> = { success: true; data: T } | { success: false; error: string };
+```
+
+**For the exercise**: Build a type-safe API client that handles both success and error cases.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Type-Safe API Client
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -97,7 +132,7 @@ describe('Todo API - Initial Implementation', () => {
 
 <SlideLayout.Full>
 ## Async Type Patterns
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript

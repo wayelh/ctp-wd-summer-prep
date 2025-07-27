@@ -1,5 +1,56 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Understanding Variables
+
+Variables are containers that store data values:
+
+**What are variables?**
+- Named storage locations in memory
+- Hold values that can be used throughout your program
+- Can be updated (or not) depending on how they're declared
+
+**Three ways to declare variables:**
+- `var` - Old way, function-scoped (avoid in modern code)
+- `let` - Block-scoped, can be reassigned
+- `const` - Block-scoped, cannot be reassigned (preferred)
+
+```javascript
+var oldWay = "I can be redeclared and have function scope";
+let modern = "I can be reassigned but have block scope";
+const preferred = "I cannot be reassigned and have block scope";
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Variable Declaration Best Practices
+
+**Use `const` by default:**
+```javascript
+const MAX_HABITS = 10;        // Won't change
+const habitName = "Exercise"; // Won't be reassigned
+const habit = { name: "Read" }; // Reference won't change
+```
+
+**Use `let` when reassignment is needed:**
+```javascript
+let currentStreak = 0;  // Will increment
+let status = "active";  // May change to "inactive"
+```
+
+**Never use `var` in modern JavaScript:**
+- Function-scoped instead of block-scoped
+- Can be redeclared (source of bugs)
+- Hoisted in confusing ways
+
+**Key insight**: Even `const` objects can have their properties modified!
+```javascript
+const habit = { streak: 5 };
+habit.streak = 6;  // ✅ This works!
+habit = {};        // ❌ Error - can't reassign const
+```
+</SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Variables in JavaScript
@@ -142,33 +193,28 @@ describe('Variable Scoping', () => {
 
 <SlideLayout.Full>
 ## JavaScript Data Types
-  <FlexBox alignItems="center" justifyContent="center" flexDirection="row">
-    <Box width="100%" height="100%">
-      **Primitives:**
-      - `undefined`
-      - `null`
-      - `boolean`
-      - `number`
-      - `bigint`
-      - `string`
-      - `symbol`
-    </Box>
-    <Box width="100%" height="100%">
-      **Objects:**
-      - `Object`
-      - `Array`
-      - `Function`
-      - `Date`
-      - `RegExp`
-      - `Map/Set`
-      - `Promise`
-    </Box>
-  </FlexBox>
+**Primitives:**
+- `undefined`
+- `null`
+- `boolean`
+- `number`
+- `bigint`
+- `string`
+- `symbol`
+
+**Objects:**
+- `Object`
+- `Array`
+- `Function`
+- `Date`
+- `RegExp`
+- `Map/Set`
+- `Promise`
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Data Types in Action
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -206,12 +252,37 @@ let saveHabit = Promise.resolve(true); // promise (async operations)
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Type Coercion
+
+**JavaScript tries to be helpful by converting types automatically:**
+
+```javascript
+// Addition operator (+) prefers string concatenation
+"5" + 3         // "53" - String concatenation
+5 + "3"         // "53" - Number converted to string
+
+// Other operators convert to numbers
+"5" - 3         // 2 - String converted to number
+"5" * "3"       // 15 - Both converted to numbers
+"10" / "2"      // 5 - Both converted to numbers
+
+// Boolean conversions
+true + true     // 2 - true becomes 1
+false + 5       // 5 - false becomes 0
+
+// Complex type conversions
+[] + {}         // "[object Object]" - Both convert to strings
+{} + []         // 0 - Empty array converts to 0
+```
+
+**Key insight**: The `+` operator is special - it concatenates with strings but adds with numbers!
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## JavaScript's Flexibility Problem
-
-<FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-
 What happens here?
-
+<CodeDisplay >
+  <File name="example.js">
 ```javascript
 // Habit Tracker: Type coercion gotchas
 console.log("5" + 3);        // "53" - Oops! String concat instead of addition
@@ -219,13 +290,14 @@ console.log("5" - 3);        // 2 - Subtraction converts to number
 console.log(true + true);    // 2 - Booleans convert to 1
 console.log([] + {});        // "[object Object]" - Both convert to strings
 ```
-</FlexBox>
+</File>
+</CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Exercise: Type Conversion
 
-<CodeDisplay height="600px">
+<CodeDisplay>
   <File name="app.js">
     
 ```javascript
@@ -339,6 +411,35 @@ describe('Calculator Function', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Common Pitfalls with Variables & Types
+
+**Watch out for these gotchas:**
+
+1. **Accidental Globals**
+```javascript
+function createHabit() {
+  habitName = "Exercise"; // Oops! Missing let/const creates global
+  return habitName;
+}
+```
+
+2. **Type Coercion Surprises**
+```javascript
+[] == false   // true (empty array coerces to false)
+[] == ![]     // true (WAT?! Both sides coerce to false)
+"" == 0       // true (empty string coerces to 0)
+```
+
+3. **Reference vs Value**
+```javascript
+const habit = { streak: 5 };
+const habit2 = habit;  // Both point to same object!
+habit2.streak = 10;
+console.log(habit.streak); // 10 - original changed too!
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## 🎯 Key Takeaways: Variables & Types
 
 1. **Use `const` by default**, `let` when you need to reassign
@@ -346,4 +447,7 @@ describe('Calculator Function', () => {
 3. **Understand type coercion** to avoid bugs
 4. **Explicit conversion** is safer than implicit
 5. **Block scope** with `let`/`const` prevents many errors
+
+### Bridge to Functions
+Now that you understand variables and types, let's see how to organize code into reusable blocks with **functions** - the building blocks of JavaScript applications!
 </SlideLayout.Full>

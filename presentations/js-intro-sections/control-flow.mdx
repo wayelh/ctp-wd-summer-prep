@@ -1,9 +1,76 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 import { CodeDisplay, File, Version } from '../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
+## Understanding Decision Making in Code
+
+Programs need to make decisions based on data:
+
+**Conditional Statements (if/else)**
+- Execute different code based on conditions
+- Use comparison operators: `===`, `!==`, `>`, `<`, `>=`, `<=`
+- Combine conditions with `&&` (and), `||` (or), `!` (not)
+
+**Switch Statements**
+- Choose between multiple options
+- Cleaner than multiple if/else for many conditions
+- Don't forget `break` statements!
+
+**The Goal**: Build logic that responds to different situations
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Conditional Logic Patterns
+
+**if/else chains** - for multiple conditions:
+```javascript
+if (score >= 90) {
+  grade = "A";
+} else if (score >= 80) {
+  grade = "B";
+} else if (score >= 70) {
+  grade = "C";
+} else {
+  grade = "F";
+}
+```
+
+**Ternary operator** - for simple conditions:
+```javascript
+const status = isLoggedIn ? "Welcome!" : "Please log in";
+```
+
+**Switch statements** - for many discrete options:
+```javascript
+switch (day) {
+  case "Monday": return "Start of work week";
+  case "Friday": return "TGIF!";
+  default: return "Regular day";
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise Overview: Habit Streak Messages
+
+You'll build conditional logic for a habit tracker that:
+
+1. **Analyzes streak length** and shows encouraging messages
+2. **Categorizes habits** with appropriate icons/styling  
+3. **Checks activity status** to show current state
+
+**Key Concepts to Apply:**
+- if/else chains for streak milestones
+- Switch statement for category handling
+- Ternary operator for active/inactive status
+- String interpolation for dynamic messages
+
+**Think About**: What conditions matter most for motivating users?
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Control Flow
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -19,17 +86,169 @@ import { CodeDisplay, File, Version } from '../components/CodeDisplayWithSlideTr
 
 const currentStreak = 7;
 const habitCategory = "health";
+const isActive = true;
 
 // Your code here...
 ```
     
+    
+```javascript
+// Solution: Using if/else statements
+const currentStreak = 7;
+const habitCategory = "health";
+const isActive = true;
+
+// 1. Streak messages
+let streakMessage;
+if (currentStreak >= 30) {
+  streakMessage = "Habit Master!";
+} else if (currentStreak >= 7) {
+  streakMessage = "On fire!";
+} else if (currentStreak >= 3) {
+  streakMessage = "Getting consistent!";
+} else {
+  streakMessage = "Keep going!";
+}
+
+// 2. Activity status
+const status = isActive ? "Active" : "Inactive";
+
+// 3. Category handling
+let categoryIcon;
+switch (habitCategory) {
+  case "health":
+    categoryIcon = "💪";
+    break;
+  case "productivity":
+    categoryIcon = "⚡";
+    break;
+  case "learning":
+    categoryIcon = "📚";
+    break;
+  default:
+    categoryIcon = "📋";
+}
+
+console.log(`${categoryIcon} Status: ${status}`);
+console.log(`Streak: ${currentStreak} days - ${streakMessage}`);
+```
+    
   </File>
+  <Tests>
+    
+```javascript
+// Tests for Control Flow
+describe('Habit Streak Messages', () => {
+  it('should display correct streak message for 30+ days', () => {
+    const streak = 30;
+    let message;
+    if (streak >= 30) {
+      message = "Habit Master!";
+    } else if (streak >= 7) {
+      message = "On fire!";
+    } else if (streak >= 3) {
+      message = "Getting consistent!";
+    } else {
+      message = "Keep going!";
+    }
+    expect(message).to.equal("Habit Master!");
+  });
+  
+  it('should display correct streak message for 7+ days', () => {
+    expect(streakMessage).to.equal("On fire!");
+  });
+  
+  it('should show active status', () => {
+    expect(status).to.equal("Active");
+  });
+  
+  it('should categorize health habits correctly', () => {
+    expect(categoryIcon).to.equal("💪");
+  });
+});
+```
+    
+  </Tests>
 </CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Iteration and Data Processing
+
+When you have collections of data, you need to process each item:
+
+**Different Loop Types:**
+- **for loop** - when you need index/counter control
+- **for...of loop** - when you want to iterate over values  
+- **while loop** - when you don't know how many iterations needed
+- **Array methods** - functional programming approach
+
+**Common Data Processing Tasks:**
+- Count items that meet criteria
+- Calculate totals/averages
+- Find maximum/minimum values
+- Transform data into new formats
+- Filter collections based on conditions
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Loop Patterns for Data Analysis
+
+**Counting and Accumulating:**
+```javascript
+let total = 0;
+for (const item of items) {
+  if (item.condition) {
+    total += item.value;
+  }
+}
+```
+
+**Finding Extremes:**
+```javascript
+let maxValue = 0;
+let bestItem = null;
+for (const item of items) {
+  if (item.value > maxValue) {
+    maxValue = item.value;
+    bestItem = item;
+  }
+}
+```
+
+**Building New Collections:**
+```javascript
+const results = [];
+for (const item of items) {
+  if (item.isValid) {
+    results.push(item.name);
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise Overview: Weekly Habit Analysis
+
+You'll process a week's worth of habit data to:
+
+1. **Count completions** across the week
+2. **Calculate total points** earned  
+3. **Find the best day** with highest points
+4. **List completed days** for reporting
+
+**Loop Techniques You'll Use:**
+- Traditional for loop with index
+- for...of loop for cleaner iteration
+- while loop for conditional processing
+- Array methods for functional style
+
+**Goal**: Extract meaningful insights from raw habit data
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Loops and Iteration
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -53,6 +272,173 @@ const weeklyHabits = [
 // Your code here...
 ```
     
+    
+```javascript
+// Solution: Using different loop types
+const weeklyHabits = [
+  { day: "Mon", completed: true, points: 10 },
+  { day: "Tue", completed: true, points: 15 },
+  { day: "Wed", completed: false, points: 0 },
+  { day: "Thu", completed: true, points: 10 },
+  { day: "Fri", completed: true, points: 20 },
+  { day: "Sat", completed: true, points: 15 },
+  { day: "Sun", completed: false, points: 0 }
+];
+
+// 1. Count completed days (for loop)
+let completedCount = 0;
+for (let i = 0; i < weeklyHabits.length; i++) {
+  if (weeklyHabits[i].completed) {
+    completedCount++;
+  }
+}
+
+// 2. Calculate total points (for...of loop)
+let totalPoints = 0;
+for (const day of weeklyHabits) {
+  if (day.completed) {
+    totalPoints += day.points;
+  }
+}
+
+// 3. Find best day (while loop)
+let bestDay = null;
+let highestPoints = 0;
+let index = 0;
+while (index < weeklyHabits.length) {
+  const day = weeklyHabits[index];
+  if (day.completed && day.points > highestPoints) {
+    highestPoints = day.points;
+    bestDay = day.day;
+  }
+  index++;
+}
+
+// 4. List completed days (array methods)
+const completedDays = weeklyHabits
+  .filter(day => day.completed)
+  .map(day => day.day);
+
+console.log(`Completed ${completedCount} days`);
+console.log(`Total points: ${totalPoints}`);
+console.log(`Best day: ${bestDay} (${highestPoints} points)`);
+console.log(`Completed days: ${completedDays.join(', ')}`);
+```
+    
   </File>
+  <Tests>
+    
+```javascript
+// Tests for Loops and Iteration
+describe('Weekly Habit Processing', () => {
+  it('should count completed days correctly', () => {
+    expect(completedCount).to.equal(5);
+  });
+  
+  it('should calculate total points correctly', () => {
+    expect(totalPoints).to.equal(70);
+  });
+  
+  it('should find the best day', () => {
+    expect(bestDay).to.equal("Fri");
+    expect(highestPoints).to.equal(20);
+  });
+  
+  it('should list all completed days', () => {
+    expect(completedDays).to.deep.equal(["Mon", "Tue", "Thu", "Fri", "Sat"]);
+  });
+});
+```
+    
+  </Tests>
 </CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Control Flow Pitfalls
+
+**Watch out for these gotchas:**
+
+1. **Forgetting `break` in switch statements**
+```javascript
+switch (habitCategory) {
+  case "health":
+    icon = "💪";
+    // ❌ Missing break - falls through!
+  case "learning":
+    icon = "📚"; // This always runs!
+}
+```
+
+2. **Off-by-one errors in loops**
+```javascript
+// ❌ Wrong - misses last element
+for (let i = 0; i < array.length - 1; i++) { }
+
+// ✅ Correct
+for (let i = 0; i < array.length; i++) { }
+```
+
+3. **Truthy/Falsy confusion**
+```javascript
+if (habit.streak) { // ❌ Fails when streak is 0
+  // 0 is falsy!
+}
+
+// Better:
+if (habit.streak !== undefined) { }
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Loop Performance Tips
+
+**Make your loops faster:**
+
+1. **Cache array length**
+```javascript
+// Slower - calculates length each iteration
+for (let i = 0; i < habits.length; i++) { }
+
+// Faster - cache length once
+const len = habits.length;
+for (let i = 0; i < len; i++) { }
+```
+
+2. **Use appropriate iteration method**
+```javascript
+// For simple iteration
+for (const habit of habits) { }
+
+// When you need index
+for (let i = 0; i < habits.length; i++) { }
+
+// For transformation
+const names = habits.map(h => h.name);
+
+// For filtering
+const active = habits.filter(h => h.isActive);
+```
+
+3. **Break early when possible**
+```javascript
+for (const habit of habits) {
+  if (habit.name === searchName) {
+    return habit; // Exit early
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 🎯 Key Takeaways: Control Flow
+
+1. **if/else** for simple decisions, **switch** for multiple options
+2. **Ternary operator** for concise conditional assignments
+3. **for loops** for index control, **for...of** for values
+4. **while loops** for unknown iteration counts
+5. **Array methods** provide functional alternatives to loops
+
+### Bridge to Objects & Arrays
+You can make decisions and repeat tasks. Now let's learn about the **data structures** that make JavaScript powerful!
 </SlideLayout.Full>

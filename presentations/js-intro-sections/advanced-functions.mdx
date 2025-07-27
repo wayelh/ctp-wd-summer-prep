@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
 
 <SlideLayout.Full>
 ## 🚀 Advanced Functions
@@ -12,24 +12,47 @@ import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Tex
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">What Are Closures?</Heading>
-    <UnorderedList>
-      <ListItem>Functions that "remember" their outer scope</ListItem>
-      <ListItem>Access variables from parent function after it returns</ListItem>
-      <ListItem>Enable data privacy and stateful functions</ListItem>
-      <ListItem>Foundation of many JavaScript patterns</ListItem>
-    </UnorderedList>
-    <Box marginTop="50px">
-      <Text fontSize="24px" fontWeight="bold">Real-world analogy:</Text>
-      <Text fontSize="20px">A habit tracker that remembers your personal goals</Text>
-      <Text fontSize="20px">Even after the setup is complete</Text>
-    </Box>
+    ## What Are Closures?
+    - Functions that "remember" their outer scope
+    - Access variables from parent function after it returns
+    - Enable data privacy and stateful functions
+    - Foundation of many JavaScript patterns
+    
+    **Real-world analogy:**
+    - A habit tracker that remembers your personal goals
+    - Even after the setup is complete
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Closures: The Concept
+
+**A closure is created when:**
+1. A function is defined inside another function
+2. The inner function uses variables from the outer function
+3. The inner function is available outside the outer function
+
+**Key insight**: The inner function "closes over" variables from its parent scope
+
+```javascript
+function outer() {
+  const message = "Hello";  // Variable in outer scope
+  
+  function inner() {
+    console.log(message);   // Inner function uses outer variable
+  }
+  
+  return inner;             // Return the inner function
+}
+
+const myClosure = outer();  // outer() has finished executing
+myClosure();                // But inner() still remembers 'message'!
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## How Closures Work
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -57,27 +80,135 @@ console.log(tracker(5));  // "Alice has 15 points"
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Closure Benefits</Heading>
-    <Box width="80%">
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">1. Data Privacy</Text>
-      <Text fontSize="18px" marginBottom="30px">Variables can't be accessed directly from outside</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">2. Stateful Functions</Text>
-      <Text fontSize="18px" marginBottom="30px">Functions can maintain state between calls</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">3. Factory Pattern</Text>
-      <Text fontSize="18px" marginBottom="30px">Create multiple instances with their own private data</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">4. Event Handlers</Text>
-      <Text fontSize="18px">Callbacks can access data from creation time</Text>
-    </Box>
-  </FlexBox>
+## Closure Benefits: Data Privacy
+
+**1. Data Privacy**
+Variables can't be accessed directly from outside
+
+```javascript
+function createSecret(value) {
+  let secret = value; // Private!
+  
+  return {
+    reveal: () => secret,
+    update: (newValue) => secret = newValue
+  };
+}
+
+const mySecret = createSecret("hidden");
+// No way to access 'secret' directly
+console.log(mySecret.reveal()); // "hidden"
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Closure Benefits: Stateful Functions
+
+**2. Stateful Functions**
+Functions can maintain state between calls
+
+```javascript
+function createCounter() {
+  let count = 0;
+  
+  return function() {
+    return ++count;
+  };
+}
+
+const counter1 = createCounter();
+const counter2 = createCounter();
+
+console.log(counter1()); // 1
+console.log(counter1()); // 2
+console.log(counter2()); // 1 (independent!)
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Closure Benefits: Factory Pattern
+
+**3. Factory Pattern**
+Create multiple instances with their own private data
+
+```javascript
+function createHabitTracker(name) {
+  let completions = 0;
+  let streak = 0;
+  
+  return {
+    complete() {
+      completions++;
+      streak++;
+      return `${name}: ${streak} day streak!`;
+    },
+    reset() {
+      streak = 0;
+    },
+    getStats() {
+      return { completions, streak };
+    }
+  };
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Closure Benefits: Event Handlers
+
+**4. Event Handlers**
+Callbacks can access data from creation time
+
+```javascript
+function setupHabitButton(habitName, pointValue) {
+  const button = document.createElement('button');
+  button.textContent = `Complete ${habitName}`;
+  
+  // Closure captures habitName and pointValue
+  button.addEventListener('click', function() {
+    updatePoints(pointValue);
+    showMessage(`${habitName} completed!`);
+  });
+  
+  return button;
+}
+
+// Each button remembers its own habit data
+const exerciseBtn = setupHabitButton('Exercise', 10);
+const readingBtn = setupHabitButton('Reading', 5);
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Understanding Closure Patterns for State Management
+
+Closures enable powerful patterns for managing private state:
+
+**Factory Function Pattern:**
+```javascript
+function createCounter(start = 0) {
+  let count = start; // Private variable
+  
+  return {
+    increment: () => ++count,
+    decrement: () => --count,
+    getValue: () => count
+  };
+}
+```
+
+**Benefits of Closure-Based Objects:**
+- Data privacy (no external access to internal variables)
+- Multiple instances with independent state
+- Clean, controlled interfaces
+- No need for classes or `this` keyword complications
+
+**For the exercise**: Create a goal tracker factory that manages progress privately while providing public methods for interaction.
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Exercise: Habit Goal Tracker with Closures
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -105,25 +236,17 @@ console.log(exerciseTracker.getStatus()); // "Exercise: 5/30 days (17%)"
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Higher-Order Functions</Heading>
-    <UnorderedList>
-      <ListItem>Functions that operate on other functions</ListItem>
-      <ListItem>Take functions as arguments</ListItem>
-      <ListItem>Return functions as results</ListItem>
-      <ListItem>Enable powerful abstractions and code reuse</ListItem>
-    </UnorderedList>
-    <Box marginTop="50px">
-      <Text fontSize="24px" fontWeight="bold">Common Examples:</Text>
-      <Text fontSize="20px">• Array methods: map, filter, reduce</Text>
-      <Text fontSize="20px">• Event handlers: addEventListener</Text>
-      <Text fontSize="20px">• Decorators and middleware</Text>
-    </Box>
+    ## Higher-Order Functions
+    - Functions that operate on other functions
+    - Take functions as arguments
+    - Return functions as results
+    - Enable powerful abstractions and code reuse
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Higher-Order Function Patterns
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -155,8 +278,37 @@ function withLogging(fn) {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Function Enhancement Patterns
+
+Higher-order functions can enhance existing functions with new capabilities:
+
+**Decorator Pattern:**
+```javascript
+function withLogging(fn) {
+  return function(...args) {
+    console.log(`Calling ${fn.name} with:`, args);
+    const result = fn(...args);
+    console.log(`Result:`, result);
+    return result;
+  };
+}
+
+// Usage
+const loggedCalculator = withLogging(calculatePoints);
+```
+
+**Function Composition for Business Logic:**
+- Start with simple base functions
+- Layer on additional behaviors (bonuses, limits, multipliers)
+- Combine functions to create complex calculations
+- Each enhancement is testable in isolation
+
+**For the exercise**: Build a points system using function composition where each enhancement is a separate, reusable function.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Habit Points Calculator
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -187,7 +339,7 @@ console.log(enhancedCalculator(5, 7)); // Should include streak bonus
 
 <SlideLayout.Full>
 ## Function Composition
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -218,31 +370,200 @@ const result = processHabit({ name: "Exercise", completions: 5 });
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Functional Programming Principles
+## Higher-Order Function Examples
 
-<Box width="80%">
-  <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Pure Functions</Text>
-  <Text fontSize="18px" marginBottom="30px">• Same input → same output</Text>
-  <Text fontSize="18px" marginBottom="30px">• No side effects</Text>
-  
-  <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Immutability</Text>
-  <Text fontSize="18px" marginBottom="30px">• Don't modify, create new</Text>
-  <Text fontSize="18px" marginBottom="30px">• Safer and more predictable</Text>
-  
-  <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Function Composition</Text>
-  <Text fontSize="18px">• Build complex operations from simple ones</Text>
-</Box>
+**Common Examples:**
+- Array methods: map, filter, reduce
+- Event handlers: addEventListener
+- Decorators and middleware
+
+```javascript
+// Array method example
+const habits = ['Exercise', 'Reading', 'Meditation'];
+const upperCaseHabits = habits.map(habit => habit.toUpperCase());
+
+// Event handler example
+button.addEventListener('click', handleClick);
+
+// Decorator example
+const loggedFunction = withLogging(myFunction);
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Functional Programming: Pure Functions
+
+**Pure Functions**
+- Same input → same output
+- No side effects
+
+```javascript
+// Pure function
+function calculatePoints(completions, multiplier) {
+  return completions * multiplier;
+}
+
+// Impure function (has side effects)
+function updatePointsImpure(completions) {
+  totalPoints += completions * 10; // Modifies external state
+  console.log('Points updated!'); // Side effect
+  return totalPoints;
+}
+
+// Better: Pure version
+function calculateNewPoints(currentPoints, completions) {
+  return currentPoints + (completions * 10);
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Functional Programming: Immutability
+
+**Immutability**
+- Don't modify, create new
+- Safer and more predictable
+
+```javascript
+// Mutable approach (avoid)
+function addHabit(habits, newHabit) {
+  habits.push(newHabit); // Modifies original array
+  return habits;
+}
+
+// Immutable approach (prefer)
+function addHabitImmutable(habits, newHabit) {
+  return [...habits, newHabit]; // Creates new array
+}
+
+// Object immutability
+function updateHabitStreak(habit, newStreak) {
+  return { ...habit, streak: newStreak }; // New object
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Functional Programming: Composition
+
+**Function Composition**
+Build complex operations from simple ones
+
+```javascript
+// Simple functions
+const addPoints = (habit, points) => ({ ...habit, points });
+const addTimestamp = habit => ({ ...habit, timestamp: Date.now() });
+const addId = habit => ({ ...habit, id: generateId() });
+
+// Compose them
+function createCompleteHabit(habitData) {
+  return addId(
+    addTimestamp(
+      addPoints(habitData, 10)
+    )
+  );
+}
+
+// Or use pipe for better readability
+const createCompleteHabit = pipe(
+  habit => addPoints(habit, 10),
+  addTimestamp,
+  addId
+);
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Closure Pitfalls
+
+**Watch out for these gotchas:**
+
+1. **Loop Variable Capture**
+```javascript
+// ❌ Problem: All buttons alert "3"
+for (var i = 0; i < 3; i++) {
+  button[i].onclick = function() {
+    alert(i); // Always 3!
+  };
+}
+
+// ✅ Solution 1: Use let (block scope)
+for (let i = 0; i < 3; i++) {
+  button[i].onclick = function() {
+    alert(i); // Works correctly
+  };
+}
+
+// ✅ Solution 2: IIFE to create new scope
+for (var i = 0; i < 3; i++) {
+  (function(index) {
+    button[index].onclick = function() {
+      alert(index);
+    };
+  })(i);
+}
+```
+
+2. **Memory Leaks**
+```javascript
+// Closures can prevent garbage collection
+function createLeak() {
+  const hugeData = new Array(1000000).fill('💾');
+  return function() {
+    console.log(hugeData.length); // Keeps hugeData in memory
+  };
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Debugging Closures & HOFs
+
+**Pro debugging tips:**
+
+1. **Use console.dir() to inspect closures**
+```javascript
+function outer(x) {
+  return function inner(y) {
+    return x + y;
+  };
+}
+
+const addFive = outer(5);
+console.dir(addFive); // Shows [[Scopes]] with closure
+```
+
+2. **Trace function composition**
+```javascript
+const compose = (...fns) => x => {
+  return fns.reduceRight((acc, fn) => {
+    console.log(`Applying ${fn.name} to`, acc);
+    return fn(acc);
+  }, x);
+};
+```
+
+3. **Name your functions for better stack traces**
+```javascript
+// Instead of:
+array.map(x => x * 2).filter(x => x > 10);
+
+// Use:
+array
+  .map(function double(x) { return x * 2; })
+  .filter(function greaterThan10(x) { return x > 10; });
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## 🎯 Key Takeaways: Advanced Functions
 
 1. **Closures** enable data privacy and stateful functions
-2. **Higher-order functions** create reusable abstractions
+2. **Higher-order functions** create reusable abstractions  
 3. **Function composition** builds complex behavior from simple parts
 4. **Pure functions** make code predictable and testable
 5. **Functional patterns** lead to more maintainable code
 
-### Coming Up Next: Prototypes
-Understanding JavaScript's inheritance model!
+### Bridge to Prototypes
+Closures and functional patterns are powerful, but JavaScript also has an object-oriented side. Let's explore **prototypes** - JavaScript's unique inheritance model!
 </SlideLayout.Full>

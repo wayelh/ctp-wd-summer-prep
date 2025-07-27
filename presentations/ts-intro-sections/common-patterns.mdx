@@ -1,38 +1,123 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## Understanding Readonly Properties
+
+The `readonly` modifier prevents property modification after creation:
+
+**Why use readonly?**
+- Prevents accidental changes to important configuration
+- Makes intent clear - this shouldn't be modified
+- Enables better optimization by TypeScript compiler
+
+**When to use:**
+- Configuration objects that shouldn't change
+- Immutable data structures
+- Properties set once during construction
+
+</SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Common TypeScript Patterns: Readonly Properties
 
-```
+```typescript
 interface Config {
   readonly apiUrl: string;
   readonly timeout: number;
 }
+
+const config: Config = {
+  apiUrl: "https://api.example.com",
+  timeout: 5000
+};
+
+// ❌ Error: Cannot assign to 'apiUrl' because it is readonly
+config.apiUrl = "https://new-api.example.com";
 ```
 </SlideLayout.Full>
 <SlideLayout.Full>
+## Understanding Index Signatures
+
+Index signatures allow dynamic property access with type safety:
+
+**What they solve:**
+- Objects with unknown property names but known value types
+- Dictionary/map-like structures
+- Dynamic property access patterns
+
+**Syntax explanation:**
+- `[key: string]: string` - any string key maps to string value
+- `[key: number]: boolean` - any number key maps to boolean value
+
+**Common use case:** Configuration objects, API responses with dynamic keys
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Common TypeScript Patterns: Index Signatures
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
 interface StringDictionary {
   [key: string]: string;
 }
+
+// Usage examples
+const translations: StringDictionary = {
+  "hello": "hola",
+  "goodbye": "adiós",
+  "thank_you": "gracias"
+};
+
+// Dynamic access is type-safe
+const greeting: string = translations["hello"]; // ✅ 
+const unknown: string = translations["unknown"]; // ✅ (might be undefined)
 ```
     
   </File>
 </CodeDisplay>
 </SlideLayout.Full>
 <SlideLayout.Full>
+## Understanding Discriminated Unions
+
+Before using this pattern, understand the concept:
+
+**The Problem:**
+- Need to represent data that can be one of several different shapes
+- Each shape has different properties
+- Want TypeScript to help us handle each case correctly
+
+**The Solution:**
+- Create a union type with a common "discriminator" property
+- Each variant has the same discriminator key but different value
+- TypeScript can "narrow" the type based on the discriminator
+
+**Real-world use:** API responses, state management, form validation results
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Common TypeScript Patterns: Discriminated Unions
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
 type Shape = 
   | { kind: "circle"; radius: number }
   | { kind: "square"; size: number };
+
+// TypeScript knows which properties are available
+function getArea(shape: Shape): number {
+  switch (shape.kind) {
+    case "circle":
+      // TypeScript knows: shape has radius property
+      return Math.PI * shape.radius ** 2;
+    case "square":
+      // TypeScript knows: shape has size property
+      return shape.size ** 2;
+  }
+}
 ```
     
   </File>
@@ -41,7 +126,7 @@ type Shape =
 
 <SlideLayout.Full>
 ## Real World Example
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -72,7 +157,7 @@ function filterTodos(todos: TodoItem[], filter: TodoFilter): TodoItem[] {
 
 <SlideLayout.Full>
 ## Exercise: Build a State Machine
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript

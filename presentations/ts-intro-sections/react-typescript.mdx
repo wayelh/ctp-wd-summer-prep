@@ -1,4 +1,25 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
+
+<SlideLayout.Full>
+## Understanding React + TypeScript Patterns
+
+Before building components, understand these key concepts:
+
+**Props Interface:**
+- Define the "contract" for what props your component expects
+- Use `?` for optional props with default values
+- Union types for restricted string values (`'primary' | 'secondary'`)
+
+**React.FC Type:**
+- Stands for "Functional Component"
+- Provides type checking for component structure
+- Includes built-in `children` prop automatically
+
+**Function Props:**
+- `() => void` - function that takes no arguments, returns nothing
+- Common pattern for event handlers like `onClick`
+
+</SlideLayout.Full>
 
 <SlideLayout.Full>
 ## React with TypeScript
@@ -38,7 +59,7 @@ const Button: React.FC<ButtonProps> = ({
 
 <SlideLayout.Full>
 ## Event Handling
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -82,7 +103,7 @@ const LoginForm: React.FC<FormProps> = ({ onSubmit }) => {
 
 <SlideLayout.Full>
 ## Exercise: Build a Type-Safe Todo Component
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -108,7 +129,7 @@ after(() => {
 
 <SlideLayout.Full>
 ## Hooks with TypeScript
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -157,7 +178,7 @@ function useLocalStorage<T>(key: string, initialValue: T) {
 
 <SlideLayout.Full>
 ## Generic Components
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript

@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.Full>
 ## TypeScript Ecosystem
@@ -19,6 +19,24 @@ import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'specta
   }
 }
 ```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Understanding Structural Typing
+
+TypeScript uses "structural typing" - different from other languages:
+
+**Structural vs Nominal:**
+- **Structural:** If it looks like a duck and quacks like a duck, it's a duck
+- **Nominal:** Only things explicitly declared as ducks are ducks
+
+**What this means:**
+- TypeScript only cares about the shape (properties/methods)
+- Interface names don't matter if the structure matches
+- This is powerful but can be surprising coming from other languages
+
+**Real-world impact:** You can use objects with "compatible" shapes interchangeably
+
 </SlideLayout.Full>
 
 <SlideLayout.Full>

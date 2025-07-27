@@ -1,11 +1,33 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.Full>
-## Union Types
+## Understanding Union Types
 
-- Sometimes a value can be one of several types
-- Union types use the `|` operator to say "this OR that"
-- Common in real-world scenarios
+**Union types represent "either/or" scenarios:**
+- A value that can be one of several types
+- Use the `|` operator (pipe) to combine types
+- TypeScript ensures you handle all possibilities
+
+**Common Use Cases:**
+```typescript
+// API response states
+type Status = "loading" | "success" | "error";
+
+// Mixed data types
+type ID = string | number;
+
+// Nullable values
+type MaybeUser = User | null;
+```
+
+**Why unions are powerful:**
+- Model real-world data accurately
+- Force exhaustive handling
+- Prevent invalid states
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Union Types in Practice
 
 ```typescript
 type Status = "loading" | "success" | "error";
@@ -16,12 +38,48 @@ function setStatus(status: Status) {
 
 setStatus("loading"); // ✅
 setStatus("pending"); // ❌ Error!
+
+// TypeScript knows all possible values
+function getStatusIcon(status: Status): string {
+  switch (status) {
+    case "loading": return "⏳";
+    case "success": return "✅";
+    case "error": return "❌";
+    // No default needed - all cases covered!
+  }
+}
 ```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Union Types for Error Handling
+
+Result types are a powerful pattern for handling success/failure scenarios:
+
+**The Problem with Exceptions:**
+- Functions can throw at any time
+- Callers might forget to handle errors
+- Hard to track which functions can fail
+
+**The Solution with Result Types:**
+```typescript
+type Result<T> = 
+  | { success: true; data: T }
+  | { success: false; error: string };
+```
+
+**Benefits:**
+- Explicit error handling in the type system
+- Callers must handle both success and failure
+- Clear indication of what can go wrong
+- Composable and chainable operations
+
+**For the exercise**: Build a Result type that forces explicit error handling.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Build a Result Type
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -54,7 +112,7 @@ if (result.success) {
 
 <SlideLayout.Full>
 ## Literal Types
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -85,7 +143,7 @@ function reducer(action: ActionType) {
 
 <SlideLayout.Full>
 ## Template Literal Types
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript

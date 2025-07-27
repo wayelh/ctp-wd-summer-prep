@@ -6,9 +6,9 @@ export interface SectionConfig {
 }
 
 export const jsSections: SectionConfig[] = [
-  { id: 'introduction', name: 'Introduction', url: '/section?id=js-introduction', sectionKey: 'js-introduction' },
   { id: 'html-basics', name: 'HTML Basics', url: '/section?id=js-html-basics', sectionKey: 'js-html-basics' },
   { id: 'css-fundamentals', name: 'CSS Fundamentals', url: '/section?id=js-css-fundamentals', sectionKey: 'js-css-fundamentals' },
+  { id: 'introduction', name: 'Introduction', url: '/section?id=js-introduction', sectionKey: 'js-introduction' },
   { id: 'variables-and-types', name: 'Variables & Types', url: '/section?id=js-variables-and-types', sectionKey: 'js-variables-and-types' },
   { id: 'functions', name: 'Functions', url: '/section?id=js-functions', sectionKey: 'js-functions' },
   { id: 'control-flow', name: 'Control Flow', url: '/section?id=js-control-flow', sectionKey: 'js-control-flow' },

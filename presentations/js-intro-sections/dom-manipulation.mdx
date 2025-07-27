@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
 import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
@@ -8,25 +8,22 @@ import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTrac
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">What is the DOM?</Heading>
-    <UnorderedList>
-      <ListItem>Document Object Model - tree representation of HTML</ListItem>
-      <ListItem>JavaScript's interface to web page content</ListItem>
-      <ListItem>Allows dynamic updates without page reload</ListItem>
-      <ListItem>Foundation of modern interactive websites</ListItem>
-    </UnorderedList>
-    <Box marginTop="50px">
-      <Text fontSize="24px" fontWeight="bold">Think of it as:</Text>
-      <Text fontSize="20px">HTML = Structure (skeleton)</Text>
-      <Text fontSize="20px">CSS = Style (appearance)</Text>
-      <Text fontSize="20px">JavaScript/DOM = Behavior (muscles)</Text>
-    </Box>
+    ## What is the DOM?
+    - Document Object Model - tree representation of HTML
+    - JavaScript's interface to web page content
+    - Allows dynamic updates without page reload
+    - Foundation of modern interactive websites
+    
+**Think of it as:**
+- HTML = Structure (skeleton)
+- CSS = Style (appearance)
+- JavaScript/DOM = Behavior (muscles)
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## DOM Tree Structure
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -59,32 +56,68 @@ document
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Core DOM Operations</Heading>
+    ## Core DOM Operations
     <Box width="80%">
       <Text fontSize="24px" fontWeight="bold" marginBottom="20px">1. Selection</Text>
-      <UnorderedList>
-        <ListItem>querySelector() - select by CSS selector</ListItem>
-        <ListItem>getElementById() - select by ID</ListItem>
-        <ListItem>getElementsByClassName() - select by class</ListItem>
-      </UnorderedList>
+      - querySelector() - select by CSS selector
+      - getElementById() - select by ID
+      - getElementsByClassName() - select by class
       <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">2. Manipulation</Text>
-      <UnorderedList>
-        <ListItem>textContent - change text</ListItem>
-        <ListItem>innerHTML - change HTML</ListItem>
-        <ListItem>style - change CSS properties</ListItem>
-      </UnorderedList>
+      - textContent - change text
+      - innerHTML - change HTML
+      - style - change CSS properties
       <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">3. Creation</Text>
-      <UnorderedList>
-        <ListItem>createElement() - create new elements</ListItem>
-        <ListItem>appendChild() - add to page</ListItem>
-      </UnorderedList>
+      - createElement() - create new elements
+      - appendChild() - add to page
     </Box>
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding DOM Selection and Manipulation
+
+Before building interactive pages, understand the fundamentals:
+
+**Core DOM Operations You'll Use:**
+1. **Selection** - Find elements in the page
+   - `document.querySelector()` - Get one element
+   - `document.querySelectorAll()` - Get multiple elements
+   - Use CSS selectors: `#id`, `.class`, `element`
+
+2. **Reading and Writing** - Access and modify elements
+   - `element.textContent` - Get/set text content
+   - `element.value` - Get/set input values
+   - `element.style` - Modify CSS properties
+
+3. **Event Handling** - Respond to user actions
+   - `addEventListener('click', handler)` - Listen for events
+   - Event object contains information about what happened
+
+**The Pattern**: Select → Read/Write → Handle Events
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise Overview: Basic DOM Manipulation
+
+You'll build interactive habit tracking functionality:
+
+1. **Select DOM elements** using querySelector
+2. **Update content** when users interact with buttons
+3. **Handle click events** to increment streak counts
+4. **Add visual feedback** to improve user experience
+
+**Key Concepts:**
+- Element selection with CSS selectors
+- Event listeners and click handlers
+- Updating text content dynamically
+- Basic DOM property manipulation
+
+**Goal**: Make a static HTML page interactive with JavaScript
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## The DOM: Bringing Pages to Life
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -113,7 +146,7 @@ document
 
 <SlideLayout.Full>
 ## Event Handling
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -146,30 +179,52 @@ habitsList.addEventListener('click', (e) => {
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">DOM Best Practices</Heading>
+    ## DOM Best Practices
     <Box width="80%">
-      <UnorderedList>
-        <ListItem>Cache DOM selections (don't query repeatedly)</ListItem>
-        <ListItem>Use event delegation for dynamic content</ListItem>
-        <ListItem>Batch DOM updates to minimize reflows</ListItem>
-        <ListItem>Prefer textContent over innerHTML for text</ListItem>
-        <ListItem>Always validate user input</ListItem>
-      </UnorderedList>
-      <Box marginTop="40px" padding="20px" backgroundColor="#f0f0f0" borderRadius="8px">
-        <Text fontSize="18px" fontWeight="bold">Performance Tip:</Text>
-        <Text fontSize="16px">DOM operations are expensive. Minimize them by:</Text>
-        <Text fontSize="16px">• Building elements before adding to DOM</Text>
-        <Text fontSize="16px">• Using document fragments for multiple additions</Text>
-        <Text fontSize="16px">• Updating classes instead of individual styles</Text>
-      </Box>
+      - Cache DOM selections (don't query repeatedly)
+      - Use event delegation for dynamic content
+      - Batch DOM updates to minimize reflows
+      - Prefer textContent over innerHTML for text
+      - Always validate user input
+      
+**Performance Tip:**
+DOM operations are expensive. Minimize them by:
+- Building elements before adding to DOM
+- Using document fragments for multiple additions
+- Updating classes instead of individual styles
     </Box>
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Complex DOM Applications
+
+Building a full interactive application requires:
+
+**HTML Structure Planning:**
+- Semantic HTML with proper IDs and classes
+- Form elements for user input
+- Container areas for dynamic content
+
+**JavaScript Architecture:**
+- State management (tracking data in variables)
+- Event handling for user interactions
+- Dynamic content creation and updates
+- Data persistence (localStorage)
+
+**Progressive Enhancement Strategy:**
+1. Start with basic form handling
+2. Add dynamic content creation
+3. Implement interactivity features
+4. Add styling and animations
+
+**For this exercise**: Build a complete habit tracker with adding, completing, and managing habits.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Interactive Habit Tracker
 
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="index.html">
 ```html
 <!DOCTYPE html>
@@ -748,26 +803,46 @@ describe('Complete Habit System', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Working with Forms and Input</Heading>
-    <Box width="80%">
-      <Text fontSize="20px" marginBottom="20px">Forms are essential for user interaction:</Text>
-      <UnorderedList>
-        <ListItem>Get user input with value property</ListItem>
-        <ListItem>Listen for 'submit' event on forms</ListItem>
-        <ListItem>Prevent default behavior with preventDefault()</ListItem>
-        <ListItem>Validate input before processing</ListItem>
-      </UnorderedList>
-      
-      <Box marginTop="30px" padding="15px" backgroundColor="#f5f5f5" borderRadius="8px">
-        <Text fontSize="18px" fontWeight="bold">Form Best Practices:</Text>
-        <Text fontSize="16px">• Always trim() user input</Text>
-        <Text fontSize="16px">• Provide clear error messages</Text>
-        <Text fontSize="16px">• Disable submit during processing</Text>
-        <Text fontSize="16px">• Reset form after successful submission</Text>
-      </Box>
-    </Box>
-  </FlexBox>
+## Working with Forms and Input
+
+**Forms are essential for user interaction:**
+- Get user input with value property
+- Listen for 'submit' event on forms
+- Prevent default behavior with preventDefault()
+- Validate input before processing
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Form Best Practices
+
+**Essential form handling practices:**
+- Always trim() user input
+- Provide clear error messages
+- Disable submit during processing
+- Reset form after successful submission
+
+```javascript
+function handleFormSubmit(event) {
+  event.preventDefault();
+  
+  const input = document.getElementById('habitName');
+  const value = input.value.trim(); // Always trim!
+  
+  if (!value) {
+    showError('Habit name is required');
+    return;
+  }
+  
+  // Disable during processing
+  submitButton.disabled = true;
+  
+  // Process form...
+  
+  // Reset after success
+  input.value = '';
+  submitButton.disabled = false;
+}
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -787,33 +862,88 @@ import DataAttributesExercise from './dom-exercises/data-attributes.mdx'
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">DOM Performance Tips</Heading>
-    <Box width="80%">
-      <Text fontSize="20px" marginBottom="20px">Optimize your DOM operations:</Text>
-      
-      <Box marginBottom="30px">
-        <Text fontSize="18px" fontWeight="bold">1. Batch DOM Updates</Text>
-        <Text fontSize="16px">• Build elements before adding to DOM</Text>
-        <Text fontSize="16px">• Use DocumentFragment for multiple additions</Text>
-        <Text fontSize="16px">• Update classes instead of individual styles</Text>
-      </Box>
-      
-      <Box marginBottom="30px">
-        <Text fontSize="18px" fontWeight="bold">2. Cache Selections</Text>
-        <Text fontSize="16px">• Store frequently used elements in variables</Text>
-        <Text fontSize="16px">• Avoid repeated querySelector calls</Text>
-        <Text fontSize="16px">• Use event delegation for dynamic content</Text>
-      </Box>
-      
-      <Box marginBottom="30px">
-        <Text fontSize="18px" fontWeight="bold">3. Minimize Reflows</Text>
-        <Text fontSize="16px">• Read DOM properties together</Text>
-        <Text fontSize="16px">• Write DOM changes together</Text>
-        <Text fontSize="16px">• Use CSS transforms for animations</Text>
-      </Box>
-    </Box>
-  </FlexBox>
+## DOM Performance: Batch Updates
+
+**1. Batch DOM Updates**
+- Build elements before adding to DOM
+- Use DocumentFragment for multiple additions
+- Update classes instead of individual styles
+
+```javascript
+// Bad: Multiple DOM additions
+const list = document.getElementById('habits');
+habits.forEach(habit => {
+  const item = document.createElement('li');
+  item.textContent = habit.name;
+  list.appendChild(item); // DOM update for each item
+});
+
+// Good: Batch with DocumentFragment
+const fragment = document.createDocumentFragment();
+habits.forEach(habit => {
+  const item = document.createElement('li');
+  item.textContent = habit.name;
+  fragment.appendChild(item); // In memory
+});
+list.appendChild(fragment); // Single DOM update
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## DOM Performance: Cache Selections
+
+**2. Cache Selections**
+- Store frequently used elements in variables
+- Avoid repeated querySelector calls
+- Use event delegation for dynamic content
+
+```javascript
+// Bad: Repeated queries
+function updateHabit(id, name) {
+  document.getElementById('habit-name').textContent = name;
+  document.getElementById('habit-count').textContent = '1';
+  document.getElementById('habit-status').textContent = 'Active';
+}
+
+// Good: Cache elements
+const elements = {
+  name: document.getElementById('habit-name'),
+  count: document.getElementById('habit-count'),
+  status: document.getElementById('habit-status')
+};
+
+function updateHabit(id, name) {
+  elements.name.textContent = name;
+  elements.count.textContent = '1';
+  elements.status.textContent = 'Active';
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## DOM Performance: Minimize Reflows
+
+**3. Minimize Reflows**
+- Read DOM properties together
+- Write DOM changes together
+- Use CSS transforms for animations
+
+```javascript
+// Bad: Mixed reads and writes
+const element = document.getElementById('habit-card');
+element.style.width = '200px'; // Write (triggers reflow)
+const height = element.offsetHeight; // Read (forces reflow)
+element.style.height = height + 50 + 'px'; // Write (triggers reflow)
+
+// Good: Batch reads and writes
+const element = document.getElementById('habit-card');
+const height = element.offsetHeight; // Read first
+element.style.width = '200px'; // Then write
+element.style.height = height + 50 + 'px';
+
+// Better: Use CSS transforms
+element.style.transform = 'scale(1.1)';
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -827,23 +957,20 @@ import EfficientDOMUpdatesExercise from './dom-exercises/efficient-dom-updates.m
 <SlideLayout.Full>
 ## Key Takeaways: DOM Manipulation
 
-<Box width="80%">
-  <Text fontSize="24px" fontWeight="bold" marginBottom="30px">Remember:</Text>
-  <UnorderedList>
-    <ListItem>The DOM is your bridge between JavaScript and HTML</ListItem>
-    <ListItem>Select elements before you can modify them</ListItem>
-    <ListItem>Event listeners make pages interactive</ListItem>
-    <ListItem>Create dynamic content with createElement()</ListItem>
-    <ListItem>Always consider performance with DOM operations</ListItem>
-  </UnorderedList>
-  
-  <Box marginTop="40px" padding="20px" backgroundColor="#e3f2fd" borderRadius="8px">
-    <Text fontSize="20px" fontWeight="bold">Modern Alternatives:</Text>
-    <Text fontSize="18px">• React, Vue, Angular abstract DOM manipulation</Text>
-    <Text fontSize="18px">• Virtual DOM for better performance</Text>
-    <Text fontSize="18px">• But understanding vanilla DOM is essential!</Text>
-  </Box>
-  
-  <Text fontSize="20px" fontStyle="italic" marginTop="40px">Master the DOM, and you can build any web interface!</Text>
-</Box>
+**Remember:**
+- The DOM is your bridge between JavaScript and HTML
+- Select elements before you can modify them
+- Event listeners make pages interactive
+- Create dynamic content with createElement()
+- Always consider performance with DOM operations
+
+**Modern Alternatives:**
+- React, Vue, Angular abstract DOM manipulation
+- Virtual DOM for better performance
+- But understanding vanilla DOM is essential!
+
+*Master the DOM, and you can build any web interface!*
+
+### Bridge to Async JavaScript
+You can now create interactive web pages. Next, let's handle **asynchronous operations** like API calls and timers!
 </SlideLayout.Full>

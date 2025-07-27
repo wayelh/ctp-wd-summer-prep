@@ -104,7 +104,7 @@ const App = () => {
           ul: UnorderedList,
           ol: OrderedList,
           li: ({ children }: PropsWithChildren) => <ListItem fontSize="30px">{children}</ListItem>,
-          p: Text,
+          p: ({ children }: PropsWithChildren) => <Text fontSize="16px">{children}</Text>,
           code: (props: PropsWithChildren<{ className?: string }>) => {
             if (useContext(CodeDisplayContext)) {
               // If we're in a CodeDisplay context, use CodeDisplay component

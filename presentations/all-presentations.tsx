@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, PropsWithChildren, useContext, useEffect } from 'react';
+import React, { lazy, Suspense, useState, PropsWithChildren, useContext, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   CodeSpan,
@@ -9,7 +9,8 @@ import {
   OrderedList,
   Text,
   UnorderedList,
-  CodePane
+  CodePane,
+  DeckContext
 } from 'spectacle';
 import { CodeDisplayContext } from './components/CodeDisplayContext';
 import CodeDisplay, { Version, File, Tests } from './components/CodeDisplayWithSlideTracking';
@@ -18,9 +19,9 @@ import './styles.css';
 // Define presentation metadata
 const presentations = {
   js: {
-    'introduction': { title: 'Introduction to JavaScript', component: lazy(() => import('./js-intro-sections/introduction.mdx')) },
     'html-basics': { title: 'HTML Basics', component: lazy(() => import('./js-intro-sections/html-basics.mdx')) },
     'css-fundamentals': { title: 'CSS Fundamentals', component: lazy(() => import('./js-intro-sections/css-fundamentals.mdx')) },
+    'introduction': { title: 'Introduction to JavaScript', component: lazy(() => import('./js-intro-sections/introduction.mdx')) },
     'variables-and-types': { title: 'Variables and Types', component: lazy(() => import('./js-intro-sections/variables-and-types.mdx')) },
     'functions': { title: 'Functions', component: lazy(() => import('./js-intro-sections/functions.mdx')) },
     'control-flow': { title: 'Control Flow', component: lazy(() => import('./js-intro-sections/control-flow.mdx')) },
@@ -37,6 +38,7 @@ const presentations = {
   },
   ts: {
     'introduction': { title: 'Introduction to TypeScript', component: lazy(() => import('./ts-intro-sections/introduction.mdx')) },
+    'type-problems': { title: 'Type Problems', component: lazy(() => import('./ts-intro-sections/type-problems.mdx')) },
     'type-basics': { title: 'Type Basics', component: lazy(() => import('./ts-intro-sections/type-basics.mdx')) },
     'interfaces-and-types': { title: 'Interfaces and Types', component: lazy(() => import('./ts-intro-sections/interfaces-and-types.mdx')) },
     'unions-and-literals': { title: 'Unions and Literals', component: lazy(() => import('./ts-intro-sections/unions-and-literals.mdx')) },
@@ -82,6 +84,117 @@ const presentations = {
 //   }
 // }
 
+
+// Custom template that includes navigation tracking
+function CustomTemplate({ 
+  activePresentation,
+  onSlideInfo,
+  getNextPresentation,
+  getPreviousPresentation
+}: {
+  activePresentation: { category: 'js' | 'ts'; key: string } | null;
+  onSlideInfo: (info: any) => void;
+  getNextPresentation: () => { category: 'js' | 'ts'; key: string } | null;
+  getPreviousPresentation: () => { category: 'js' | 'ts'; key: string } | null;
+}) {
+  const deckContext = useContext(DeckContext);
+  
+  useEffect(() => {
+    if (deckContext) {
+      const { slideCount, activeView } = deckContext;
+      const slideIndex = activeView?.slideIndex ?? 0;
+      
+      const info = {
+        current: slideIndex,
+        total: slideCount,
+        isLast: slideIndex === slideCount - 1
+      };
+      
+      onSlideInfo(info);
+    }
+  }, [deckContext, onSlideInfo]);
+
+  if (!deckContext) return <DefaultTemplate />;
+  
+  const { slideCount, activeView } = deckContext;
+  const slideIndex = activeView?.slideIndex ?? 0;
+  const isFirstSlide = slideIndex === 0;
+  const isLastSlide = slideIndex === slideCount - 1;
+  
+  return (
+    <>
+      <DefaultTemplate />
+      
+      {/* First slide indicator */}
+      {activePresentation && isFirstSlide && (() => {
+        const prev = getPreviousPresentation();
+        if (prev && presentations[prev.category] && presentations[prev.category][prev.key]) {
+          const prevTitle = presentations[prev.category][prev.key].title;
+          return (
+            <div style={{
+              position: 'fixed',
+              bottom: '20px',
+              left: '20px',
+              background: 'rgba(0, 0, 0, 0.8)',
+              color: 'white',
+              padding: '10px 15px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              zIndex: 900,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <span style={{ 
+                color: prev.category === 'js' ? '#f7df1e' : '#3178c6',
+                fontWeight: 'bold'
+              }}>
+                {prevTitle}
+              </span>
+              <span>← Press to go back</span>
+            </div>
+          );
+        }
+        return null;
+      })()}
+      
+      {/* Last slide indicator */}
+      {activePresentation && isLastSlide && (() => {
+        const next = getNextPresentation();
+        if (next && presentations[next.category] && presentations[next.category][next.key]) {
+          const nextTitle = presentations[next.category][next.key].title;
+          return (
+            <div style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              background: 'rgba(0, 0, 0, 0.8)',
+              color: 'white',
+              padding: '10px 15px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              zIndex: 900,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <span>Press → to continue</span>
+              <span style={{ 
+                color: next.category === 'js' ? '#f7df1e' : '#3178c6',
+                fontWeight: 'bold'
+              }}>
+                {nextTitle}
+              </span>
+            </div>
+          );
+        }
+        return null;
+      })()}
+      
+    </>
+  );
+}
+
 // Main App Component
 function App() {
   // Parse URL parameters to get initial presentation
@@ -100,10 +213,10 @@ function App() {
     category: 'js' | 'ts';
     key: string;
   } | null>(getInitialPresentation());
-  const [deckKey, setDeckKey] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const slideInfoRef = useRef({ current: 0, total: 0, isLast: false });
 
-  // Update URL when presentation changes
+  // Update URL when presentation changes (but preserve hash)
   useEffect(() => {
     // Create fresh params with only the presentation info
     const params = new URLSearchParams();
@@ -113,33 +226,156 @@ function App() {
       params.set('presentation', activePresentation.key);
     }
     
-    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+    // Preserve the current hash (slide number)
+    const currentHash = window.location.hash;
+    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}${currentHash}` : `${window.location.pathname}${currentHash}`;
     window.history.replaceState({}, '', newUrl);
   }, [activePresentation]);
 
-  const handlePresentationSelect = (category: 'js' | 'ts', key: string) => {
-    // If selecting the same presentation, force a remount
-    if (activePresentation?.category === category && activePresentation?.key === key) {
-      setDeckKey(prev => prev + 1);
+  const handlePresentationSelect = (category: 'js' | 'ts', key: string, goToLastSlide = false) => {
+    // Update URL
+    const params = new URLSearchParams();
+    params.set('category', category);
+    params.set('presentation', key);
+    
+    // Check if we're selecting the same presentation (just opening menu)
+    const isSamePresentation = activePresentation?.category === category && activePresentation?.key === key;
+    
+    // If same presentation, keep current slide; otherwise start at slide 0
+    const hash = isSamePresentation ? window.location.hash : '#/0';
+    const newUrl = `${window.location.pathname}?${params.toString()}${hash}`;
+    
+    if (goToLastSlide) {
+      // Store flag in sessionStorage to handle after deck loads
+      sessionStorage.setItem('navigateToLastSlide', 'true');
+    } else {
+      sessionStorage.removeItem('navigateToLastSlide');
     }
-    setActivePresentation({ category, key });
-    setSidebarOpen(false); // Close sidebar after selection
+    
+    // Force a full page navigation to ensure clean state
+    window.location.href = newUrl;
   };
+
+  // Handle slide info updates from NavigationTracker
+  const handleSlideInfo = useCallback((info: { current: number; total: number; isLast: boolean }) => {
+    slideInfoRef.current = info;
+    
+    // Save current slide position to sessionStorage
+    if (activePresentation) {
+      const storageKey = `slide-position-${activePresentation.category}-${activePresentation.key}`;
+      sessionStorage.setItem(storageKey, info.current.toString());
+    }
+  }, [activePresentation]);
 
   const ActiveComponent = activePresentation && activePresentation.key in presentations[activePresentation.category]
     ? presentations[activePresentation.category][activePresentation.key as keyof typeof presentations[typeof activePresentation.category]].component
     : null;
 
-  // Force window resize event after presentation changes
+  // Handle navigation to last slide after deck loads
   useEffect(() => {
-    if (activePresentation) {
-      // Small timeout to ensure DOM is ready
-      const timer = setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-      }, 50);
-      return () => clearTimeout(timer);
+    if (activePresentation && sessionStorage.getItem('navigateToLastSlide') === 'true') {
+      // Remove the flag
+      sessionStorage.removeItem('navigateToLastSlide');
+      
+      // Wait for deck to fully load and get slide count
+      let attempts = 0;
+      const navigateToLast = () => {
+        // Try to find slide count from DOM
+        const slideElements = document.querySelectorAll('[style*="transform: translateX"]');
+        const slideCount = slideElements.length;
+        
+        if (slideCount > 0) {
+          // Navigate to last slide
+          const lastSlideIndex = slideCount - 1;
+          window.location.hash = `#/${lastSlideIndex}`;
+        } else if (attempts < 20) {
+          // Keep trying for up to 4 seconds
+          attempts++;
+          setTimeout(navigateToLast, 200);
+        }
+      };
+      
+      // Start checking after a delay to let deck render
+      setTimeout(navigateToLast, 500);
     }
-  }, [activePresentation, deckKey]);
+  }, [activePresentation]);
+
+  // Get next presentation
+  const getNextPresentation = () => {
+    if (!activePresentation) return null;
+    
+    const allPresentations = [
+      ...Object.keys(presentations.js).map(key => ({ category: 'js' as const, key })),
+      ...Object.keys(presentations.ts).map(key => ({ category: 'ts' as const, key }))
+    ];
+    
+    const currentIndex = allPresentations.findIndex(
+      p => p.category === activePresentation.category && p.key === activePresentation.key
+    );
+    
+    // Don't loop - return null if we're at the last presentation
+    if (currentIndex === -1 || currentIndex === allPresentations.length - 1) {
+      return null;
+    }
+    
+    return allPresentations[currentIndex + 1];
+  };
+
+  // Get previous presentation
+  const getPreviousPresentation = () => {
+    if (!activePresentation) return null;
+    
+    const allPresentations = [
+      ...Object.keys(presentations.js).map(key => ({ category: 'js' as const, key })),
+      ...Object.keys(presentations.ts).map(key => ({ category: 'ts' as const, key }))
+    ];
+    
+    const currentIndex = allPresentations.findIndex(
+      p => p.category === activePresentation.category && p.key === activePresentation.key
+    );
+    
+    // Don't loop - return null if we're at the first presentation
+    if (currentIndex === -1 || currentIndex === 0) {
+      return null;
+    }
+    
+    return allPresentations[currentIndex - 1];
+  };
+
+  // Handle navigation between presentations
+  useEffect(() => {
+    if (!activePresentation) return;
+
+    // Handle keyboard navigation
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const { current, isLast } = slideInfoRef.current;
+      const isFirst = current === 0;
+      
+      if (e.key === 'ArrowRight' && isLast) {
+        const next = getNextPresentation();
+        if (next) {
+          e.preventDefault();
+          e.stopPropagation();
+          // Don't pass goToLastSlide parameter - we want to go to the first slide
+          handlePresentationSelect(next.category, next.key, false);
+        }
+      } else if (e.key === 'ArrowLeft' && isFirst) {
+        const prev = getPreviousPresentation();
+        if (prev) {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePresentationSelect(prev.category, prev.key, true); // true = go to last slide
+        }
+      }
+    };
+
+    // Listen for navigation with capture to intercept before Spectacle
+    window.addEventListener('keydown', handleKeyDown, true);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [activePresentation, handlePresentationSelect]);
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh' }}>
@@ -350,6 +586,7 @@ function App() {
         </div>
       </nav>
 
+
       <div className="presentation-container">
         {ActiveComponent && activePresentation ? (
           <Suspense fallback={
@@ -365,9 +602,16 @@ function App() {
             </div>
           }>
             <Deck 
-              key={`${activePresentation.category}-${activePresentation.key}-${deckKey}`}
+              key={`${activePresentation.category}-${activePresentation.key}`}
               backgroundImage="url(https://ctp-presentation-media.s3.us-east-2.amazonaws.com/bg.gif)" 
-              template={() => <DefaultTemplate />}
+              template={() => (
+                <CustomTemplate 
+                  activePresentation={activePresentation}
+                  onSlideInfo={handleSlideInfo}
+                  getNextPresentation={getNextPresentation}
+                  getPreviousPresentation={getPreviousPresentation}
+                />
+              )}
             >
               <ActiveComponent components={{
                 // Map markdown elements to Spectacle components

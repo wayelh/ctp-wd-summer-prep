@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.VerticalImage
   title="Interfaces vs Types"
@@ -13,8 +13,8 @@ import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'specta
 
 <SlideLayout.Full>
 ## Interface Example
-<CodeDisplay height="500px">
-  <File name="example.typescript">
+<CodeDisplay >
+  <File name="example.ts">
     
 ```typescript
 interface User {
@@ -62,8 +62,46 @@ const user2: UserProfile = {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Object Structure Design
+
+Before building complex interfaces, let's understand how to model real-world entities:
+
+**1. Identify Core Properties**
+- What data does this entity need to store?
+- Which properties are required vs optional?
+- What are the data types for each property?
+
+**2. Relationships Between Entities**
+- How do different objects relate to each other?
+- Should we nest objects or reference them by ID?
+- Are there one-to-many or many-to-many relationships?
+
+**3. Future Extensibility**
+- What properties might be added later?
+- Should we plan for optional features now?
+- How can we make the interface flexible but type-safe?
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Modeling Guidelines for Exercises
+
+**For the Blog System, consider:**
+- An Author has personal information (id, name, email)
+- A Comment belongs to a post and has an author
+- A BlogPost contains content, metadata, and related entities
+- Think about what's required vs optional
+
+**Key Interface Concepts You'll Use:**
+- Nested interfaces (Author inside BlogPost)
+- Array types (tags: string[], comments: Comment[])
+- Optional properties (bio?: string)
+- Date types for timestamps
+- Union types for categories/statuses
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Model a Blog System
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -103,19 +141,91 @@ const myBlog: BlogPost = {
     }
   ]
 };
+```
+    
+    
+```typescript
+// Solution: Complete blog system interfaces
+interface Author {
+  id: number;
+  name: string;
+  email: string;
+  bio?: string;
+}
+
+interface Comment {
+  id: number;
+  content: string;
+  author: string;
+  createdAt: Date;
+  likes?: number;
+}
+
+interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  author: Author;
+  publishedAt: Date;
+  tags: string[];
+  comments: Comment[];
+  isPublished?: boolean;
+  views?: number;
+}
+
+// Extended example with all features
+const myBlog: BlogPost = {
+  id: 1,
+  title: "Learning TypeScript",
+  content: "TypeScript is amazing for building scalable applications!",
+  author: {
+    id: 100,
+    name: "Jane Doe",
+    email: "jane@example.com",
+    bio: "Full-stack developer passionate about TypeScript"
+  },
+  publishedAt: new Date(),
+  tags: ["typescript", "programming", "javascript"],
+  comments: [
+    {
+      id: 1,
+      content: "Great post! Very helpful.",
+      author: "John",
+      createdAt: new Date(),
+      likes: 5
+    },
+    {
+      id: 2,
+      content: "Thanks for sharing this!",
+      author: "Alice",
+      createdAt: new Date(),
+      likes: 2
+    }
+  ],
+  isPublished: true,
+  views: 150
+};
 
 //***
-describe('Blog System - Initial Implementation', () => {
+describe('Blog System - Complete Implementation', () => {
   it('should have properly structured author with valid email', () => {
     expect(myBlog.author.email).to.include('@');
+    expect(myBlog.author.name).to.equal('Jane Doe');
   });
   
   it('should have at least one comment', () => {
     expect(myBlog.comments).to.have.lengthOf.above(0);
+    expect(myBlog.comments[0].content).to.be.a('string');
   });
   
   it('should include typescript tag', () => {
     expect(myBlog.tags).to.include('typescript');
+    expect(myBlog.tags).to.be.an('array');
+  });
+  
+  it('should have optional properties working', () => {
+    expect(myBlog.isPublished).to.be.true;
+    expect(myBlog.views).to.be.a('number');
   });
 });
 ```
@@ -125,8 +235,54 @@ describe('Blog System - Initial Implementation', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Building Complex Application Interfaces
+
+Now let's model a more complex system with multiple related entities:
+
+**Habit Tracking System Components:**
+- **Habit**: The core entity (name, category, settings)
+- **HabitEntry**: Records of completions (when, notes, success)
+- **HabitTracker**: The main system that manages everything
+
+**Design Considerations:**
+- How do we link entries to specific habits?
+- What methods should the tracker have?
+- Which properties are required for a minimum viable habit?
+- How do we handle different frequencies (daily, weekly, etc.)?
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Function Types in Interfaces
+
+Interfaces can include method signatures:
+
+```typescript
+interface Calculator {
+  // Method signature - parameters and return type
+  add(a: number, b: number): number;
+  
+  // Function property - assigned a function
+  multiply: (a: number, b: number) => number;
+  
+  // Optional method
+  subtract?(a: number, b: number): number;
+}
+
+// Implementation
+const calc: Calculator = {
+  add(a, b) { return a + b; },
+  multiply: (a, b) => a * b
+};
+```
+
+**For HabitTracker, you'll need:**
+- `addHabit(habit: Habit): void`
+- `recordEntry(entry: HabitEntry): void`
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Habit Tracker Types
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -203,9 +359,68 @@ Design clean, maintainable interfaces:
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Utility Types
+
+TypeScript provides built-in utility types for transforming existing types:
+
+**Common Utility Types:**
+- `Partial<T>` - Makes all properties optional
+- `Required<T>` - Makes all properties required  
+- `Pick<T, K>` - Selects specific properties
+- `Omit<T, K>` - Excludes specific properties
+- `Record<K, V>` - Creates object type with key/value types
+
+```typescript
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+}
+
+// For creating users - omit system-generated fields
+type CreateUserInput = Omit<User, 'id'>;
+
+// For updates - make everything optional except id
+type UpdateUserInput = Partial<User> & { id: string };
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Generic Interfaces
+
+Interfaces can be generic to work with different types:
+
+```typescript
+// Generic interface for API responses
+interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message?: string;
+}
+
+// Usage with different data types
+const userResponse: ApiResponse<User> = {
+  data: { id: "1", name: "Alice" },
+  status: 200
+};
+
+const habitsResponse: ApiResponse<Habit[]> = {
+  data: [{ name: "Exercise" }],
+  status: 200
+};
+```
+
+**For the next exercise, you'll create:**
+- Generic `ApiResponse<T>` interface
+- `CreateHabitInput` using utility types
+- `HabitStats` interface for analytics
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Advanced Interface Patterns
-<CodeDisplay height="500px">
-  <File name="example.typescript">
+<CodeDisplay >
+  <File name="example.ts">
     
 ```typescript
 // Exercise: Use advanced interface patterns for the habit system
@@ -246,8 +461,8 @@ const newHabitInput: CreateHabitInput = {
 
 <SlideLayout.Full>
 ## Interface Declaration Merging
-<CodeDisplay height="500px">
-  <File name="example.typescript">
+<CodeDisplay >
+  <File name="example.ts">
     
 ```typescript
 // Interfaces can be declared multiple times

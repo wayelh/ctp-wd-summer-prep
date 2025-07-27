@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, CodePane } from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, CodePane } from 'spectacle'
 import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.VerticalImage
@@ -15,7 +15,7 @@ import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTrac
 <SlideLayout.Full>
 ## CSS Syntax and Selectors
 
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="index.html">
 ```html
 <!DOCTYPE html>
@@ -100,7 +100,7 @@ button.primary {
 <SlideLayout.Full>
 ## The Box Model
 
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="index.html">
 ```html
 <!DOCTYPE html>
@@ -197,7 +197,7 @@ body {
 <SlideLayout.Full>
 ## Flexbox Layout
 
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="index.html">
 ```html
 <!DOCTYPE html>
@@ -337,7 +337,7 @@ body {
 <SlideLayout.Full>
 ## Grid Layout
 
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="index.html">
 ```html
 <!DOCTYPE html>
@@ -498,9 +498,226 @@ body {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Overview: CSS Design Principles
+
+Before styling the habit card, plan your design approach:
+
+- Layout Strategy:
+    - Choose between Flexbox (1D layout) vs Grid (2D layout)
+    - Consider content hierarchy and information flow
+    - Plan for responsive behavior on different screen sizes
+- Visual Hierarchy:
+    - Use typography scale (headings, body text, captions)
+    - Color coding for categories and status indicators
+    - Visual weight through size, color, and spacing
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Interactive CSS Styling
+
+<CodeDisplay >
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Habit Cards</title>
+</head>
+<body>
+    <h2>Hover over the cards to see the effect</h2>
+    
+    <div class="habit-container">
+        <div class="habit-card">
+            <div class="habit-icon">🎯</div>
+            <h3>Daily Goals</h3>
+            <p class="habit-streak">7 day streak</p>
+            <div class="habit-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 70%"></div>
+                </div>
+                <span class="progress-text">70% complete</span>
+            </div>
+        </div>
+        
+        <div class="habit-card featured">
+            <div class="habit-icon">💪</div>
+            <h3>Exercise</h3>
+            <p class="habit-streak">14 day streak</p>
+            <div class="habit-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+                <span class="progress-text">100% complete</span>
+            </div>
+        </div>
+        
+        <div class="habit-card">
+            <div class="habit-icon">📖</div>
+            <h3>Reading</h3>
+            <p class="habit-streak">3 day streak</p>
+            <div class="habit-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 45%"></div>
+                </div>
+                <span class="progress-text">45% complete</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Base styles for the container */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.habit-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Progressive enhancement - Base card styles */
+.habit-card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    text-align: center;
+    cursor: pointer;
+    
+    /* Smooth interactions */
+    transition: all 0.3s ease;
+}
+
+/* Enhanced hover state */
+.habit-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Featured card with enhanced styling */
+.habit-card.featured {
+    border: 2px solid #4CAF50;
+    position: relative;
+}
+
+.habit-card.featured::before {
+    content: '⭐';
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    font-size: 20px;
+}
+
+/* Icon styling with hover effect */
+.habit-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    transition: transform 0.3s ease;
+}
+
+.habit-card:hover .habit-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Typography */
+.habit-card h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.habit-streak {
+    color: #666;
+    font-size: 14px;
+    margin: 0 0 16px 0;
+}
+
+/* Progress bar with smooth animation */
+.habit-progress {
+    margin-top: 16px;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.habit-card:hover .progress-fill {
+    background-color: #45a049;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Additional interactive states */
+.habit-card:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Focus state for accessibility */
+.habit-card:focus {
+    outline: 3px solid #2196F3;
+    outline-offset: 2px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .habit-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .habit-card {
+        width: 100%;
+        max-width: 350px;
+    }
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Accessibility and Usability
+
+- Sufficient color contrast ratios
+- Interactive elements with proper focus states
+- Hover effects that don't rely solely on color
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Style a Habit Tracker Card
 
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="index.html">
 ```html
 <!DOCTYPE html>
@@ -556,6 +773,344 @@ body {
 .habit-card {
     /* Your styles here */
 }
+
+// ---
+
+/* Solution 1: Basic styling with all requirements */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.habit-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+.habit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.habit-title {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.habit-category {
+    background-color: #2196F3;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.habit-body {
+    margin-bottom: 24px;
+}
+
+.streak-info {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.streak-number {
+    font-size: 48px;
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+.streak-label {
+    color: #666;
+    font-size: 16px;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+}
+
+.habit-time {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+}
+
+.habit-footer {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-complete, .btn-skip {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-complete {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-complete:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.btn-skip {
+    background-color: #f0f0f0;
+    color: #666;
+}
+
+.btn-skip:hover {
+    background-color: #e0e0e0;
+}
+
+// ---
+
+/* Solution 2: Enhanced with animations and advanced styling */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+    padding: 40px 20px;
+    min-height: 100vh;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 40px;
+}
+
+.habit-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 28px;
+    max-width: 380px;
+    margin: 0 auto;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.habit-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.habit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.habit-title {
+    margin: 0;
+    color: #1a1a1a;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.habit-category {
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 24px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+}
+
+.habit-body {
+    margin-bottom: 28px;
+}
+
+.streak-info {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.streak-number {
+    font-size: 56px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+.streak-label {
+    color: #757575;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.progress-bar {
+    height: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #66BB6A);
+    border-radius: 5px;
+    position: relative;
+    animation: progressAnimation 1s ease-out;
+}
+
+@keyframes progressAnimation {
+    from {
+        width: 0 !important;
+    }
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.habit-time {
+    color: #616161;
+    font-size: 14px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.habit-time::before {
+    content: '🕐';
+    font-size: 16px;
+}
+
+.habit-footer {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-complete, .btn-skip {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-complete {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-complete:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.btn-complete:active {
+    transform: translateY(0);
+}
+
+.btn-skip {
+    background-color: #fafafa;
+    color: #757575;
+    border: 1px solid #e0e0e0;
+}
+
+.btn-skip:hover {
+    background-color: #f5f5f5;
+    border-color: #bdbdbd;
+}
+
+/* Ripple effect for buttons */
+.btn-complete::before,
+.btn-skip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-complete:active::before,
+.btn-skip:active::before {
+    width: 300px;
+    height: 300px;
+}
 ```
   </File>
   <Tests>
@@ -593,7 +1148,7 @@ describe('Habit Card Styling', () => {
 <SlideLayout.Full>
 ## CSS Transitions and Animations
 
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="index.html">
 ```html
 <!DOCTYPE html>
@@ -768,7 +1323,7 @@ describe('Habit Card Styling', () => {
 <SlideLayout.Full>
 ## Responsive Design
 
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="index.html">
 ```html
 <!DOCTYPE html>

@@ -1,6 +1,6 @@
 import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
 
-<CodeDisplay height="550px">
+<CodeDisplay>
   <File name="index.html">
 ```html
 <!DOCTYPE html>

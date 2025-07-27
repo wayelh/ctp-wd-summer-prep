@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.Full>
 ## Utility Types
@@ -26,7 +26,7 @@ function updateUser(id: number, updates: Partial<User>) {
 
 <SlideLayout.Full>
 ## Common Utility Types
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -51,8 +51,41 @@ type UserRoles = Record<string, 'admin' | 'user' | 'guest'>;
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Utility Types for API Design
+
+Utility types help create consistent, type-safe APIs:
+
+**CRUD Operations Need Different Types:**
+- **Create**: Exclude system-generated fields (id, timestamps)
+- **Read**: Full object with all properties
+- **Update**: Partial updates with optional fields
+- **Delete**: Just the identifier
+
+**Utility Type Patterns:**
+```typescript
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: Date;
+}
+
+// Create: user provides data, system generates id and timestamps
+type CreateUserInput = Omit<User, 'id' | 'createdAt'>;
+
+// Update: all fields optional except id
+type UpdateUserInput = Partial<Pick<User, 'email' | 'name'>> & { id: string };
+
+// Public: hide sensitive fields
+type PublicUser = Omit<User, 'password'>;
+```
+
+**For the exercise**: Build a complete CRUD type system using utility types.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Build a CRUD Type System
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -91,7 +124,7 @@ const updateData: UpdateUserInput = {
 
 <SlideLayout.Full>
 ## Advanced Utility Types
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript

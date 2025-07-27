@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.Full>
 ## Classes in TypeScript
@@ -31,7 +31,7 @@ class Dog extends Animal {
 
 <SlideLayout.Full>
 ## Access Modifiers
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -66,8 +66,43 @@ account.deposit(100);
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding TypeScript Class Features
+
+TypeScript classes provide powerful object-oriented programming capabilities:
+
+**Access Modifiers Control Visibility:**
+- `public` - accessible everywhere (default)
+- `private` - only accessible within the same class
+- `protected` - accessible within class and subclasses
+- `readonly` - can only be set during initialization
+
+**Inheritance Patterns:**
+```typescript
+abstract class Shape {
+  abstract getArea(): number; // Must be implemented by subclasses
+  
+  protected displayInfo(): void {
+    console.log(`Area: ${this.getArea()}`);
+  }
+}
+
+class Circle extends Shape {
+  constructor(private radius: number) {
+    super();
+  }
+  
+  getArea(): number {
+    return Math.PI * this.radius ** 2;
+  }
+}
+```
+
+**For the exercise**: Build a hierarchy with proper encapsulation and inheritance.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Build a Class Hierarchy
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -93,7 +128,7 @@ after(() => {
 
 <SlideLayout.Full>
 ## Decorators (Experimental)
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript

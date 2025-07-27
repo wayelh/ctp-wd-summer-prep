@@ -4,14 +4,14 @@ import { resolve } from 'path'
 
 // Generate entry points for all sections
 const jsSections = [
-  'introduction', 'html-basics', 'css-fundamentals', 'variables-and-types',
+  'html-basics', 'css-fundamentals', 'introduction', 'variables-and-types',
   'functions', 'control-flow', 'objects-and-arrays', 'dom-manipulation',
   'async-javascript', 'error-handling', 'advanced-functions', 'prototypes',
   'modules', 'modern-features', 'common-pitfalls', 'best-practices'
 ];
 
 const tsSections = [
-  'introduction', 'type-basics', 'interfaces-and-types', 'unions-and-literals',
+  'introduction', 'type-problems', 'type-basics', 'interfaces-and-types', 'unions-and-literals',
   'generics', 'type-guards', 'utility-types', 'classes-and-oop',
   'modules-and-namespaces', 'async-types', 'common-patterns',
   'react-typescript', 'testing-typescript', 'migration-strategies',

@@ -1,8 +1,8 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 <SlideLayout.Full>
 ## Common Pitfalls
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -35,8 +35,66 @@ const obj = {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding "this" Binding Problems
+
+The `this` keyword can be confusing because its value depends on how a function is called:
+
+**Function Context Rules:**
+1. **Method calls**: `obj.method()` - `this` is `obj`
+2. **Function calls**: `function()` - `this` is `window` (or `undefined` in strict mode)
+3. **Arrow functions**: Always inherit `this` from enclosing scope
+4. **Event handlers**: `this` is the element that triggered the event
+
+**Common Problem - Lost Context:**
+```javascript
+const obj = {
+  name: "MyObject",
+  method() {
+    console.log(this.name); // "MyObject"
+    
+    setTimeout(function() {
+      console.log(this.name); // undefined! (this is window/global)
+    }, 1000);
+  }
+};
+```
+
+**Solutions**: Arrow functions, `.bind()`, or saving `this` to a variable
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Arrow Functions vs Regular Functions
+
+**Regular Function - Dynamic `this`:**
+```javascript
+const obj = {
+  name: "Timer",
+  start() {
+    setInterval(function() {
+      console.log(this.name); // this = window (not obj!)
+    }, 1000);
+  }
+};
+```
+
+**Arrow Function - Lexical `this`:**
+```javascript
+const obj = {
+  name: "Timer", 
+  start() {
+    setInterval(() => {
+      console.log(this.name); // this = obj ✅
+    }, 1000);
+  }
+};
+```
+
+**For the exercise**: Fix the timer by ensuring `this` refers to the timer object inside the callback.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Fix the "this" Problem
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript

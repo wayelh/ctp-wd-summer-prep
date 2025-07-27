@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Text } from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text } from 'spectacle'
 
 <SlideLayout.VerticalImage
   title="Type Guards"
@@ -13,7 +13,7 @@ import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Text } from 
 
 <SlideLayout.Full>
 ## Type Guards in Action
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -37,8 +37,38 @@ function handleResult(result: Result) {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Type Guards for Union Types
+
+Type guards help TypeScript understand which specific type you're working with:
+
+**Discriminated Unions Pattern:**
+```typescript
+interface Circle { kind: "circle"; radius: number; }
+interface Square { kind: "square"; side: number; }
+type Shape = Circle | Square;
+
+function getArea(shape: Shape) {
+  switch (shape.kind) {  // TypeScript uses 'kind' to narrow the type
+    case "circle": 
+      return Math.PI * shape.radius ** 2;  // shape is Circle here
+    case "square":
+      return shape.side ** 2;  // shape is Square here
+  }
+}
+```
+
+**Key Benefits:**
+- TypeScript knows exactly which properties are available
+- Exhaustive checking ensures you handle all cases
+- Compile-time safety for runtime decisions
+- Cleaner than traditional type checking
+
+**For the exercise**: Use discriminated unions to safely calculate areas for different shapes.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Create Type Guards
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -98,7 +128,7 @@ describe('Shape Area Calculator - Initial Implementation', () => {
 
 <SlideLayout.Full>
 ## Type Predicates
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -132,7 +162,7 @@ function process(value: unknown) {
 
 <SlideLayout.Full>
 ## Exercise: Habit Type Guards
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
@@ -192,38 +222,127 @@ const habits: Habit[] = [
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    ## Advanced Type Guards
-    <Box width="80%">
-      <Text fontSize="20px" marginBottom="20px">More sophisticated type narrowing:</Text>
-      
-      <Box marginBottom="30px">
-        <Text fontSize="18px" fontWeight="bold">1. in operator</Text>
-        <Text fontSize="16px">• Check if property exists in object</Text>
-        <Text fontSize="16px">• Useful for optional properties</Text>
-        <Text fontSize="16px">• Works with union types</Text>
-      </Box>
-      
-      <Box marginBottom="30px">
-        <Text fontSize="18px" fontWeight="bold">2. instanceof checks</Text>
-        <Text fontSize="16px">• Check class instances</Text>
-        <Text fontSize="16px">• Works with inheritance</Text>
-        <Text fontSize="16px">• Type-safe error handling</Text>
-      </Box>
-      
-      <Box marginBottom="30px">
-        <Text fontSize="18px" fontWeight="bold">3. Assertion functions</Text>
-        <Text fontSize="16px">• Throw if condition not met</Text>
-        <Text fontSize="16px">• Narrow type after assertion</Text>
-        <Text fontSize="16px">• Great for validation</Text>
-      </Box>
-    </Box>
-  </FlexBox>
+## Type Guards: in operator
+
+**1. in operator**
+- Check if property exists in object
+- Useful for optional properties
+- Works with union types
+
+```typescript
+interface BasicHabit {
+  id: number;
+  name: string;
+}
+
+interface AdvancedHabit extends BasicHabit {
+  streak: number;
+  category: string;
+  reminders?: boolean;
+}
+
+type Habit = BasicHabit | AdvancedHabit;
+
+function processHabit(habit: Habit) {
+  console.log(`Processing: ${habit.name}`);
+  
+  // Type guard using 'in' operator
+  if ('streak' in habit) {
+    // TypeScript knows habit is AdvancedHabit here
+    console.log(`Current streak: ${habit.streak}`);
+    console.log(`Category: ${habit.category}`);
+    
+    if ('reminders' in habit && habit.reminders) {
+      console.log('Reminders are enabled');
+    }
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Type Guards: instanceof checks
+
+**2. instanceof checks**
+- Check class instances
+- Works with inheritance
+- Type-safe error handling
+
+```typescript
+class HabitError extends Error {
+  constructor(message: string, public habitId: number) {
+    super(message);
+    this.name = 'HabitError';
+  }
+}
+
+class ValidationError extends Error {
+  constructor(message: string, public field: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+function handleError(error: Error) {
+  if (error instanceof HabitError) {
+    // TypeScript knows error is HabitError
+    console.log(`Habit error for ID ${error.habitId}: ${error.message}`);
+    notifyUser(`Problem with habit ${error.habitId}`);
+  } else if (error instanceof ValidationError) {
+    // TypeScript knows error is ValidationError
+    console.log(`Validation error in ${error.field}: ${error.message}`);
+    highlightField(error.field);
+  } else {
+    // Generic error handling
+    console.log(`Unknown error: ${error.message}`);
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Type Guards: Assertion functions
+
+**3. Assertion functions**
+- Throw if condition not met
+- Narrow type after assertion
+- Great for validation
+
+```typescript
+// Assertion function - asserts the type
+function assertIsHabit(value: unknown): asserts value is Habit {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Value is not an object');
+  }
+  
+  const obj = value as Record<string, unknown>;
+  if (typeof obj.id !== 'number' || typeof obj.name !== 'string') {
+    throw new Error('Value is not a valid Habit');
+  }
+}
+
+// Usage
+function processUnknownData(data: unknown) {
+  // Before assertion: data is unknown
+  assertIsHabit(data);
+  // After assertion: TypeScript knows data is Habit
+  
+  console.log(`Processing habit: ${data.name}`);
+  console.log(`Habit ID: ${data.id}`);
+}
+
+// Non-null assertion function
+function assertIsDefined<T>(value: T | null | undefined): asserts value is T {
+  if (value === null || value === undefined) {
+    throw new Error('Value is null or undefined');
+  }
+}
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Exercise: API Response Guards
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.typescript">
     
 ```typescript

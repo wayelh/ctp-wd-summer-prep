@@ -66,12 +66,20 @@ body {
 .monaco-menu,
 .context-view.monaco-menu-container,
 .context-view .monaco-menu,
-.monaco-menu-container .monaco-menu,
-.monaco-scrollable-element .monaco-menu {
+.monaco-menu-container .monaco-menu {
   background-color: #073642 !important;
-  border: 1px solid #586e75 !important;
+  border: 1px solid #ffffff !important;
   color: #839496 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+.monaco-scrollable-element .monaco-menu,
+.monaco-action-bar .actions-container,
+.monaco-menu .monaco-tree-row,
+.monaco-menu .monaco-list,
+.monaco-menu .monaco-scrollable-element {
+  background-color: #073642 !important;
+  color: #839496 !important;
 }
 
 .monaco-menu .monaco-action-bar,
@@ -102,6 +110,41 @@ body {
 /* Ensure menu container has background */
 .monaco-menu-container {
   background-color: #073642 !important;
+}
+
+/* More specific context menu fixes */
+.context-view.monaco-menu-container .monaco-menu {
+  background-color: #073642 !important;
+}
+
+.context-view.monaco-menu-container .monaco-scrollable-element {
+  background-color: #073642 !important;
+}
+
+.monaco-menu .monaco-tree {
+  background-color: #073642 !important;
+}
+
+.monaco-menu .monaco-list-rows {
+  background-color: #073642 !important;
+}
+
+/* Fix for shadow DOM context menus */
+.monaco-menu-container .monaco-menu .monaco-action-bar {
+  background-color: #073642 !important;
+}
+
+/* Ensure no transparent backgrounds in menu items */
+.monaco-menu .monaco-list-row,
+.monaco-menu .monaco-tree-row,
+.monaco-menu .action-item {
+  background-color: #073642 !important;
+}
+
+.monaco-menu .monaco-list-row:hover,
+.monaco-menu .monaco-tree-row:hover,
+.monaco-menu .action-item:hover {
+  background-color: #586e75 !important;
 }
 
 /* Shadow container */
@@ -142,4 +185,123 @@ body {
 .monaco-editor .view-line,
 .monaco-editor .overflow-guard {
   background-color: transparent !important;
+}
+
+/* Light theme context menu overrides */
+.monaco-editor[data-theme="solarized-light"] .monaco-menu,
+.monaco-editor[data-theme="solarized-light"] .context-view.monaco-menu-container,
+.monaco-editor[data-theme="solarized-light"] .context-view .monaco-menu {
+  background-color: #eee8d5 !important;
+  border: 1px solid #93a1a1 !important;
+  color: #657b83 !important;
+}
+
+.monaco-editor[data-theme="solarized-light"] .monaco-menu .monaco-list-row:hover,
+.monaco-editor[data-theme="solarized-light"] .monaco-menu .action-item:hover {
+  background-color: #93a1a1 !important;
+  color: #002b36 !important;
+}
+
+/* Force opaque backgrounds for all context menus */
+.monaco-menu-container,
+.context-view.monaco-menu-container,
+.monaco-menu,
+.monaco-menu .monaco-scrollable-element,
+.monaco-menu .monaco-list,
+.monaco-menu .monaco-tree {
+  opacity: 1 !important;
+}
+
+/* Ultra-specific context menu background fixes */
+body .monaco-menu-container {
+  background-color: #073642 !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+body .monaco-menu {
+  background-color: #073642 !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+body .monaco-menu .monaco-scrollable-element {
+  background-color: #073642 !important;
+}
+
+body .monaco-menu .monaco-list {
+  background-color: #073642 !important;
+}
+
+body .monaco-menu .monaco-list-rows {
+  background-color: #073642 !important;
+}
+
+body .monaco-menu .monaco-list-row {
+  background-color: #073642 !important;
+}
+
+body .monaco-menu .monaco-tree-row {
+  background-color: #073642 !important;
+}
+
+/* Context menu in shadow DOM */
+body .context-view {
+  background-color: #073642 !important;
+}
+
+body .context-view .monaco-menu-container {
+  background-color: #073642 !important;
+}
+
+/* Force all children to have background */
+.monaco-menu-container *,
+.context-view.monaco-menu-container * {
+  background-color: inherit !important;
+}
+
+/* Force white text on dark theme context menus */
+.monaco-menu .action-label,
+.monaco-menu .monaco-list-row,
+.monaco-menu .monaco-icon-label,
+.monaco-menu .label-name,
+.monaco-menu .label-description,
+.monaco-menu-container .action-label,
+.monaco-menu-container .monaco-list-row {
+  color: #ffffff !important;
+}
+
+/* Ensure text is visible */
+.monaco-menu .action-item .action-label {
+  color: #ffffff !important;
+}
+
+.monaco-menu .action-item.disabled .action-label {
+  color: #999999 !important;
+  opacity: 0.6;
+}
+
+/* Additional specificity with important flags */
+div.context-view.monaco-menu-container {
+  background-color: #073642 !important;
+}
+
+div.monaco-menu-container div.monaco-menu {
+  background-color: #073642 !important;
+}
+
+/* Target the actual menu list container */
+.monaco-menu .actions-container {
+  background-color: #073642 !important;
+}
+
+.monaco-menu .monaco-action-bar {
+  background-color: #073642 !important;
+}
+
+/* Ensure visibility */
+.monaco-menu-container,
+.monaco-menu {
+  visibility: visible !important;
+  opacity: 1 !important;
 }

@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
 
 <SlideLayout.Full>
 ## Asynchronous JavaScript
@@ -7,24 +7,22 @@ import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Tex
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Why Asynchronous?</Heading>
-    <UnorderedList>
-      <ListItem>JavaScript is single-threaded</ListItem>
-      <ListItem>Can't block while waiting for slow operations</ListItem>
-      <ListItem>Network requests, file I/O, timers need async</ListItem>
-      <ListItem>Enables responsive user interfaces</ListItem>
-    </UnorderedList>
-    <Box marginTop="50px">
-      <Text fontSize="24px" fontWeight="bold">Real-world analogy:</Text>
-      <Text fontSize="20px">Restaurant kitchen - take orders while cooking</Text>
-      <Text fontSize="20px">Don't wait for one meal before starting next</Text>
-    </Box>
+## Why Asynchronous?
+    
+- JavaScript is single-threaded
+- Can't block while waiting for slow operations
+- Network requests, file I/O, timers need async
+- Enables responsive user interfaces
+    
+**Real-world analogy:**
+- Restaurant kitchen - take orders while cooking
+- Don't wait for one meal before starting next
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Synchronous vs Asynchronous
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -50,27 +48,21 @@ console.log("2. Continuing..."); // Runs immediately!
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Evolution of Async Patterns</Heading>
-    <Box width="80%">
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">1. Callbacks (Traditional)</Text>
-      <UnorderedList>
-        <ListItem>Function passed as argument</ListItem>
-        <ListItem>Called when operation completes</ListItem>
-        <ListItem>Can lead to "callback hell"</ListItem>
-      </UnorderedList>
-      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">2. Promises (ES6)</Text>
-      <UnorderedList>
-        <ListItem>Object representing future value</ListItem>
-        <ListItem>Chainable with .then() and .catch()</ListItem>
-        <ListItem>Better error handling</ListItem>
-      </UnorderedList>
-      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">3. Async/Await (ES2017)</Text>
-      <UnorderedList>
-        <ListItem>Write async code that looks synchronous</ListItem>
-        <ListItem>Built on top of Promises</ListItem>
-        <ListItem>Cleaner, more readable code</ListItem>
-      </UnorderedList>
-    </Box>
+## Evolution of Async Patterns
+**1. Callbacks (Traditional)**
+- Function passed as argument
+- Called when operation completes
+- Can lead to "callback hell"
+
+**2. Promises (ES6)**
+- Object representing future value
+- Chainable with .then() and .catch()
+- Better error handling
+
+**3. Async/Await (ES2017)**
+- Write async code that looks synchronous
+- Built on top of Promises
+- Cleaner, more readable code
   </FlexBox>
 </SlideLayout.Full>
 
@@ -86,8 +78,136 @@ console.log("2. Continuing..."); // Runs immediately!
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Callbacks: The Traditional Way
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Callbacks - functions passed as arguments
+function loadHabitData(habitId, callback) {
+  // Simulate network request
+  setTimeout(() => {
+    const data = { id: habitId, name: "Exercise", streak: 5 };
+    callback(data);
+  }, 1000);
+}
+
+// Usage - provide function to call when done
+loadHabitData(123, (habitData) => {
+  console.log("Got habit:", habitData.name);
+});
+
+// Problem: Callback hell with multiple operations
+loadHabitData(123, (habitData) => {
+  updateHabitStreak(habitData.id, (result) => {
+    saveToDatabase(result, (saved) => {
+      console.log("All done!"); // Nested callbacks get messy
+    });
+  });
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Promises: A Better Way
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Promises - objects representing future values
+function loadHabitData(habitId) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const data = { id: habitId, name: "Exercise", streak: 5 };
+      resolve(data); // Success!
+      // reject(new Error("Failed")); // For errors
+    }, 1000);
+  });
+}
+
+// Usage with .then() and .catch()
+loadHabitData(123)
+  .then(habitData => {
+    console.log("Got habit:", habitData.name);
+    return updateHabitStreak(habitData.id);
+  })
+  .then(result => {
+    return saveToDatabase(result);
+  })
+  .then(saved => {
+    console.log("All done!");
+  })
+  .catch(error => {
+    console.error("Something failed:", error);
+  });
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Async/Await: The Modern Way
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Async/await - makes async code look synchronous
+async function processHabit(habitId) {
+  try {
+    // await pauses execution until Promise resolves
+    const habitData = await loadHabitData(habitId);
+    console.log("Got habit:", habitData.name);
+    
+    const result = await updateHabitStreak(habitData.id);
+    const saved = await saveToDatabase(result);
+    
+    console.log("All done!");
+    return saved;
+  } catch (error) {
+    console.error("Something failed:", error);
+    throw error; // Re-throw if needed
+  }
+}
+
+// Usage - async functions return Promises
+processHabit(123)
+  .then(result => console.log("Success:", result))
+  .catch(error => console.log("Failed:", error));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Async/Await Rules
+
+**Key concepts to remember:**
+
+**The `async` keyword:**
+- Makes a function return a Promise automatically
+- Allows use of `await` inside the function
+
+**The `await` keyword:**
+- Can only be used inside `async` functions
+- Pauses execution until the Promise resolves
+- Returns the resolved value (not the Promise)
+
+**Error handling:**
+- Use `try/catch` blocks with async/await
+- Much cleaner than `.catch()` chains
+
+**Real benefit:** Write asynchronous code that reads like synchronous code!
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Asynchronous JavaScript
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -111,13 +231,102 @@ function getHabitData(habitId) {
 // Should save completion, then fetch updated data
 ```
     
+    
+```javascript
+// Solution: Modern async/await patterns
+// 1. Converting callback to Promise
+function saveHabitCompletion(habitId) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ success: true, points: 10 });
+    }, 1000);
+  });
+}
+
+// 2. Async/await version of data fetching
+async function getHabitData(habitId) {
+  const response = await fetch(`/api/habits/${habitId}`);
+  return await response.json();
+}
+
+// 3. Complete async function that saves and updates
+async function saveAndUpdateHabit(habitId, completionData) {
+  try {
+    // Save the completion
+    const saveResult = await saveHabitCompletion(habitId);
+    console.log('Saved:', saveResult);
+    
+    // Fetch updated data
+    const updatedData = await getHabitData(habitId);
+    console.log('Updated data:', updatedData);
+    
+    return {
+      saveResult,
+      updatedData
+    };
+  } catch (error) {
+    console.error('Error in save and update:', error);
+    throw error;
+  }
+}
+
+// Usage example
+async function handleHabitCompletion() {
+  try {
+    const result = await saveAndUpdateHabit('habit-123');
+    console.log('Process completed:', result);
+  } catch (error) {
+    console.error('Failed to complete habit:', error);
+  }
+}
+
+// Simulated API functions for testing
+function fetch(url) {
+  return Promise.resolve({
+    json: () => Promise.resolve({
+      id: 'habit-123',
+      name: 'Exercise',
+      streak: 5,
+      lastCompleted: new Date().toISOString()
+    })
+  });
+}
+```
+    
   </File>
+  <Tests>
+    
+```javascript
+// Tests for Async JavaScript
+describe('Async Habit Tracking', () => {
+  it('should save habit completion asynchronously', async () => {
+    const result = await saveHabitCompletion('test-habit');
+    expect(result.success).to.be.true;
+    expect(result.points).to.equal(10);
+  });
+  
+  it('should fetch habit data with async/await', async () => {
+    const data = await getHabitData('habit-123');
+    expect(data).to.have.property('id');
+    expect(data.name).to.equal('Exercise');
+  });
+  
+  it('should save and update habit in sequence', async () => {
+    const result = await saveAndUpdateHabit('habit-123');
+    expect(result).to.have.property('saveResult');
+    expect(result).to.have.property('updatedData');
+    expect(result.saveResult.success).to.be.true;
+  });
+});
+```
+    
+  </Tests>
 </CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Promise Basics
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -151,29 +360,91 @@ myPromise
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Common Async Patterns</Heading>
-    <Box width="80%">
-      <Text fontSize="20px" marginBottom="30px">Real-world scenarios in habit tracking:</Text>
-      <UnorderedList>
-        <ListItem>Fetching user habits from API</ListItem>
-        <ListItem>Saving completion to database</ListItem>
-        <ListItem>Syncing data across devices</ListItem>
-        <ListItem>Loading user preferences</ListItem>
-        <ListItem>Uploading progress photos</ListItem>
-      </UnorderedList>
-      <Box marginTop="40px" padding="20px" backgroundColor="#f0f0f0" borderRadius="8px">
-        <Text fontSize="18px" fontWeight="bold">Remember:</Text>
-        <Text fontSize="16px">• Network requests are always async</Text>
-        <Text fontSize="16px">• File operations are async in Node.js</Text>
-        <Text fontSize="16px">• setTimeout/setInterval are async</Text>
-      </Box>
-    </Box>
+## Common Async Patterns
+**Real-world scenarios in habit tracking:**
+- Fetching user habits from API
+- Saving completion to database
+- Syncing data across devices
+- Loading user preferences
+- Uploading progress photos
+
+**Remember:**
+- Network requests are always async
+- File operations are async in Node.js
+- setTimeout/setInterval are async
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Promise Chains vs Async/Await
+
+**Promise Chains** (older style):
+```javascript
+getData()
+  .then(data => processData(data))
+  .then(processed => saveData(processed))
+  .then(result => console.log('Success:', result))
+  .catch(error => console.error('Failed:', error));
+```
+
+**Async/Await** (modern style):
+```javascript
+async function handleData() {
+  try {
+    const data = await getData();
+    const processed = await processData(data);
+    const result = await saveData(processed);
+    console.log('Success:', result);
+  } catch (error) {
+    console.error('Failed:', error);
+  }
+}
+```
+
+**Why Async/Await is Better:**
+- Looks like synchronous code (easier to read)
+- Better error handling with try/catch
+- Easier debugging and stack traces
+- Less nesting and callback complexity
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Converting Patterns: Callbacks → Promises → Async/Await
+
+**Step 1: Callback to Promise**
+```javascript
+// Callback version
+function saveData(data, callback) {
+  setTimeout(() => callback(null, { success: true }), 1000);
+}
+
+// Promise version  
+function saveData(data) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve({ success: true }), 1000);
+  });
+}
+```
+
+**Step 2: Promise Chain to Async/Await**
+```javascript
+// Promise chain
+return saveData(data)
+  .then(result => updateUI(result))
+  .then(ui => logActivity(ui));
+
+// Async/await
+const result = await saveData(data);
+const ui = await updateUI(result);
+return await logActivity(ui);
+```
+
+**For the exercise**: Convert a complex promise chain into clean async/await code.
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Promise Chain to Async/Await
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -221,7 +492,7 @@ function getLocalHabitData(habitId) {
 
 <SlideLayout.Full>
 ## Async/Await Best Practices
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -259,23 +530,20 @@ await Promise.all(habits.map(habit => saveHabit(habit)));
 <SlideLayout.Full>
 ## Key Takeaways: Asynchronous JavaScript
 
-<Box width="80%">
-  <Text fontSize="24px" fontWeight="bold" marginBottom="30px">Remember:</Text>
-  <UnorderedList>
-    <ListItem>JavaScript is single-threaded but non-blocking</ListItem>
-    <ListItem>Callbacks → Promises → Async/Await (evolution)</ListItem>
-    <ListItem>Always handle errors in async code</ListItem>
-    <ListItem>Use Promise.all() for parallel operations</ListItem>
-    <ListItem>Async/await makes code more readable</ListItem>
-  </UnorderedList>
-  
-  <Box marginTop="40px" padding="20px" backgroundColor="#e8f5e9" borderRadius="8px">
-    <Text fontSize="20px" fontWeight="bold">Common Pitfalls:</Text>
-    <Text fontSize="18px">• Forgetting to await async functions</Text>
-    <Text fontSize="18px">• Not handling promise rejections</Text>
-    <Text fontSize="18px">• Creating sequential code when parallel would work</Text>
-  </Box>
-  
-  <Text fontSize="20px" fontStyle="italic" marginTop="40px">Master async patterns for responsive, modern web apps!</Text>
-</Box>
+**Remember:**
+- JavaScript is single-threaded but non-blocking
+- Callbacks → Promises → Async/Await (evolution)
+- Always handle errors in async code
+- Use Promise.all() for parallel operations
+- Async/await makes code more readable
+
+**Common Pitfalls:**
+- Forgetting to await async functions
+- Not handling promise rejections
+- Creating sequential code when parallel would work
+
+*Master async patterns for responsive, modern web apps!*
+
+### Bridge to Error Handling
+Async code can fail. Let's learn how to **handle errors gracefully** and build robust applications!
 </SlideLayout.Full>

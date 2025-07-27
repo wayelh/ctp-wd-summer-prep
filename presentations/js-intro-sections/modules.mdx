@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
 
 <SlideLayout.Full>
 ## 📦 JavaScript Modules
@@ -12,24 +12,32 @@ import { SlideLayout, Image, FlexBox, UnorderedList, ListItem, Box, Heading, Tex
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Why Modules?</Heading>
-    <UnorderedList>
-      <ListItem>Break code into manageable pieces</ListItem>
-      <ListItem>Avoid global namespace pollution</ListItem>
-      <ListItem>Enable code reuse across projects</ListItem>
-      <ListItem>Clear dependencies and interfaces</ListItem>
-    </UnorderedList>
-    <Box marginTop="50px">
-      <Text fontSize="24px" fontWeight="bold">Real-world analogy:</Text>
-      <Text fontSize="20px">Like organizing a habit tracker into separate components:</Text>
-      <Text fontSize="20px">habits, analytics, storage, UI - each in its own module</Text>
-    </Box>
+    ## Why Modules?
+    - Break code into manageable pieces
+    - Avoid global namespace pollution
+    - Enable code reuse across projects
+    - Clear dependencies and interfaces
+
+    ### Real-world analogy:
+    - Like organizing a kitchen: separate stations for prep, cooking, plating
+    - Each station has specialized tools and clear responsibilities
+    - Chefs can work independently but coordinate through shared interfaces
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Understanding Module File Paths
+- **Absolute paths**: Start from root directory (e.g., `/src/utils.js`)
+- **Relative paths**: Start from current file location (e.g., `./utils.js`, `../utils.js`)
+- **File extensions**: `.js` for JavaScript files,
+
+**Key insight:** The browser/Node.js needs to know exactly where to find your files!
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Module Basics: Export and Import
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -64,24 +72,22 @@ const myHabit = createHabit('Exercise', 'health');
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Types of Exports</Heading>
-    <Box width="80%">
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">Named Exports:</Text>
-      <Text fontSize="18px" marginBottom="30px">• Export multiple values from a module</Text>
-      <Text fontSize="18px" marginBottom="30px">• Import with exact names (or rename)</Text>
-      <Text fontSize="18px" marginBottom="30px">• Can export declarations or statements</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginTop="20px" marginBottom="20px">Default Export:</Text>
-      <Text fontSize="18px" marginBottom="30px">• One default export per module</Text>
-      <Text fontSize="18px" marginBottom="30px">• Import with any name</Text>
-      <Text fontSize="18px">• Good for main functionality</Text>
-    </Box>
+    ## Types of Exports
+    **Named Exports:**
+    - Export multiple values from a module
+    - Import with exact names (or rename)
+    - Can export declarations or statements
+
+    **Default Export:**
+    - One default export per module
+    - Import with any name
+    - Good for main functionality
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Export Syntax Examples
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -114,7 +120,7 @@ export { VERSION, helper };
 
 <SlideLayout.Full>
 ## Import Syntax Examples
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -144,7 +150,7 @@ import './initialize.js';
 
 <SlideLayout.Full>
 ## Exercise: Habit Storage Module
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -172,24 +178,22 @@ const STORAGE_KEY = 'habit_tracker_habits';
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Module Systems</Heading>
-    <Box width="80%">
-      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">ES6 Modules (ESM):</Text>
-      <Text fontSize="18px" marginBottom="30px">• Modern standard (import/export)</Text>
-      <Text fontSize="18px" marginBottom="30px">• Static analysis possible</Text>
-      <Text fontSize="18px" marginBottom="30px">• Tree-shaking support</Text>
-      
-      <Text fontSize="24px" fontWeight="bold" marginTop="20px" marginBottom="20px">CommonJS (CJS):</Text>
-      <Text fontSize="18px" marginBottom="30px">• Node.js standard (require/module.exports)</Text>
-      <Text fontSize="18px" marginBottom="30px">• Dynamic loading</Text>
-      <Text fontSize="18px">• Synchronous by design</Text>
-    </Box>
+    ## Module Systems
+    **ES6 Modules (ESM):**
+    - Modern standard (import/export)
+    - Static analysis possible
+    - Tree-shaking support
+
+    **CommonJS (CJS):**
+    - Node.js standard (require/module.exports)
+    - Dynamic loading
+    - Synchronous by design
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## CommonJS vs ES6 Modules
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -218,7 +222,7 @@ console.log(add(2, 3));
 
 <SlideLayout.Full>
 ## Exercise: Modular Habit Tracker
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
@@ -254,23 +258,19 @@ import { calculateStreak } from './services/analytics.js';
 
 <SlideLayout.Full>
   <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
-    <Heading fontSize="h2">Module Best Practices</Heading>
-    <Box width="80%">
-      <UnorderedList>
-        <ListItem>**Single Responsibility** - One module, one purpose</ListItem>
-        <ListItem>**Clear Exports** - Be explicit about public API</ListItem>
-        <ListItem>**Avoid Circular Dependencies** - A imports B imports A</ListItem>
-        <ListItem>**Consistent Naming** - Match file and export names</ListItem>
-        <ListItem>**Documentation** - Document module purpose and exports</ListItem>
-        <ListItem>**Testing** - Test modules in isolation</ListItem>
-      </UnorderedList>
-    </Box>
+    ## Module Best Practices
+    - **Single Responsibility** - One module, one purpose
+    - **Clear Exports** - Be explicit about public API
+    - **Avoid Circular Dependencies** - A imports B imports A
+    - **Consistent Naming** - Match file and export names
+    - **Documentation** - Document module purpose and exports
+    - **Testing** - Test modules in isolation
   </FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Dynamic Imports
-<CodeDisplay height="500px">
+<CodeDisplay >
   <File name="example.js">
     
 ```javascript
