@@ -16,292 +16,96 @@ body {
   position: relative;
 }
 
-/* Solarized Dark Monaco Editor tooltips */
-.monaco-hover,
-.monaco-editor-hover,
-.monaco-editor .monaco-hover,
-.monaco-editor .monaco-editor-hover,
-.monaco-hover-content {
-  background-color: #073642 !important;
-  border: 1px solid #586e75 !important;
-  color: #839496 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
-}
-
-.monaco-editor .monaco-hover .hover-contents,
-.monaco-hover .hover-contents {
-  background-color: #073642 !important;
-  color: #839496 !important;
-}
-
-/* Suggest widget */
-.suggest-widget,
-.monaco-editor .suggest-widget {
-  background-color: #073642 !important;
-  border: 1px solid #586e75 !important;
-  color: #839496 !important;
-}
-
-.suggest-widget .monaco-list-row,
-.monaco-editor .suggest-widget .monaco-list-row {
-  background-color: transparent !important;
-  color: #839496 !important;
-}
-
-.suggest-widget .monaco-list-row.focused,
-.monaco-editor .suggest-widget .monaco-list-row.focused {
-  background-color: #586e75 !important;
-  color: #fdf6e3 !important;
-}
-
-/* Parameter hints */
-.parameter-hints-widget,
-.monaco-editor .parameter-hints-widget {
-  background-color: #073642 !important;
-  border: 1px solid #586e75 !important;
-  color: #839496 !important;
-}
-
-/* Context menu - comprehensive selectors */
-.monaco-menu,
-.context-view.monaco-menu-container,
-.context-view .monaco-menu,
-.monaco-menu-container .monaco-menu {
-  background-color: #073642 !important;
-  border: 1px solid #ffffff !important;
-  color: #839496 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-}
-
-.monaco-scrollable-element .monaco-menu,
-.monaco-action-bar .actions-container,
-.monaco-menu .monaco-tree-row,
-.monaco-menu .monaco-list,
-.monaco-menu .monaco-scrollable-element {
-  background-color: #073642 !important;
-  color: #839496 !important;
-}
-
-.monaco-menu .monaco-action-bar,
-.monaco-menu .actions-container,
-.context-view .monaco-action-bar,
-.monaco-menu .monaco-scrollable-element {
-  background-color: #073642 !important;
-}
-
-.monaco-menu .action-item,
-.monaco-menu .action-label,
-.monaco-menu .monaco-list-row {
-  color: #839496 !important;
-  background-color: transparent !important;
-}
-
-.monaco-menu .action-item:hover,
-.monaco-menu .action-item.focused,
-.monaco-menu .monaco-list-row:hover,
-.monaco-menu .monaco-list-row.focused {
-  background-color: #586e75 !important;
-}
-
-.monaco-menu .action-item.disabled .action-label {
-  opacity: 0.4;
-}
-
-/* Ensure menu container has background */
-.monaco-menu-container {
-  background-color: #073642 !important;
-}
-
-/* More specific context menu fixes */
-.context-view.monaco-menu-container .monaco-menu {
-  background-color: #073642 !important;
-}
-
-.context-view.monaco-menu-container .monaco-scrollable-element {
-  background-color: #073642 !important;
-}
-
-.monaco-menu .monaco-tree {
-  background-color: #073642 !important;
-}
-
-.monaco-menu .monaco-list-rows {
-  background-color: #073642 !important;
-}
-
-/* Fix for shadow DOM context menus */
-.monaco-menu-container .monaco-menu .monaco-action-bar {
-  background-color: #073642 !important;
-}
-
-/* Ensure no transparent backgrounds in menu items */
-.monaco-menu .monaco-list-row,
-.monaco-menu .monaco-tree-row,
-.monaco-menu .action-item {
-  background-color: #073642 !important;
-}
-
-.monaco-menu .monaco-list-row:hover,
-.monaco-menu .monaco-tree-row:hover,
-.monaco-menu .action-item:hover {
-  background-color: #586e75 !important;
-}
-
-/* Shadow container */
-.shadow-root-host {
-  background-color: transparent !important;
-}
-
-/* Monaco scrollable element */
-.monaco-scrollable-element > .scrollbar {
-  background: transparent !important;
-}
-
-/* Ensure high z-index for all tooltips */
-.monaco-hover,
-.suggest-widget,
-.parameter-hints-widget,
-.monaco-menu,
-.context-view {
-  z-index: 10000 !important;
-}
-
-/* Force Monaco editor background colors */
-.monaco-editor,
-.monaco-editor .monaco-editor-background,
-.monaco-editor .margin,
-.monaco-editor .view-overlays,
-.monaco-editor .margin-view-overlays,
-.monaco-editor .monaco-scrollable-element,
-.monaco-editor .lines-content.monaco-editor-background,
-.monaco-editor .minimap,
-.monaco-editor .decorationsOverviewRuler {
-  background-color: transparent !important;
-}
-
-/* Override Monaco's internal styles */
-.monaco-editor .lines-content,
-.monaco-editor .view-lines,
-.monaco-editor .view-line,
-.monaco-editor .overflow-guard {
-  background-color: transparent !important;
-}
-
-/* Light theme context menu overrides */
-.monaco-editor[data-theme="solarized-light"] .monaco-menu,
-.monaco-editor[data-theme="solarized-light"] .context-view.monaco-menu-container,
-.monaco-editor[data-theme="solarized-light"] .context-view .monaco-menu {
-  background-color: #eee8d5 !important;
-  border: 1px solid #93a1a1 !important;
-  color: #657b83 !important;
-}
-
-.monaco-editor[data-theme="solarized-light"] .monaco-menu .monaco-list-row:hover,
-.monaco-editor[data-theme="solarized-light"] .monaco-menu .action-item:hover {
-  background-color: #93a1a1 !important;
-  color: #002b36 !important;
-}
-
-/* Force opaque backgrounds for all context menus */
-.monaco-menu-container,
-.context-view.monaco-menu-container,
-.monaco-menu,
-.monaco-menu .monaco-scrollable-element,
-.monaco-menu .monaco-list,
-.monaco-menu .monaco-tree {
+/* Monaco Editor critical fixes */
+.monaco-editor .suggest-widget,
+.monaco-editor .suggest-widget.visible {
+  background-color: #252526 !important;
   opacity: 1 !important;
-}
-
-/* Ultra-specific context menu background fixes */
-body .monaco-menu-container {
-  background-color: #073642 !important;
-  border: 1px solid #ffffff !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-}
-
-body .monaco-menu {
-  background-color: #073642 !important;
-  border: 1px solid #ffffff !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-}
-
-body .monaco-menu .monaco-scrollable-element {
-  background-color: #073642 !important;
-}
-
-body .monaco-menu .monaco-list {
-  background-color: #073642 !important;
-}
-
-body .monaco-menu .monaco-list-rows {
-  background-color: #073642 !important;
-}
-
-body .monaco-menu .monaco-list-row {
-  background-color: #073642 !important;
-}
-
-body .monaco-menu .monaco-tree-row {
-  background-color: #073642 !important;
-}
-
-/* Context menu in shadow DOM */
-body .context-view {
-  background-color: #073642 !important;
-}
-
-body .context-view .monaco-menu-container {
-  background-color: #073642 !important;
-}
-
-/* Force all children to have background */
-.monaco-menu-container *,
-.context-view.monaco-menu-container * {
-  background-color: inherit !important;
-}
-
-/* Force white text on dark theme context menus */
-.monaco-menu .action-label,
-.monaco-menu .monaco-list-row,
-.monaco-menu .monaco-icon-label,
-.monaco-menu .label-name,
-.monaco-menu .label-description,
-.monaco-menu-container .action-label,
-.monaco-menu-container .monaco-list-row {
-  color: #ffffff !important;
-}
-
-/* Ensure text is visible */
-.monaco-menu .action-item .action-label {
-  color: #ffffff !important;
-}
-
-.monaco-menu .action-item.disabled .action-label {
-  color: #999999 !important;
-  opacity: 0.6;
-}
-
-/* Additional specificity with important flags */
-div.context-view.monaco-menu-container {
-  background-color: #073642 !important;
-}
-
-div.monaco-menu-container div.monaco-menu {
-  background-color: #073642 !important;
-}
-
-/* Target the actual menu list container */
-.monaco-menu .actions-container {
-  background-color: #073642 !important;
-}
-
-.monaco-menu .monaco-action-bar {
-  background-color: #073642 !important;
-}
-
-/* Ensure visibility */
-.monaco-menu-container,
-.monaco-menu {
   visibility: visible !important;
+}
+
+.monaco-editor.vs .suggest-widget,
+.monaco-editor.vs .suggest-widget.visible {
+  background-color: #f3f3f3 !important;
+}
+
+/* Suggest widget container and scrollable area */
+.monaco-editor .suggest-widget > .suggest-widget-container,
+.monaco-editor .suggest-widget .monaco-sash-container,
+.monaco-editor .suggest-widget .tree,
+.monaco-editor .suggest-widget .monaco-list,
+.monaco-editor .suggest-widget .monaco-list-rows,
+.monaco-editor .suggest-widget .monaco-scrollable-element {
+  background-color: inherit !important;
   opacity: 1 !important;
 }
+
+/* List items text visibility */
+.monaco-editor .suggest-widget .monaco-list-row,
+.monaco-editor .suggest-widget .monaco-list-row > .contents,
+.monaco-editor .suggest-widget .monaco-list-row .monaco-icon-label,
+.monaco-editor .suggest-widget .monaco-list-row .label-name,
+.monaco-editor .suggest-widget .monaco-list-row .signature,
+.monaco-editor .suggest-widget .monaco-list-row .qualifier,
+.monaco-editor .suggest-widget .monaco-list-row .details-label {
+  color: #cccccc !important;
+  opacity: 1 !important;
+}
+
+.monaco-editor.vs .suggest-widget .monaco-list-row,
+.monaco-editor.vs .suggest-widget .monaco-list-row > .contents,
+.monaco-editor.vs .suggest-widget .monaco-list-row .monaco-icon-label,
+.monaco-editor.vs .suggest-widget .monaco-list-row .label-name {
+  color: #616161 !important;
+}
+
+/* Focused item */
+.monaco-editor .suggest-widget .monaco-list-row.focused {
+  background-color: #094771 !important;
+}
+
+.monaco-editor.vs .suggest-widget .monaco-list-row.focused {
+  background-color: #0066bf !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list-row.focused * {
+  color: #ffffff !important;
+}
+
+/* Details panel */
+.suggest-details,
+.monaco-editor .suggest-details,
+.monaco-editor .suggest-widget .details {
+  background-color: #1e1e1e !important;
+  color: #cccccc !important;
+  opacity: 1 !important;
+}
+
+.monaco-editor.vs .suggest-details,
+.monaco-editor.vs .suggest-widget .details {
+  background-color: #f3f3f3 !important;
+  color: #616161 !important;
+}
+
+/* Context menu fix */
+.monaco-menu,
+.context-view .monaco-menu,
+.context-view.monaco-menu-container {
+  background-color: #252526 !important;
+  color: #cccccc !important;
+  opacity: 1 !important;
+}
+
+.monaco-editor.vs .monaco-menu,
+.monaco-editor.vs .context-view .monaco-menu {
+  background-color: #f3f3f3 !important;
+  color: #616161 !important;
+}
+
+/* Force everything visible */
+.monaco-editor *[class*="suggest"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+

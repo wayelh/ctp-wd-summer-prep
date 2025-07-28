@@ -1,0 +1,31 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Building Generic Data Structures
+
+Real applications need flexible storage systems:
+
+- Generic Storage Requirements:
+- Store items of any type safely
+  - Provide CRUD operations (Create, Read, Update, Delete)
+  - Maintain type safety throughout operations
+  - Allow searching and filtering
+
+**Generic Constraints for Practical Use:**
+```typescript
+// Constraint: items must have an 'id' property
+interface Identifiable {
+  id: string;
+}
+
+class Storage<T extends Identifiable> {
+  private items: T[] = [];
+  
+  add(item: T): void { /* ... */ }
+  getById(id: string): T | undefined { /* ... */ }
+}
+```
+
+**The Challenge**: Build a storage system that works with any object type while ensuring they have the properties needed for storage operations.
+</SlideLayout.Full>

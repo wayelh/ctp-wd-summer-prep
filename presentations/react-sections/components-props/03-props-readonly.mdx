@@ -1,0 +1,94 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Props are Read-Only
+
+### Important Rules:
+- **Props are immutable** - components cannot modify their own props
+- **Data flows down** - parent passes props to children
+- **Props trigger re-renders** - component updates when props change
+- **Default values** - use default parameters or defaultProps
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Props are Read-Only</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React from 'react';
+
+interface StreakDisplayProps {
+  streak: number;
+  habitName?: string;
+}
+
+// ❌ Wrong: Don't modify props
+function BadStreakDisplay({ streak }: StreakDisplayProps): JSX.Element {
+  // This would cause an error!
+  // streak = streak + 1; // Error: Cannot assign to 'streak'
+  
+  return <div>Streak: {streak}</div>;
+}
+
+// ✅ Correct: Props are read-only
+function GoodStreakDisplay({ 
+  streak, 
+  habitName = "Your habit" 
+}: StreakDisplayProps): JSX.Element {
+  // Use props as they are, don't modify them
+  const message = streak > 0 
+    ? `${habitName}: ${streak} day streak! Keep going!` 
+    : `Start your ${habitName} streak today!`;
+    
+  return (
+    <div className="streak-display">
+      <span className="streak-icon">{streak > 0 ? '🔥' : '💪'}</span>
+      <span className="streak-message">{message}</span>
+    </div>
+  );
+}
+
+// Parent component controls the data
+function HabitTracker(): JSX.Element {
+  const habits = [
+    { id: 1, name: "Meditation", streak: 10 },
+    { id: 2, name: "Reading", streak: 0 },
+    { id: 3, name: "Exercise", streak: 5 }
+  ];
+  
+  return (
+    <div className="habit-tracker">
+      <h2>Your Habits</h2>
+      {habits.map(habit => (
+        <GoodStreakDisplay 
+          key={habit.id}
+          streak={habit.streak} 
+          habitName={habit.name}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Render the app
+import ReactDOM from 'react-dom/client';
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<HabitTracker />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

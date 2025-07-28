@@ -1,0 +1,49 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Frontend Layer - The User Interface
+
+<FlexBox justifyContent="space-between" alignItems="flex-start">
+  <Box width="48%">
+    **Technologies:**
+    - HTML (Structure)
+    - CSS (Styling)
+    - JavaScript (Interactivity)
+    - React/Vue/Angular (Frameworks)
+  </Box>
+  <Box width="48%">
+    **Responsibilities:**
+    - Display information
+    - Handle user interactions
+    - Send requests to backend
+    - Manage client-side state
+  </Box>
+</FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Frontend Example
+
+<CodeDisplay>
+  <File name="frontend-example.js">
+```javascript
+// Frontend JavaScript example
+function handleFormSubmit(event) {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  
+  // Send data to backend
+  fetch('/api/habits', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: formData.get('habitName'),
+      description: formData.get('description')
+    }),
+    headers: {'Content-Type': 'application/json'}
+  });
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

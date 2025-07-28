@@ -1,0 +1,106 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Testing Custom Hooks
+
+<CodeDisplay>
+  <File name="useCounter.ts">
+```tsx
+import { useState, useCallback } from 'react';
+
+interface UseCounterOptions {
+  initialValue?: number;
+  min?: number;
+  max?: number;
+}
+
+function useCounter({
+  initialValue = 0,
+  min = -Infinity,
+  max = Infinity
+}: UseCounterOptions = {}) {
+  const [count, setCount] = useState(initialValue);
+
+  const increment = useCallback(() => {
+    setCount(c => Math.min(c + 1, max));
+  }, [max]);
+
+  const decrement = useCallback(() => {
+    setCount(c => Math.max(c - 1, min));
+  }, [min]);
+
+  const reset = useCallback(() => {
+    setCount(initialValue);
+  }, [initialValue]);
+
+  const set = useCallback((value: number) => {
+    setCount(Math.max(min, Math.min(value, max)));
+  }, [min, max]);
+
+  return { count, increment, decrement, reset, set };
+}
+
+export default useCounter;
+```
+  </File>
+  <File name="useCounter.test.ts">
+```tsx
+import { renderHook, act } from '@testing-library/react';
+import useCounter from './useCounter';
+
+describe('useCounter', () => {
+  test('initializes with default value', () => {
+    const { result } = renderHook(() => useCounter());
+    expect(result.current.count).toBe(0);
+  });
+
+  test('initializes with custom value', () => {
+    const { result } = renderHook(() => 
+      useCounter({ initialValue: 10 })
+    );
+    expect(result.current.count).toBe(10);
+  });
+
+  test('increments count', () => {
+    const { result } = renderHook(() => useCounter());
+    
+    act(() => {
+      result.current.increment();
+    });
+    
+    expect(result.current.count).toBe(1);
+  });
+
+  test('respects max limit', () => {
+    const { result } = renderHook(() => 
+      useCounter({ initialValue: 9, max: 10 })
+    );
+    
+    act(() => {
+      result.current.increment();
+      result.current.increment(); // Should not go beyond 10
+    });
+    
+    expect(result.current.count).toBe(10);
+  });
+
+  test('resets to initial value', () => {
+    const { result } = renderHook(() => 
+      useCounter({ initialValue: 5 })
+    );
+    
+    act(() => {
+      result.current.increment();
+      result.current.increment();
+      result.current.reset();
+    });
+    
+    expect(result.current.count).toBe(5);
+  });
+});
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

@@ -1,0 +1,65 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Database Layer - Data Persistence
+
+<FlexBox justifyContent="space-between" alignItems="flex-start">
+  <Box width="48%">
+    **SQL Databases:**
+    - PostgreSQL
+    - MySQL
+    - SQLite
+    - Structured data with relationships
+  </Box>
+  <Box width="48%">
+    **NoSQL Databases:**
+    - MongoDB
+    - Firebase
+    - DynamoDB
+    - Flexible document storage
+  </Box>
+</FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## SQL Database Schema Example
+
+<CodeDisplay>
+  <File name="database-schema.sql">
+```sql
+-- SQL Database Schema Example
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(100) UNIQUE NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE habits (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  name VARCHAR(100) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Database Query Example
+
+<CodeDisplay>
+  <File name="database-query.sql">
+```sql
+-- Query example
+SELECT h.name, h.description, u.username 
+FROM habits h 
+JOIN users u ON h.user_id = u.id 
+WHERE u.id = 1;
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

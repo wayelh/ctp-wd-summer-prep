@@ -1,0 +1,170 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Server Actions
+
+<CodeDisplay>
+  <File name="app/todos/page.tsx">
+```tsx
+// Server Component with Server Actions
+import { revalidatePath } from 'next/cache';
+
+async function TodosPage() {
+  const todos = await fetchTodos();
+
+  // Server Action - runs on server
+  async function addTodo(formData: FormData) {
+    'use server';
+    
+    const title = formData.get('title') as string;
+    
+    // Direct database access
+    await db.todos.create({
+      data: { title, completed: false }
+    });
+    
+    // Revalidate the page
+    revalidatePath('/todos');
+  }
+
+  async function toggleTodo(id: string, completed: boolean) {
+    'use server';
+    
+    await db.todos.update({
+      where: { id },
+      data: { completed }
+    });
+    
+    revalidatePath('/todos');
+  }
+
+  async function deleteTodo(id: string) {
+    'use server';
+    
+    await db.todos.delete({
+      where: { id }
+    });
+    
+    revalidatePath('/todos');
+  }
+
+  return (
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
+      <h1>Server Actions Todo List</h1>
+      
+      {/* Form with Server Action */}
+      <form action={addTodo} style={{ marginBottom: '20px' }}>
+        <input
+          name="title"
+          type="text"
+          placeholder="Add a new todo..."
+          required
+          style={{ 
+            padding: '10px',
+            width: '300px',
+            marginRight: '10px'
+          }}
+        />
+        <button type="submit">Add</button>
+      </form>
+
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {todos.map((todo) => (
+          <TodoItem 
+            key={todo.id} 
+            todo={todo}
+            onToggle={toggleTodo}
+            onDelete={deleteTodo}
+          />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// Client Component for optimistic updates
+'use client';
+
+import { useTransition, useOptimistic } from 'react';
+
+function TodoItem({ 
+  todo, 
+  onToggle, 
+  onDelete 
+}: { 
+  todo: Todo;
+  onToggle: (id: string, completed: boolean) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}) {
+  const [isPending, startTransition] = useTransition();
+  const [optimisticTodo, setOptimisticTodo] = useOptimistic(
+    todo,
+    (state, newCompleted: boolean) => ({ ...state, completed: newCompleted })
+  );
+
+  return (
+    <li style={{ 
+      display: 'flex', 
+      alignItems: 'center',
+      padding: '10px',
+      opacity: isPending ? 0.5 : 1
+    }}>
+      <input
+        type="checkbox"
+        checked={optimisticTodo.completed}
+        onChange={(e) => {
+          startTransition(async () => {
+            setOptimisticTodo(e.target.checked);
+            await onToggle(todo.id, e.target.checked);
+          });
+        }}
+      />
+      <span style={{ 
+        flex: 1,
+        marginLeft: '10px',
+        textDecoration: optimisticTodo.completed ? 'line-through' : 'none'
+      }}>
+        {todo.title}
+      </span>
+      <button
+        onClick={() => {
+          startTransition(async () => {
+            await onDelete(todo.id);
+          });
+        }}
+        disabled={isPending}
+      >
+        Delete
+      </button>
+    </li>
+  );
+}
+
+// Types
+interface Todo {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
+// Mock database
+const db = {
+  todos: {
+    findMany: async () => [],
+    create: async (data: any) => {},
+    update: async (params: any) => {},
+    delete: async (params: any) => {}
+  }
+};
+
+async function fetchTodos(): Promise<Todo[]> {
+  return db.todos.findMany();
+}
+
+export default TodosPage;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

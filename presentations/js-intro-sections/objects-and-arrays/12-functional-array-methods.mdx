@@ -1,0 +1,28 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Functional Array Methods
+
+**Modern JavaScript array methods:**
+
+- `map()` - Transform each element
+- `filter()` - Select elements that match criteria
+- `reduce()` - Combine all elements into a single value
+- `find()` - Get the first matching element
+
+```javascript
+const habits = [
+  { name: 'Exercise', points: 10, completed: true },
+  { name: 'Reading', points: 5, completed: false },
+  { name: 'Meditation', points: 8, completed: true }
+];
+
+// Get names of completed habits
+const completedNames = habits
+  .filter(habit => habit.completed)
+  .map(habit => habit.name);
+  
+console.log(completedNames); // ['Exercise', 'Meditation']
+```
+</SlideLayout.Full>

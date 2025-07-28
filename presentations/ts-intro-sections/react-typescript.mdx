@@ -3,22 +3,54 @@ import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 <SlideLayout.Full>
 ## Understanding React + TypeScript Patterns
 
-Before building components, understand these key concepts:
+Before building components, understand these key concepts
+</SlideLayout.Full>
 
-**Props Interface:**
+<SlideLayout.Full>
+## Props Interface
+
 - Define the "contract" for what props your component expects
 - Use `?` for optional props with default values
 - Union types for restricted string values (`'primary' | 'secondary'`)
 
-**React.FC Type:**
+```typescript
+interface ButtonProps {
+  text: string;              // Required
+  onClick: () => void;       // Required
+  variant?: 'primary' | 'secondary';  // Optional with union type
+  disabled?: boolean;        // Optional boolean
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## React.FC Type
+
 - Stands for "Functional Component"
 - Provides type checking for component structure
 - Includes built-in `children` prop automatically
 
-**Function Props:**
+```typescript
+const Button: React.FC<ButtonProps> = (props) => {
+  // Component implementation
+  return <button>{props.text}</button>;
+};
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Function Props
+
 - `() => void` - function that takes no arguments, returns nothing
 - Common pattern for event handlers like `onClick`
 
+```typescript
+interface Props {
+  onClick: () => void;
+  onChange: (value: string) => void;
+  onSubmit: (data: FormData) => Promise<void>;
+}
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -28,6 +60,10 @@ Before building components, understand these key concepts:
 - Event handling with proper types
 - Hooks with TypeScript
 - Generic components
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Basic Functional Component
 
 ```typescript
 // Basic functional component
@@ -129,23 +165,49 @@ after(() => {
 
 <SlideLayout.Full>
 ## Hooks with TypeScript
+
+TypeScript provides excellent type inference and safety for React hooks
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## useState with Type Inference
 <CodeDisplay >
   <File name="example.typescript">
     
 ```typescript
-// useState with type inference
+// Type inference works automatically
 const [count, setCount] = useState(0); // number inferred
 const [name, setName] = useState(''); // string inferred
+const [isActive, setIsActive] = useState(false); // boolean inferred
 
-// useState with explicit types
+// Explicit types for complex values
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
 const [user, setUser] = useState<User | null>(null);
+const [items, setItems] = useState<string[]>([]);
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
 
-// useReducer with types
+<SlideLayout.Full>
+## useReducer with TypeScript
+<CodeDisplay >
+  <File name="example.typescript">
+    
+```typescript
+// Define action types
 type Action = 
   | { type: 'increment' }
   | { type: 'decrement' }
   | { type: 'reset'; payload: number };
 
+// Type-safe reducer
 const reducer = (state: number, action: Action): number => {
   switch (action.type) {
     case 'increment': return state + 1;
@@ -154,9 +216,23 @@ const reducer = (state: number, action: Action): number => {
   }
 };
 
+// Usage
 const [state, dispatch] = useReducer(reducer, 0);
+dispatch({ type: 'increment' });
+dispatch({ type: 'reset', payload: 10 });
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
 
-// Custom hooks
+<SlideLayout.Full>
+## Custom Hooks with Generics
+<CodeDisplay >
+  <File name="example.typescript">
+    
+```typescript
+// Generic custom hook for localStorage
 function useLocalStorage<T>(key: string, initialValue: T) {
   const [value, setValue] = useState<T>(() => {
     const item = localStorage.getItem(key);
@@ -170,6 +246,10 @@ function useLocalStorage<T>(key: string, initialValue: T) {
   
   return [value, setStoredValue] as const;
 }
+
+// Usage with type inference
+const [theme, setTheme] = useLocalStorage('theme', 'light');
+const [user, setUser] = useLocalStorage<User | null>('user', null);
 ```
     
   </File>

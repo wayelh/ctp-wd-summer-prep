@@ -1,0 +1,98 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## React Testing Library
+
+<CodeDisplay>
+  <File name="package.json">
+```json
+{
+  "name": "react-testing-demo",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0"
+  }
+}
+```
+  </File>
+  <File name="Button.tsx">
+```tsx
+import React, { useState } from 'react';
+
+interface ButtonProps {
+  onClick?: () => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}
+
+function Button({ onClick, disabled, children }: ButtonProps) {
+  const [clicked, setClicked] = useState(false);
+
+  const handleClick = () => {
+    setClicked(true);
+    onClick?.();
+    setTimeout(() => setClicked(false), 200);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={disabled}
+      className={clicked ? 'clicked' : ''}
+      aria-pressed={clicked}
+    >
+      {children}
+    </button>
+  );
+}
+
+export default Button;
+```
+  </File>
+  <File name="Button.test.tsx">
+```tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import Button from './Button';
+
+describe('Button', () => {
+  test('renders with text', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  test('calls onClick when clicked', () => {
+    const handleClick = jest.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+    
+    fireEvent.click(screen.getByText('Click me'));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('is disabled when disabled prop is true', () => {
+    render(<Button disabled>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeDisabled();
+  });
+
+  test('sets aria-pressed when clicked', () => {
+    render(<Button>Click me</Button>);
+    const button = screen.getByText('Click me');
+    
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(button);
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+  });
+});
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

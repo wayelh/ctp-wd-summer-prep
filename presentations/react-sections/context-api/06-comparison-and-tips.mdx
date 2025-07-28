@@ -1,0 +1,89 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Context vs Props
+
+### When to Use Context:
+- **Cross-cutting concerns** - Theme, auth, locale
+- **Deeply nested data** - Avoiding prop drilling
+- **Global state** - App-wide settings
+- **Shared utilities** - Notifications, modals
+
+### When to Use Props:
+- **Parent-child communication** - Direct relationships
+- **Component configuration** - UI options
+- **Isolated components** - Reusable libraries
+- **Performance critical** - Frequent updates
+
+### Context Limitations:
+- All consumers re-render on value change
+- Can't be used in server components
+- Makes components less reusable
+- Harder to test in isolation
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Performance Tips - Context Structure
+
+### 1. **Split Contexts**
+```tsx
+// Instead of one large context
+const AppContext = { user, theme, cart, settings };
+
+// Use multiple focused contexts
+const UserContext = { user };
+const ThemeContext = { theme };
+const CartContext = { cart };
+```
+
+### 2. **Split State and Dispatch**
+```tsx
+const StateContext = createContext(state);
+const DispatchContext = createContext(dispatch);
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Performance Tips - Memoization
+
+### 3. **Memoize Context Values**
+```tsx
+const value = useMemo(
+  () => ({ state, dispatch }),
+  [state, dispatch]
+);
+```
+
+### 4. **Avoid Creating Objects in Render**
+```tsx
+// ❌ Creates new object every render
+<Context.Provider value={{ count, setCount }}>
+
+// ✅ Stable reference
+const value = useMemo(() => ({ count, setCount }), [count]);
+<Context.Provider value={value}>
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Advanced Performance - Context Selectors
+
+### 5. **Use Context Selectors** (with libraries)
+```tsx
+// With use-context-selector
+const username = useContextSelector(
+  UserContext, 
+  state => state.user.name
+);
+```
+
+**Benefits:**
+- Only re-render when selected data changes
+- Prevents unnecessary re-renders
+- Better performance for large contexts
+- Available through third-party libraries
+
+</SlideLayout.Full>

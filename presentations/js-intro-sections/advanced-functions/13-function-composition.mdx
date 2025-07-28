@@ -1,0 +1,34 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Function Composition
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Combining simple functions to create complex behavior
+const compose = (...fns) => x => 
+  fns.reduceRight((acc, fn) => fn(acc), x);
+
+const pipe = (...fns) => x => 
+  fns.reduce((acc, fn) => fn(acc), x);
+
+// Example: Processing habit data
+const addTimestamp = habit => ({...habit, timestamp: Date.now()});
+const calculatePoints = habit => ({...habit, points: habit.completions * 10});
+const addStreak = habit => ({...habit, streak: habit.consecutive || 0});
+
+const processHabit = compose(
+  addStreak,
+  calculatePoints,
+  addTimestamp
+);
+
+// The functions are applied right-to-left with compose
+const result = processHabit({ name: "Exercise", completions: 5 });
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,459 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Dynamic List Operations
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Lists</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface Task {
+  id: number;
+  text: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  createdAt: Date;
+}
+
+function TaskManager(): JSX.Element {
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: 1,
+      text: 'Complete React tutorial',
+      completed: false,
+      priority: 'high',
+      createdAt: new Date()
+    }
+  ]);
+  const [newTaskText, setNewTaskText] = useState('');
+  const [priority, setPriority] = useState<Task['priority']>('medium');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
+  const [sortBy, setSortBy] = useState<'date' | 'priority' | 'alphabetical'>('date');
+
+  // Add new task
+  const addTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskText.trim()) return;
+
+    const newTask: Task = {
+      id: Date.now(),
+      text: newTaskText,
+      completed: false,
+      priority,
+      createdAt: new Date()
+    };
+
+    setTasks([...tasks, newTask]);
+    setNewTaskText('');
+  };
+
+  // Toggle task completion
+  const toggleTask = (id: number) => {
+    setTasks(tasks.map(task =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ));
+  };
+
+  // Delete task
+  const deleteTask = (id: number) => {
+    setTasks(tasks.filter(task => task.id !== id));
+  };
+
+  // Edit task
+  const editTask = (id: number, newText: string) => {
+    setTasks(tasks.map(task =>
+      task.id === id ? { ...task, text: newText } : task
+    ));
+  };
+
+  // Update priority
+  const updatePriority = (id: number, newPriority: Task['priority']) => {
+    setTasks(tasks.map(task =>
+      task.id === id ? { ...task, priority: newPriority } : task
+    ));
+  };
+
+  // Clear completed tasks
+  const clearCompleted = () => {
+    setTasks(tasks.filter(task => !task.completed));
+  };
+
+  // Filter tasks
+  const filteredTasks = tasks.filter(task => {
+    if (filterStatus === 'active') return !task.completed;
+    if (filterStatus === 'completed') return task.completed;
+    return true;
+  });
+
+  // Sort tasks
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    switch (sortBy) {
+      case 'priority':
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      case 'alphabetical':
+        return a.text.localeCompare(b.text);
+      case 'date':
+      default:
+        return b.createdAt.getTime() - a.createdAt.getTime();
+    }
+  });
+
+  const stats = {
+    total: tasks.length,
+    active: tasks.filter(t => !t.completed).length,
+    completed: tasks.filter(t => t.completed).length
+  };
+
+  return (
+    <div className="task-manager">
+      <h1>Task Manager</h1>
+
+      {/* Add Task Form */}
+      <form onSubmit={addTask} className="add-task-form">
+        <input
+          type="text"
+          value={newTaskText}
+          onChange={(e) => setNewTaskText(e.target.value)}
+          placeholder="Add a new task..."
+        />
+        <select 
+          value={priority}
+          onChange={(e) => setPriority(e.target.value as Task['priority'])}
+        >
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+        <button type="submit">Add Task</button>
+      </form>
+
+      {/* Controls */}
+      <div className="controls">
+        <div className="filter-controls">
+          <button 
+            className={filterStatus === 'all' ? 'active' : ''}
+            onClick={() => setFilterStatus('all')}
+          >
+            All ({stats.total})
+          </button>
+          <button 
+            className={filterStatus === 'active' ? 'active' : ''}
+            onClick={() => setFilterStatus('active')}
+          >
+            Active ({stats.active})
+          </button>
+          <button 
+            className={filterStatus === 'completed' ? 'active' : ''}
+            onClick={() => setFilterStatus('completed')}
+          >
+            Completed ({stats.completed})
+          </button>
+        </div>
+
+        <div className="sort-controls">
+          <label>Sort by:</label>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)}>
+            <option value="date">Date</option>
+            <option value="priority">Priority</option>
+            <option value="alphabetical">Alphabetical</option>
+          </select>
+        </div>
+
+        {stats.completed > 0 && (
+          <button onClick={clearCompleted} className="clear-btn">
+            Clear Completed
+          </button>
+        )}
+      </div>
+
+      {/* Task List */}
+      <div className="task-list">
+        {sortedTasks.length === 0 ? (
+          <p className="empty-state">No tasks to display</p>
+        ) : (
+          sortedTasks.map(task => (
+            <TaskItem
+              key={task.id}
+              task={task}
+              onToggle={toggleTask}
+              onDelete={deleteTask}
+              onEdit={editTask}
+              onPriorityChange={updatePriority}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Individual task component
+function TaskItem({ 
+  task, 
+  onToggle, 
+  onDelete, 
+  onEdit,
+  onPriorityChange 
+}: {
+  task: Task;
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
+  onEdit: (id: number, text: string) => void;
+  onPriorityChange: (id: number, priority: Task['priority']) => void;
+}): JSX.Element {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(task.text);
+
+  const handleEdit = () => {
+    if (editText.trim() && editText !== task.text) {
+      onEdit(task.id, editText);
+    }
+    setIsEditing(false);
+  };
+
+  return (
+    <div className={`task-item ${task.completed ? 'completed' : ''}`}>
+      <input
+        type="checkbox"
+        checked={task.completed}
+        onChange={() => onToggle(task.id)}
+      />
+      
+      {isEditing ? (
+        <input
+          type="text"
+          value={editText}
+          onChange={(e) => setEditText(e.target.value)}
+          onBlur={handleEdit}
+          onKeyPress={(e) => e.key === 'Enter' && handleEdit()}
+          autoFocus
+          className="edit-input"
+        />
+      ) : (
+        <span 
+          className="task-text"
+          onDoubleClick={() => setIsEditing(true)}
+        >
+          {task.text}
+        </span>
+      )}
+
+      <select
+        value={task.priority}
+        onChange={(e) => onPriorityChange(task.id, e.target.value as Task['priority'])}
+        className={`priority-select ${task.priority}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+
+      <button
+        onClick={() => onDelete(task.id)}
+        className="delete-btn"
+      >
+        Delete
+      </button>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<TaskManager />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.task-manager {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.add-task-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.add-task-form input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.add-task-form select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-controls button {
+  padding: 6px 12px;
+  margin-right: 5px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filter-controls button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sort-controls select {
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.reset-btn {
+  padding: 6px 12px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.task-list {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  background-color: white;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-item.completed {
+  background-color: #f8f9fa;
+}
+
+.task-item.completed .task-text {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.task-text {
+  flex: 1;
+  cursor: text;
+}
+
+.edit-input {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.priority-select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.priority-select.high {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.priority-select.medium {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.priority-select.low {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.delete-btn {
+  padding: 4px 8px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

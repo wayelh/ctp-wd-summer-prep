@@ -1,4 +1,5 @@
 import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
 ## The Power of Intellisense
@@ -38,8 +39,8 @@ const user: User = {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## TypeScript's Type System
-**Primitive Types:**
+## TypeScript's Type System - Primitives
+
 - `undefined`
 - `null`
 - `boolean`
@@ -47,8 +48,11 @@ const user: User = {
 - `bigint`
 - `string`
 - `symbol`
+</SlideLayout.Full>
 
-**Complex Types:**
+<SlideLayout.Full>
+## TypeScript's Type System - Complex Types
+
 - `object`
 - `Function`
 - `Array`
@@ -57,6 +61,7 @@ const user: User = {
 - `unknown`
 - `never`
 </SlideLayout.Full>
+
 <SlideLayout.Full>
 ## TypeScript's Type System In Action
 <CodeDisplay >
@@ -103,17 +108,17 @@ function add(a: number, b: number) {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Understanding Type Inference
+## When TypeScript Infers Types
 
-TypeScript can automatically determine types in many situations:
-
-**When TypeScript Infers Types:**
 - Variable declarations with initial values
 - Function return types (based on return statements)
 - Array literals and object literals
 - Method calls and property access
+</SlideLayout.Full>
 
-**Inference Examples:**
+<SlideLayout.Full>
+## Inference Examples
+
 ```typescript
 const name = "Alice";        // inferred as string
 const age = 30;              // inferred as number
@@ -125,13 +130,27 @@ function add(a: number, b: number) {
   return a + b;              // return type inferred as number
 }
 ```
+</SlideLayout.Full>
 
-**When to Be Explicit:**
+<SlideLayout.Full>
+## When to Be Explicit
+
 - Function parameters (required)
 - Complex object shapes
 - When inference isn't what you want
 
-**For the exercise**: Predict what types TypeScript will infer for various declarations.
+```typescript
+// Explicit is required for parameters
+function greet(name: string) {
+  console.log(`Hello, ${name}!`);
+}
+
+// Explicit for complex objects
+interface Config {
+  apiUrl: string;
+  retries: number;
+}
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -204,28 +223,14 @@ describe('Type Inference Challenge', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## The Special Types: any, unknown, never
-<CodeDisplay >
-  <File name="example.typescript">
-    
-```typescript
-// any: Turns off type checking (avoid when possible!)
-let anything: any = 42;
-anything = "now I'm a string";
-anything = { surprise: true };
+## 🎯 Key Takeaways: Type Basics
 
-// unknown: Safe any - must check before use
-let mystery: unknown = getValue();
-if (typeof mystery === 'string') {
-  console.log(mystery.toUpperCase()); // OK after check
-}
+1. **Intellisense** makes development faster and safer
+2. **Type System** includes primitives and complex types
+3. **Type Inference** reduces boilerplate
+4. **Be Explicit** when needed for clarity
+5. **TypeScript** adds safety without losing JavaScript's flexibility
 
-// never: Represents values that never occur
-function throwError(message: string): never {
-  throw new Error(message);
-}
-```
-    
-  </File>
-</CodeDisplay>
+### Next Up: Interfaces and Types
+Learn how to create custom types for your applications!
 </SlideLayout.Full>

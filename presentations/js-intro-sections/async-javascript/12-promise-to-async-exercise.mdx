@@ -1,0 +1,50 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Promise Chain to Async/Await
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Exercise: Convert habit sync promise chain to async/await
+// TODO: This function syncs habit data with a server
+// Convert the promise chain to use async/await
+
+function syncHabitData(habitId) {
+  // First, get local habit data
+  return getLocalHabitData(habitId)
+    .then(localData => {
+      // Then, send to server
+      return fetch(`/api/habits/${habitId}/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(localData)
+      });
+    })
+    .then(response => response.json())
+    .then(serverData => {
+      // Update local storage with server response
+      localStorage.setItem(`habit_${habitId}`, JSON.stringify(serverData));
+      console.log('Sync complete:', serverData);
+      return serverData;
+    })
+    .catch(error => {
+      console.error('Sync failed:', error);
+      throw error;
+    });
+}
+
+// Helper function (given)
+function getLocalHabitData(habitId) {
+  return Promise.resolve({
+    id: habitId,
+    completions: ["2024-01-01", "2024-01-02"],
+    lastSync: new Date().toISOString()
+  });
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

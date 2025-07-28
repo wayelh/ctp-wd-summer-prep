@@ -1,0 +1,93 @@
+import { SlideLayout } from 'spectacle'
+import EfficientDOMUpdatesExercise from '../dom-exercises/efficient-dom-updates.mdx'
+
+<SlideLayout.Full>
+## DOM Performance: Batch Updates
+
+**1. Batch DOM Updates**
+- Build elements before adding to DOM
+- Use DocumentFragment for multiple additions
+- Update classes instead of individual styles
+
+```javascript
+// Bad: Multiple DOM additions
+const list = document.getElementById('habits');
+habits.forEach(habit => {
+  const item = document.createElement('li');
+  item.textContent = habit.name;
+  list.appendChild(item); // DOM update for each item
+});
+
+// Good: Batch with DocumentFragment
+const fragment = document.createDocumentFragment();
+habits.forEach(habit => {
+  const item = document.createElement('li');
+  item.textContent = habit.name;
+  fragment.appendChild(item); // In memory
+});
+list.appendChild(fragment); // Single DOM update
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## DOM Performance: Cache Selections
+
+**2. Cache Selections**
+- Store frequently used elements in variables
+- Avoid repeated querySelector calls
+- Use event delegation for dynamic content
+
+```javascript
+// Bad: Repeated queries
+function updateHabit(id, name) {
+  document.getElementById('habit-name').textContent = name;
+  document.getElementById('habit-count').textContent = '1';
+  document.getElementById('habit-status').textContent = 'Active';
+}
+
+// Good: Cache elements
+const elements = {
+  name: document.getElementById('habit-name'),
+  count: document.getElementById('habit-count'),
+  status: document.getElementById('habit-status')
+};
+
+function updateHabit(id, name) {
+  elements.name.textContent = name;
+  elements.count.textContent = '1';
+  elements.status.textContent = 'Active';
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## DOM Performance: Minimize Reflows
+
+**3. Minimize Reflows**
+- Read DOM properties together
+- Write DOM changes together
+- Use CSS transforms for animations
+
+```javascript
+// Bad: Mixed reads and writes
+const element = document.getElementById('habit-card');
+element.style.width = '200px'; // Write (triggers reflow)
+const height = element.offsetHeight; // Read (forces reflow)
+element.style.height = height + 50 + 'px'; // Write (triggers reflow)
+
+// Good: Batch reads and writes
+const element = document.getElementById('habit-card');
+const height = element.offsetHeight; // Read first
+element.style.width = '200px'; // Then write
+element.style.height = height + 50 + 'px';
+
+// Better: Use CSS transforms
+element.style.transform = 'scale(1.1)';
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Efficient DOM Updates
+
+<EfficientDOMUpdatesExercise />
+</SlideLayout.Full>

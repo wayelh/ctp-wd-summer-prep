@@ -64,39 +64,91 @@ const user2: UserProfile = {
 <SlideLayout.Full>
 ## Understanding Object Structure Design
 
-Before building complex interfaces, let's understand how to model real-world entities:
+Before building complex interfaces, let's understand how to model real-world entities
+</SlideLayout.Full>
 
-**1. Identify Core Properties**
+<SlideLayout.Full>
+## 1. Identify Core Properties
+
 - What data does this entity need to store?
 - Which properties are required vs optional?
 - What are the data types for each property?
 
-**2. Relationships Between Entities**
+```typescript
+// Example: Modeling a User
+interface User {
+  id: string;           // Required, unique identifier
+  email: string;        // Required, for authentication
+  name?: string;        // Optional, display name
+  avatar?: string;      // Optional, profile picture
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 2. Relationships Between Entities
+
 - How do different objects relate to each other?
 - Should we nest objects or reference them by ID?
 - Are there one-to-many or many-to-many relationships?
 
-**3. Future Extensibility**
+```typescript
+// Nested approach
+interface Post {
+  author: User;        // Full user object
+}
+
+// Reference approach
+interface Post {
+  authorId: string;    // Just the ID
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## 3. Future Extensibility
+
 - What properties might be added later?
 - Should we plan for optional features now?
 - How can we make the interface flexible but type-safe?
+
+```typescript
+interface Product {
+  // Core properties
+  id: string;
+  name: string;
+  price: number;
+  
+  // Extensible features
+  metadata?: Record<string, any>;
+  features?: string[];
+}
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Modeling Guidelines for Exercises
 
-**For the Blog System, consider:**
-- An Author has personal information (id, name, email)
-- A Comment belongs to a post and has an author
-- A BlogPost contains content, metadata, and related entities
-- Think about what's required vs optional
+For the Blog System, consider these entities and their relationships
+</SlideLayout.Full>
 
-**Key Interface Concepts You'll Use:**
-- Nested interfaces (Author inside BlogPost)
-- Array types (tags: string[], comments: Comment[])
-- Optional properties (bio?: string)
-- Date types for timestamps
-- Union types for categories/statuses
+<SlideLayout.Full>
+## Blog System Entities
+
+- **Author**: Personal information (id, name, email)
+- **Comment**: Belongs to a post and has an author
+- **BlogPost**: Contains content, metadata, and related entities
+- Think about what's required vs optional
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Key Interface Concepts You'll Use
+
+- **Nested interfaces**: Author inside BlogPost
+- **Array types**: tags: string[], comments: Comment[]
+- **Optional properties**: bio?: string
+- **Date types**: for timestamps
+- **Union types**: for categories/statuses
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -237,14 +289,20 @@ describe('Blog System - Complete Implementation', () => {
 <SlideLayout.Full>
 ## Building Complex Application Interfaces
 
-Now let's model a more complex system with multiple related entities:
+Now let's model a more complex system with multiple related entities
+</SlideLayout.Full>
 
-**Habit Tracking System Components:**
+<SlideLayout.Full>
+## Habit Tracking System Components
+
 - **Habit**: The core entity (name, category, settings)
 - **HabitEntry**: Records of completions (when, notes, success)
 - **HabitTracker**: The main system that manages everything
+</SlideLayout.Full>
 
-**Design Considerations:**
+<SlideLayout.Full>
+## Design Considerations
+
 - How do we link entries to specific habits?
 - What methods should the tracker have?
 - Which properties are required for a minimum viable habit?
@@ -275,9 +333,9 @@ const calc: Calculator = {
 };
 ```
 
-**For HabitTracker, you'll need:**
+- For HabitTracker, you'll need:
 - `addHabit(habit: Habit): void`
-- `recordEntry(entry: HabitEntry): void`
+  - `recordEntry(entry: HabitEntry): void`
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -363,12 +421,12 @@ Design clean, maintainable interfaces:
 
 TypeScript provides built-in utility types for transforming existing types:
 
-**Common Utility Types:**
+- Common Utility Types:
 - `Partial<T>` - Makes all properties optional
-- `Required<T>` - Makes all properties required  
-- `Pick<T, K>` - Selects specific properties
-- `Omit<T, K>` - Excludes specific properties
-- `Record<K, V>` - Creates object type with key/value types
+  - `Required<T>` - Makes all properties required  
+  - `Pick<T, K>` - Selects specific properties
+  - `Omit<T, K>` - Excludes specific properties
+  - `Record<K, V>` - Creates object type with key/value types
 
 ```typescript
 interface User {
@@ -411,10 +469,10 @@ const habitsResponse: ApiResponse<Habit[]> = {
 };
 ```
 
-**For the next exercise, you'll create:**
+- For the next exercise, you'll create:
 - Generic `ApiResponse<T>` interface
-- `CreateHabitInput` using utility types
-- `HabitStats` interface for analytics
+  - `CreateHabitInput` using utility types
+  - `HabitStats` interface for analytics
 </SlideLayout.Full>
 
 <SlideLayout.Full>

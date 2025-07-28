@@ -1,0 +1,121 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Asynchronous JavaScript
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Exercise: Understanding async patterns in habit tracking
+// TODO: Convert these examples to use modern async/await
+
+// 1. Callbacks - saving habit completion
+function saveHabitCompletion(habitId, callback) {
+  setTimeout(() => {
+    callback({ success: true, points: 10 });
+  }, 1000);
+}
+
+// 2. Promises - fetching habit data
+function getHabitData(habitId) {
+  return fetch(`/api/habits/${habitId}`)
+    .then(response => response.json());
+}
+
+// 3. TODO: Create async function to save and update
+// Should save completion, then fetch updated data
+```
+    
+    
+```javascript
+// Solution: Modern async/await patterns
+// 1. Converting callback to Promise
+function saveHabitCompletion(habitId) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ success: true, points: 10 });
+    }, 1000);
+  });
+}
+
+// 2. Async/await version of data fetching
+async function getHabitData(habitId) {
+  const response = await fetch(`/api/habits/${habitId}`);
+  return await response.json();
+}
+
+// 3. Complete async function that saves and updates
+async function saveAndUpdateHabit(habitId, completionData) {
+  try {
+    // Save the completion
+    const saveResult = await saveHabitCompletion(habitId);
+    console.log('Saved:', saveResult);
+    
+    // Fetch updated data
+    const updatedData = await getHabitData(habitId);
+    console.log('Updated data:', updatedData);
+    
+    return {
+      saveResult,
+      updatedData
+    };
+  } catch (error) {
+    console.error('Error in save and update:', error);
+    throw error;
+  }
+}
+
+// Usage example
+async function handleHabitCompletion() {
+  try {
+    const result = await saveAndUpdateHabit('habit-123');
+    console.log('Process completed:', result);
+  } catch (error) {
+    console.error('Failed to complete habit:', error);
+  }
+}
+
+// Simulated API functions for testing
+function fetch(url) {
+  return Promise.resolve({
+    json: () => Promise.resolve({
+      id: 'habit-123',
+      name: 'Exercise',
+      streak: 5,
+      lastCompleted: new Date().toISOString()
+    })
+  });
+}
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Tests for Async JavaScript
+describe('Async Habit Tracking', () => {
+  it('should save habit completion asynchronously', async () => {
+    const result = await saveHabitCompletion('test-habit');
+    expect(result.success).to.be.true;
+    expect(result.points).to.equal(10);
+  });
+  
+  it('should fetch habit data with async/await', async () => {
+    const data = await getHabitData('habit-123');
+    expect(data).to.have.property('id');
+    expect(data.name).to.equal('Exercise');
+  });
+  
+  it('should save and update habit in sequence', async () => {
+    const result = await saveAndUpdateHabit('habit-123');
+    expect(result).to.have.property('saveResult');
+    expect(result).to.have.property('updatedData');
+    expect(result.saveResult.success).to.be.true;
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>

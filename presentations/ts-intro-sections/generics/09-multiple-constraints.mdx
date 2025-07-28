@@ -1,0 +1,35 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Generic Constraints: Multiple constraints
+
+**2. Multiple constraints**
+- Combine interfaces with &
+- Create complex type requirements
+- Build reusable, type-safe utilities
+
+```typescript
+// Multiple constraints with &
+interface Identifiable { id: number; }
+interface Timestamped { createdAt: Date; updatedAt: Date; }
+
+function processEntity<T extends Identifiable & Timestamped>(
+  entity: T
+): T & { processed: true } {
+  return {
+    ...entity,
+    updatedAt: new Date(),
+    processed: true
+  };
+}
+
+// Must have both id and timestamp properties
+const habit = processEntity({
+  id: 1,
+  name: "Exercise",
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01')
+});
+```
+</SlideLayout.Full>

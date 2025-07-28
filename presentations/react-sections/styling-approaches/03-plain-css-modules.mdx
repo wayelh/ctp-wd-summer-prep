@@ -1,0 +1,197 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Plain CSS & CSS Modules
+
+<CodeDisplay>
+  <File name="styles.css">
+```css
+/* Plain CSS - Global scope */
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.button-primary {
+  background-color: #2196f3;
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: #1976d2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.button-secondary {
+  background-color: transparent;
+  color: #2196f3;
+  border: 2px solid #2196f3;
+}
+
+.button-secondary:hover {
+  background-color: #2196f3;
+  color: white;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+```
+  </File>
+  <File name="Button.module.css">
+```css
+/* CSS Module - Locally scoped */
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.primary {
+  composes: button;
+  background-color: #2196f3;
+  color: white;
+}
+
+.primary:hover {
+  background-color: #1976d2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.secondary {
+  composes: button;
+  background-color: transparent;
+  color: #2196f3;
+  border: 2px solid #2196f3;
+}
+
+/* CSS Module features */
+.large {
+  padding: 15px 30px;
+  font-size: 18px;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Using CSS variables for theming */
+.themed {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+}
+```
+  </File>
+  <File name="Button.tsx">
+```tsx
+import React from 'react';
+// Plain CSS import
+import './styles.css';
+// CSS Module import
+import styles from './Button.module.css';
+
+// Using plain CSS
+export function PlainCSSButton({ 
+  variant = 'primary', 
+  children, 
+  disabled 
+}: ButtonProps) {
+  const className = `button button-${variant}`;
+  
+  return (
+    <button className={className} disabled={disabled}>
+      {children}
+    </button>
+  );
+}
+
+// Using CSS Modules
+export function CSSModuleButton({ 
+  variant = 'primary', 
+  size,
+  icon,
+  children, 
+  disabled 
+}: ButtonProps) {
+  const classNames = [
+    styles[variant],
+    size && styles[size],
+    icon && styles.icon
+  ].filter(Boolean).join(' ');
+  
+  return (
+    <button className={classNames} disabled={disabled}>
+      {icon && <span>{icon}</span>}
+      {children}
+    </button>
+  );
+}
+
+// Using clsx for conditional classes
+import clsx from 'clsx';
+
+export function ButtonWithClsx({ 
+  variant = 'primary',
+  size,
+  fullWidth,
+  children 
+}: ButtonProps) {
+  return (
+    <button 
+      className={clsx(
+        styles.button,
+        styles[variant],
+        {
+          [styles.large]: size === 'large',
+          [styles.fullWidth]: fullWidth
+        }
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+interface ButtonProps {
+  variant?: 'primary' | 'secondary';
+  size?: 'small' | 'medium' | 'large';
+  icon?: React.ReactNode;
+  fullWidth?: boolean;
+  children: React.ReactNode;
+  disabled?: boolean;
+}
+
+// Example usage
+function App() {
+  return (
+    <div>
+      <PlainCSSButton>Plain CSS</PlainCSSButton>
+      <CSSModuleButton variant="secondary" icon="🚀">
+        CSS Module
+      </CSSModuleButton>
+      <ButtonWithClsx variant="primary" size="large" fullWidth>
+        Full Width Large
+      </ButtonWithClsx>
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

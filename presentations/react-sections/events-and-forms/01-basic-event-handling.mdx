@@ -1,0 +1,164 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Basic Event Handling
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Events</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, MouseEvent, KeyboardEvent } from 'react';
+import ReactDOM from 'react-dom/client';
+
+function EventExamples(): JSX.Element {
+  const [message, setMessage] = useState('');
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [keyPressed, setKeyPressed] = useState('');
+
+  // Simple click handler
+  const handleClick = () => {
+    setMessage('Button clicked!');
+  };
+
+  // Handler with event parameter
+  const handleClickWithEvent = (e: MouseEvent<HTMLButtonElement>) => {
+    console.log('Click event:', e);
+    setMessage(`Clicked at: ${e.clientX}, ${e.clientY}`);
+  };
+
+  // Handler with custom parameters
+  const handleItemClick = (item: string) => {
+    setMessage(`You selected: ${item}`);
+  };
+
+  // Mouse move handler
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    setMousePosition({ x: e.clientX, y: e.clientY });
+  };
+
+  // Keyboard handler
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    setKeyPressed(e.key);
+    if (e.key === 'Enter') {
+      setMessage('Enter key pressed!');
+    }
+  };
+
+  // Prevent default behavior
+  const handleLinkClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setMessage('Link clicked, but navigation prevented!');
+  };
+
+  return (
+    <div className="event-examples">
+      <h2>Event Handling Examples</h2>
+      
+      <div>
+        <h3>Click Events</h3>
+        <button onClick={handleClick}>Simple Click</button>
+        <button onClick={handleClickWithEvent}>Click with Event</button>
+        <button onClick={() => handleItemClick('Item 1')}>Select Item 1</button>
+        <button onClick={() => handleItemClick('Item 2')}>Select Item 2</button>
+      </div>
+
+      <div
+        onMouseMove={handleMouseMove}
+        style={{
+          height: 100,
+          border: '1px solid #ddd',
+          marginTop: 20,
+          position: 'relative'
+        }}
+      >
+        <p>Move your mouse here</p>
+        <p>Position: ({mousePosition.x}, {mousePosition.y})</p>
+      </div>
+
+      <div>
+        <h3>Keyboard Events</h3>
+        <input
+          type="text"
+          onKeyPress={handleKeyPress}
+          placeholder="Press any key"
+        />
+        <p>Key pressed: {keyPressed}</p>
+      </div>
+
+      <div>
+        <h3>Prevent Default</h3>
+        <a href="https://reactjs.org" onClick={handleLinkClick}>
+          Click this link
+        </a>
+      </div>
+
+      <p className="message">{message}</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<EventExamples />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.event-examples {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.event-examples div {
+  margin-bottom: 20px;
+}
+
+.event-examples button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.event-examples button:hover {
+  background-color: #0056b3;
+}
+
+.event-examples input {
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.message {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 20px;
+  min-height: 30px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

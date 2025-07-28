@@ -1,0 +1,33 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Arrays: Lists of Data
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Exercise: Work with arrays of habit data
+// TODO: Given an array of daily completion records,
+// calculate various statistics
+
+const dailyRecords = [
+  { date: "2024-01-01", completed: true, points: 10 },
+  { date: "2024-01-02", completed: true, points: 15 },
+  { date: "2024-01-03", completed: false, points: 0 },
+  { date: "2024-01-04", completed: true, points: 10 },
+  { date: "2024-01-05", completed: true, points: 20 }
+];
+
+// TODO: Calculate:
+// 1. Total days completed
+// 2. Total points earned
+// 3. Completion rate (percentage)
+// 4. Array of just the completed dates
+
+// Your code here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,164 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## State Update Patterns
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>State Update Patterns</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+function HabitStatePatterns(): JSX.Element {
+  const [streak, setStreak] = useState(0);
+  const [habit, setHabit] = useState({ name: 'Exercise', streak: 15, completed: false });
+  const [completedDates, setCompletedDates] = useState<string[]>([]);
+
+  // ❌ Wrong: Directly mutating state
+  const wrongUpdate = () => {
+    // This won't trigger a re-render!
+    habit.completed = true; // Don't do this!
+    completedDates.push(new Date().toISOString()); // Don't do this!
+  };
+
+  // ✅ Correct: Creating new objects/arrays
+  const correctUpdate = () => {
+    // Update object - create new object
+    setHabit({ ...habit, completed: true, streak: habit.streak + 1 });
+    
+    // Or use functional update for safety
+    setHabit(prevHabit => ({ 
+      ...prevHabit, 
+      completed: true,
+      streak: prevHabit.streak + 1 
+    }));
+    
+    // Update array - create new array
+    setCompletedDates([...completedDates, new Date().toISOString()]);
+    
+    // Or use functional update
+    setCompletedDates(prevDates => [...prevDates, new Date().toISOString()]);
+  };
+
+  // Functional updates for streak counting
+  const completeMultipleDays = () => {
+    // ❌ This only adds one to streak
+    // setStreak(streak + 1);
+    // setStreak(streak + 1);
+    
+    // ✅ This correctly adds two days
+    setStreak(prev => prev + 1);
+    setStreak(prev => prev + 1);
+  };
+
+  // Complex state updates for habits
+  interface Habit {
+    id: number;
+    name: string;
+    streak: number;
+    completedToday: boolean;
+    lastCompleted: string | null;
+  }
+
+  const [habits, setHabits] = useState<Habit[]>([
+    { id: 1, name: 'Morning Meditation', streak: 15, completedToday: false, lastCompleted: null },
+    { id: 2, name: 'Exercise', streak: 7, completedToday: false, lastCompleted: null }
+  ]);
+
+  const completeHabit = (id: number) => {
+    setHabits(prevHabits =>
+      prevHabits.map(habit =>
+        habit.id === id
+          ? { 
+              ...habit, 
+              completedToday: true,
+              streak: habit.streak + 1,
+              lastCompleted: new Date().toISOString()
+            }
+          : habit
+      )
+    );
+  };
+
+  const updateHabitName = (id: number, newName: string) => {
+    setHabits(prevHabits =>
+      prevHabits.map(habit =>
+        habit.id === id
+          ? { ...habit, name: newName }
+          : habit
+      )
+    );
+  };
+
+  return (
+    <div>
+      <h2>Habit State Update Patterns</h2>
+      
+      <div>
+        <h3>Total Streak: {streak} days</h3>
+        <button onClick={completeMultipleDays}>Add 2 Days to Streak</button>
+      </div>
+
+      <div>
+        <h3>{habit.name}</h3>
+        <p>Streak: {habit.streak} days {habit.completed && '✅'}</p>
+        <button onClick={() => setHabit(prev => ({ 
+          ...prev, 
+          completed: true, 
+          streak: prev.streak + 1 
+        }))}>
+          Complete Today
+        </button>
+      </div>
+
+      <div>
+        <h3>All Habits:</h3>
+        {habits.map(habit => (
+          <div key={habit.id}>
+            <input
+              type="checkbox"
+              checked={habit.completedToday}
+              onChange={() => completeHabit(habit.id)}
+            />
+            <input
+              value={habit.name}
+              onChange={(e) => updateHabitName(habit.id, e.target.value)}
+              style={{ 
+                textDecoration: habit.completedToday ? 'line-through' : 'none',
+                marginLeft: '10px'
+              }}
+            />
+            <span style={{ marginLeft: '10px' }}>
+              Streak: {habit.streak} 🔥
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<HabitStatePatterns />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,68 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Best Practices
+
+### General Guidelines:
+- **Handle loading, error, and empty states**
+- **Cancel requests** when component unmounts
+- **Debounce** user input for search
+- **Cache aggressively** but invalidate wisely
+- **Prefetch** data for better UX
+
+### Library Choice:
+- **SWR** - Simple, lightweight, great defaults
+- **React Query** - Powerful, many features
+- **Apollo** - GraphQL specialist
+- **RTK Query** - Redux integration
+
+### Performance Tips:
+```tsx
+// ✅ Good: Cancel in-flight requests
+useEffect(() => {
+  const controller = new AbortController();
+  fetch(url, { signal: controller.signal });
+  return () => controller.abort();
+}, [url]);
+
+// ✅ Good: Debounce search
+const debouncedSearch = useDebounce(searchTerm, 500);
+
+// ✅ Good: Prefetch on hover
+onMouseEnter={() => queryClient.prefetchQuery(...))
+
+// ❌ Bad: Fetch in render
+const data = fetchData(); // Don't do this!
+
+// ✅ Good: Stale-while-revalidate
+const { data } = useSWR(key, fetcher, {
+  refreshInterval: 30000
+});
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Summary
+
+### Key Concepts:
+- **Always handle** loading and error states
+- **Cancel requests** to prevent memory leaks
+- **Cache data** for better performance
+- **Optimistic updates** improve UX
+- **Real-time options**: WebSocket, SSE, polling
+
+### Modern Approach:
+1. Use a **data fetching library**
+2. Implement **proper error handling**
+3. Add **loading skeletons**
+4. Enable **background refetching**
+5. Consider **real-time updates**
+
+### Remember:
+- Don't reinvent the wheel
+- Choose the right tool for your needs
+- Focus on user experience
+- Monitor performance
+
+</SlideLayout.Full>

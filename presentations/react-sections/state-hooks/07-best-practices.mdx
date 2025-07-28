@@ -1,0 +1,35 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## State Management Best Practices
+
+### 1. **Keep State Local When Possible**
+- Start with component state
+- Lift up only when needed
+
+### 2. **Group Related State**
+```tsx
+// Instead of multiple states
+const [habitName, setHabitName] = useState('');
+const [habitStreak, setHabitStreak] = useState(0);
+const [habitCompleted, setHabitCompleted] = useState(false);
+
+// Consider grouping
+const [habit, setHabit] = useState({ 
+  name: '', 
+  streak: 0, 
+  completed: false 
+});
+```
+
+### 3. **Use the Right Hook**
+- `useState`: Simple state
+- `useReducer`: Complex state logic
+- `useContext`: Shared state
+- `useRef`: DOM refs or mutable values
+
+### 4. **Avoid Unnecessary Re-renders**
+- Use `useMemo` and `useCallback` wisely
+- Don't overuse - measure first!
+
+</SlideLayout.Full>

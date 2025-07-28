@@ -1,0 +1,48 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Essential HTML Elements
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML Elements Demo</title>
+</head>
+<body>
+    <!-- Text Elements -->
+    <h1>Main Heading (h1)</h1>
+    <h2>Subheading (h2)</h2>
+    <p>This is a paragraph with <strong>bold</strong> and <em>italic</em> text.</p>
+    
+    <!-- Lists -->
+    <h3>Shopping List (unordered)</h3>
+    <ul>
+        <li>Milk</li>
+        <li>Eggs</li>
+        <li>Bread</li>
+    </ul>
+    
+    <h3>Steps (ordered)</h3>
+    <ol>
+        <li>Open the app</li>
+        <li>Create a habit</li>
+        <li>Track daily</li>
+    </ol>
+    
+    <!-- Links and Images -->
+    <a href="https://example.com">Visit Example</a>
+    <img src="https://via.placeholder.com/200x100" alt="Placeholder image">
+    
+    <!-- Interactive Elements -->
+    <button onclick="alert('Button clicked!')">Click Me</button>
+    <input type="text" placeholder="Enter your name">
+</body>
+</html>
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

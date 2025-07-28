@@ -1,0 +1,265 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Habit Goal Tracker with Closures
+<CodeDisplay >
+  <File name="exercise.js">
+```javascript
+// Exercise: Create a habit goal tracker using closures
+// TODO: Implement a factory function that creates trackers
+// Each tracker should:
+// 1. Store a private goal and current progress
+// 2. Have methods to add progress and check if complete
+// 3. Calculate completion percentage
+// 4. Not expose internal variables directly
+
+function createGoalTracker(habitName, targetDays) {
+  // Your code here
+}
+
+// Test your implementation:
+const exerciseTracker = createGoalTracker("Exercise", 30);
+exerciseTracker.addProgress(5);
+console.log(exerciseTracker.getStatus()); // "Exercise: 5/30 days (17%)"
+```
+```javascript
+// Solution: Using closures to create private state
+function createGoalTracker(habitName, targetDays) {
+  // Private variables enclosed in the function scope
+  let currentProgress = 0;
+  const goal = targetDays;
+  const name = habitName;
+  
+  // Return an object with methods that access the closure
+  return {
+    addProgress(days) {
+      if (days > 0) {
+        currentProgress += days;
+      }
+      return currentProgress;
+    },
+    
+    getProgress() {
+      return currentProgress;
+    },
+    
+    getGoal() {
+      return goal;
+    },
+    
+    isComplete() {
+      return currentProgress >= goal;
+    },
+    
+    getPercentage() {
+      return Math.round((currentProgress / goal) * 100);
+    },
+    
+    getStatus() {
+      const percentage = this.getPercentage();
+      return `${name}: ${currentProgress}/${goal} days (${percentage}%)`;
+    },
+    
+    getRemainingDays() {
+      const remaining = goal - currentProgress;
+      return remaining > 0 ? remaining : 0;
+    },
+    
+    reset() {
+      currentProgress = 0;
+    }
+  };
+}
+
+// Example usage
+const exerciseTracker = createGoalTracker("Exercise", 30);
+exerciseTracker.addProgress(5);
+console.log(exerciseTracker.getStatus()); // "Exercise: 5/30 days (17%)"
+exerciseTracker.addProgress(10);
+console.log(exerciseTracker.getStatus()); // "Exercise: 15/30 days (50%)"
+console.log(exerciseTracker.isComplete()); // false
+console.log(exerciseTracker.getRemainingDays()); // 15
+```
+  </File>
+  <Tests>
+```javascript
+describe('Goal Tracker with Closures', () => {
+  describe('createGoalTracker()', () => {
+    it('should create a tracker with the given name and target', () => {
+      const tracker = createGoalTracker('Reading', 20);
+      expect(tracker).to.be.an('object');
+      expect(tracker).to.have.property('addProgress');
+      expect(tracker).to.have.property('getStatus');
+    });
+
+    it('should not expose private variables directly', () => {
+      const tracker = createGoalTracker('Writing', 15);
+      expect(tracker.currentProgress).to.be.undefined;
+      expect(tracker.goal).to.be.undefined;
+      expect(tracker.targetDays).to.be.undefined;
+    });
+  });
+
+  describe('addProgress()', () => {
+    it('should add progress to the tracker', () => {
+      const tracker = createGoalTracker('Meditation', 10);
+      tracker.addProgress(3);
+      expect(tracker.getProgress()).to.equal(3);
+      tracker.addProgress(2);
+      expect(tracker.getProgress()).to.equal(5);
+    });
+
+    it('should handle multiple additions correctly', () => {
+      const tracker = createGoalTracker('Exercise', 30);
+      tracker.addProgress(5);
+      tracker.addProgress(10);
+      tracker.addProgress(3);
+      expect(tracker.getProgress()).to.equal(18);
+    });
+
+    it('should ignore negative values', () => {
+      const tracker = createGoalTracker('Sleep', 7);
+      tracker.addProgress(3);
+      tracker.addProgress(-2);
+      expect(tracker.getProgress()).to.equal(3);
+    });
+
+    it('should return current progress after adding', () => {
+      const tracker = createGoalTracker('Water', 8);
+      const result = tracker.addProgress(4);
+      expect(result).to.equal(4);
+    });
+  });
+
+  describe('getStatus()', () => {
+    it('should return correct status string', () => {
+      const tracker = createGoalTracker('Exercise', 30);
+      tracker.addProgress(5);
+      expect(tracker.getStatus()).to.equal('Exercise: 5/30 days (17%)');
+    });
+
+    it('should calculate percentage correctly', () => {
+      const tracker = createGoalTracker('Reading', 10);
+      tracker.addProgress(5);
+      expect(tracker.getStatus()).to.equal('Reading: 5/10 days (50%)');
+    });
+
+    it('should round percentage to nearest integer', () => {
+      const tracker = createGoalTracker('Coding', 30);
+      tracker.addProgress(10); // 33.33...%
+      expect(tracker.getStatus()).to.equal('Coding: 10/30 days (33%)');
+    });
+
+    it('should show 100% when goal is reached', () => {
+      const tracker = createGoalTracker('Running', 20);
+      tracker.addProgress(20);
+      expect(tracker.getStatus()).to.equal('Running: 20/20 days (100%)');
+    });
+
+    it('should show over 100% when exceeding goal', () => {
+      const tracker = createGoalTracker('Walking', 10);
+      tracker.addProgress(15);
+      expect(tracker.getStatus()).to.equal('Walking: 15/10 days (150%)');
+    });
+  });
+
+  describe('isComplete()', () => {
+    it('should return false when goal not reached', () => {
+      const tracker = createGoalTracker('Yoga', 20);
+      tracker.addProgress(19);
+      expect(tracker.isComplete()).to.be.false;
+    });
+
+    it('should return true when goal is reached exactly', () => {
+      const tracker = createGoalTracker('Stretching', 15);
+      tracker.addProgress(15);
+      expect(tracker.isComplete()).to.be.true;
+    });
+
+    it('should return true when goal is exceeded', () => {
+      const tracker = createGoalTracker('Swimming', 10);
+      tracker.addProgress(12);
+      expect(tracker.isComplete()).to.be.true;
+    });
+  });
+
+  describe('getRemainingDays()', () => {
+    it('should return remaining days to goal', () => {
+      const tracker = createGoalTracker('Diet', 30);
+      tracker.addProgress(10);
+      expect(tracker.getRemainingDays()).to.equal(20);
+    });
+
+    it('should return 0 when goal is completed', () => {
+      const tracker = createGoalTracker('Fasting', 7);
+      tracker.addProgress(7);
+      expect(tracker.getRemainingDays()).to.equal(0);
+    });
+
+    it('should return 0 when goal is exceeded', () => {
+      const tracker = createGoalTracker('NoSugar', 14);
+      tracker.addProgress(20);
+      expect(tracker.getRemainingDays()).to.equal(0);
+    });
+  });
+
+  describe('reset()', () => {
+    it('should reset progress to 0', () => {
+      const tracker = createGoalTracker('Journaling', 21);
+      tracker.addProgress(15);
+      tracker.reset();
+      expect(tracker.getProgress()).to.equal(0);
+      expect(tracker.getStatus()).to.equal('Journaling: 0/21 days (0%)');
+    });
+
+    it('should maintain the same goal after reset', () => {
+      const tracker = createGoalTracker('NoSmoking', 100);
+      tracker.addProgress(50);
+      tracker.reset();
+      expect(tracker.getGoal()).to.equal(100);
+    });
+  });
+
+  describe('Multiple independent trackers', () => {
+    it('should maintain separate state for each tracker', () => {
+      const tracker1 = createGoalTracker('Habit1', 10);
+      const tracker2 = createGoalTracker('Habit2', 20);
+      
+      tracker1.addProgress(5);
+      tracker2.addProgress(10);
+      
+      expect(tracker1.getProgress()).to.equal(5);
+      expect(tracker2.getProgress()).to.equal(10);
+      expect(tracker1.getStatus()).to.equal('Habit1: 5/10 days (50%)');
+      expect(tracker2.getStatus()).to.equal('Habit2: 10/20 days (50%)');
+    });
+
+    it('should not interfere with each other', () => {
+      const waterTracker = createGoalTracker('Drink Water', 8);
+      const sleepTracker = createGoalTracker('Sleep 8 hours', 30);
+      
+      waterTracker.addProgress(8);
+      expect(waterTracker.isComplete()).to.be.true;
+      expect(sleepTracker.isComplete()).to.be.false;
+      
+      sleepTracker.addProgress(30);
+      expect(waterTracker.getProgress()).to.equal(8);
+      expect(sleepTracker.getProgress()).to.equal(30);
+    });
+  });
+});
+```
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Higher-Order Functions
+    - Functions that operate on other functions
+    - Take functions as arguments
+    - Return functions as results
+    - Enable powerful abstractions and code reuse
+  </FlexBox>
+</SlideLayout.Full>

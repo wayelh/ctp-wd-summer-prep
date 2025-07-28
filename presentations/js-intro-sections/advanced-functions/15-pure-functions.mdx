@@ -1,0 +1,38 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Functional Programming: Pure Functions
+
+**Pure Functions**
+- Same input → same output
+- No side effects
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Why Pure Functions Matter
+- Easier to test and debug
+- Predictable behavior
+- Can be optimized by compilers
+- Enable functional programming patterns
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Example of Pure vs Impure Functions
+```javascript
+// Pure function
+function calculatePoints(completions, multiplier) {
+  return completions * multiplier;
+}
+
+// Impure function (has side effects)
+function updatePointsImpure(completions) {
+  totalPoints += completions * 10; // Modifies external state
+  console.log('Points updated!'); // Side effect
+  return totalPoints;
+}
+
+// Better: Pure version
+function calculateNewPoints(currentPoints, completions) {
+  return currentPoints + (completions * 10);
+}
+```
+</SlideLayout.Full>

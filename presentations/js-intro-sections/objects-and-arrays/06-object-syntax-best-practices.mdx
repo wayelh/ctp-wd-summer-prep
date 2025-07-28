@@ -1,0 +1,28 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Object Syntax and Best Practices
+
+**Object Literal Creation:**
+```javascript
+const habit = {
+  name: "Morning Exercise",
+  category: "health", 
+  streakDays: 5,
+  isActive: true,
+  
+  // Methods use 'this' to access properties
+  complete() {
+    this.streakDays++;
+    console.log(`${this.name} completed! Streak: ${this.streakDays}`);
+  }
+};
+```
+
+- Key Concepts for the Exercise:
+- Property access: `habit.name` vs `habit["name"]`
+  - Method definition and the `this` keyword
+  - Dynamic property access with variables
+  - Adding and modifying properties after creation
+</SlideLayout.Full>

@@ -1,0 +1,603 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Version, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Build a Contact Form
+
+<CodeDisplay height="70vh">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form Exercise</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, FormEvent } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// TODO: Create a contact form with:
+// 1. Name field (required)
+// 2. Email field (required, valid email)
+// 3. Subject dropdown (required)
+// 4. Message textarea (required, min 10 characters)
+// 5. Phone field (optional, format: xxx-xxx-xxxx)
+// 6. Preferred contact method (radio buttons: email/phone)
+// 7. Subscribe to newsletter checkbox
+// 8. Form validation with error messages
+// 9. Success message on valid submission
+// 10. Loading state during submission
+
+interface FormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  phone: string;
+  contactMethod: 'email' | 'phone';
+  subscribe: boolean;
+}
+
+function ContactForm(): JSX.Element {
+  // TODO: Implement state for form data, errors, loading, and success
+  
+  // TODO: Implement validation function
+  
+  // TODO: Implement form submission handler
+  
+  // TODO: Implement field change handlers
+  
+  return (
+    <div className="contact-form">
+      <h1>Contact Us</h1>
+      {/* TODO: Build your form here */}
+      <p>Implement the contact form</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<ContactForm />);
+```
+  </File>
+  <Version>
+```tsx
+// SOLUTION
+import React, { useState, FormEvent, ChangeEvent } from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface FormData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  phone: string;
+  contactMethod: 'email' | 'phone';
+  subscribe: boolean;
+}
+
+interface FormErrors {
+  [key: string]: string;
+}
+
+function ContactForm(): JSX.Element {
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
+    phone: '',
+    contactMethod: 'email',
+    subscribe: false
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Validation function
+  const validate = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+
+    // Email validation
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    // Subject validation
+    if (!formData.subject) {
+      newErrors.subject = 'Please select a subject';
+    }
+
+    // Message validation
+    if (!formData.message.trim()) {
+      newErrors.message = 'Message is required';
+    } else if (formData.message.trim().length < 10) {
+      newErrors.message = 'Message must be at least 10 characters';
+    }
+
+    // Phone validation (optional, but validate format if provided)
+    if (formData.phone && !/^\d{3}-\d{3}-\d{4}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone must be in format: xxx-xxx-xxxx';
+    }
+
+    // If phone is selected as contact method, phone is required
+    if (formData.contactMethod === 'phone' && !formData.phone) {
+      newErrors.phone = 'Phone is required when selected as contact method';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle input changes
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+    
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  // Handle phone input formatting
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 6) {
+      value = `${value.slice(0, 3)}-${value.slice(3, 6)}-${value.slice(6, 10)}`;
+    } else if (value.length >= 3) {
+      value = `${value.slice(0, 3)}-${value.slice(3)}`;
+    }
+    setFormData(prev => ({ ...prev, phone: value }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (!validate()) return;
+
+    setLoading(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    setLoading(false);
+    setSuccess(true);
+    
+    // Reset form after 3 seconds
+    setTimeout(() => {
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+        phone: '',
+        contactMethod: 'email',
+        subscribe: false
+      });
+      setSuccess(false);
+    }, 3000);
+  };
+
+  if (success) {
+    return (
+      <div className="success-message">
+        <h2>Thank You!</h2>
+        <p>Your message has been sent successfully.</p>
+        <p>We'll get back to you soon.</p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="contact-form">
+      <h1>Contact Us</h1>
+      
+      <div className="form-group">
+        <label htmlFor="name">Name *</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          className={errors.name ? 'error' : ''}
+        />
+        {errors.name && <span className="error-message">{errors.name}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="email">Email *</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          className={errors.email ? 'error' : ''}
+        />
+        {errors.email && <span className="error-message">{errors.email}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="subject">Subject *</label>
+        <select
+          id="subject"
+          name="subject"
+          value={formData.subject}
+          onChange={handleChange}
+          className={errors.subject ? 'error' : ''}
+        >
+          <option value="">Select a subject</option>
+          <option value="general">General Inquiry</option>
+          <option value="support">Technical Support</option>
+          <option value="sales">Sales Question</option>
+          <option value="feedback">Feedback</option>
+        </select>
+        {errors.subject && <span className="error-message">{errors.subject}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="message">Message *</label>
+        <textarea
+          id="message"
+          name="message"
+          value={formData.message}
+          onChange={handleChange}
+          rows={5}
+          className={errors.message ? 'error' : ''}
+        />
+        {errors.message && <span className="error-message">{errors.message}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="phone">Phone</label>
+        <input
+          type="tel"
+          id="phone"
+          name="phone"
+          value={formData.phone}
+          onChange={handlePhoneChange}
+          placeholder="xxx-xxx-xxxx"
+          className={errors.phone ? 'error' : ''}
+        />
+        {errors.phone && <span className="error-message">{errors.phone}</span>}
+      </div>
+
+      <div className="form-group">
+        <label>Preferred Contact Method</label>
+        <div className="radio-group">
+          <label>
+            <input
+              type="radio"
+              name="contactMethod"
+              value="email"
+              checked={formData.contactMethod === 'email'}
+              onChange={handleChange}
+            />
+            Email
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="contactMethod"
+              value="phone"
+              checked={formData.contactMethod === 'phone'}
+              onChange={handleChange}
+            />
+            Phone
+          </label>
+        </div>
+      </div>
+
+      <div className="form-group checkbox-group">
+        <label>
+          <input
+            type="checkbox"
+            name="subscribe"
+            checked={formData.subscribe}
+            onChange={handleChange}
+          />
+          Subscribe to our newsletter
+        </label>
+      </div>
+
+      <button type="submit" disabled={loading}>
+        {loading ? 'Sending...' : 'Send Message'}
+      </button>
+    </form>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<ContactForm />);
+```
+  </Version>
+  <File name="styles.css">
+```css
+.contact-form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.contact-form h1 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  font-weight: normal;
+}
+
+.radio-group input {
+  width: auto;
+  margin-right: 5px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  font-weight: normal;
+}
+
+.checkbox-group input {
+  width: auto;
+  margin-right: 8px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.success-message {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 40px;
+  text-align: center;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  color: #155724;
+}
+
+.success-message h2 {
+  margin-bottom: 20px;
+}
+```
+  </File>
+  <Tests>
+```javascript
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import userEvent from '@testing-library/user-event';
+
+// Import your ContactForm component
+import { ContactForm } from './App';
+
+describe('Contact Form', () => {
+  beforeEach(() => {
+    render(<ContactForm />);
+  });
+
+  it('should render all form fields', () => {
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/subject/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/message/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/phone/i)).toBeInTheDocument();
+  });
+
+  it('should have radio buttons for contact method', () => {
+    const emailRadio = screen.getByRole('radio', { name: /email/i });
+    const phoneRadio = screen.getByRole('radio', { name: /phone/i });
+    
+    expect(emailRadio).toBeInTheDocument();
+    expect(phoneRadio).toBeInTheDocument();
+    expect(emailRadio).toBeChecked();
+  });
+
+  it('should have newsletter checkbox', () => {
+    const checkbox = screen.getByRole('checkbox', { name: /subscribe/i });
+    expect(checkbox).toBeInTheDocument();
+    expect(checkbox).not.toBeChecked();
+  });
+
+  it('should show validation errors for empty required fields', async () => {
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    
+    fireEvent.click(submitButton);
+    
+    expect(await screen.findByText(/name is required/i)).toBeInTheDocument();
+    expect(await screen.findByText(/email is required/i)).toBeInTheDocument();
+    expect(await screen.findByText(/please select a subject/i)).toBeInTheDocument();
+    expect(await screen.findByText(/message is required/i)).toBeInTheDocument();
+  });
+
+  it('should validate email format', async () => {
+    const emailInput = screen.getByLabelText(/email/i);
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    
+    await userEvent.type(emailInput, 'invalid-email');
+    fireEvent.click(submitButton);
+    
+    expect(await screen.findByText(/email is invalid/i)).toBeInTheDocument();
+  });
+
+  it('should validate message length', async () => {
+    const messageInput = screen.getByLabelText(/message/i);
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    
+    await userEvent.type(messageInput, 'Short');
+    fireEvent.click(submitButton);
+    
+    expect(await screen.findByText(/message must be at least 10 characters/i)).toBeInTheDocument();
+  });
+
+  it('should format phone number as user types', async () => {
+    const phoneInput = screen.getByLabelText(/phone/i);
+    
+    await userEvent.type(phoneInput, '1234567890');
+    
+    expect(phoneInput).toHaveValue('123-456-7890');
+  });
+
+  it('should require phone when phone contact method is selected', async () => {
+    const phoneRadio = screen.getByRole('radio', { name: /phone/i });
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    
+    fireEvent.click(phoneRadio);
+    fireEvent.click(submitButton);
+    
+    expect(await screen.findByText(/phone is required when selected as contact method/i)).toBeInTheDocument();
+  });
+
+  it('should submit form successfully with valid data', async () => {
+    const user = userEvent.setup();
+    
+    await user.type(screen.getByLabelText(/name/i), 'John Doe');
+    await user.type(screen.getByLabelText(/email/i), 'john@example.com');
+    await user.selectOptions(screen.getByLabelText(/subject/i), 'general');
+    await user.type(screen.getByLabelText(/message/i), 'This is a test message that is long enough');
+    
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    await user.click(submitButton);
+    
+    // Check loading state
+    expect(screen.getByRole('button', { name: /sending/i })).toBeDisabled();
+    
+    // Check success message
+    expect(await screen.findByText(/thank you/i)).toBeInTheDocument();
+    expect(screen.getByText(/your message has been sent successfully/i)).toBeInTheDocument();
+  });
+
+  it('should toggle newsletter subscription', async () => {
+    const checkbox = screen.getByRole('checkbox', { name: /subscribe/i });
+    
+    expect(checkbox).not.toBeChecked();
+    
+    await userEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+    
+    await userEvent.click(checkbox);
+    expect(checkbox).not.toBeChecked();
+  });
+
+  it('should clear errors when user corrects input', async () => {
+    const nameInput = screen.getByLabelText(/name/i);
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    
+    // Trigger validation error
+    fireEvent.click(submitButton);
+    expect(await screen.findByText(/name is required/i)).toBeInTheDocument();
+    
+    // Type in the field
+    await userEvent.type(nameInput, 'John');
+    
+    // Error should be cleared
+    expect(screen.queryByText(/name is required/i)).not.toBeInTheDocument();
+  });
+});
+```
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>

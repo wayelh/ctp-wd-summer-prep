@@ -1,0 +1,28 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## How the Layers Connect
+
+<FlexBox flexDirection="column" alignItems="center">
+  <Text fontSize="2rem">👤 **User** ↔️ **Frontend**</Text>
+  <Text fontSize="1.5rem">User clicks button, sees results</Text>
+  
+  <Text fontSize="2rem">💻 **Frontend** ↔️ **Backend**</Text>
+  <Text fontSize="1.5rem">HTTPS requests (GET, POST, PUT, DELETE)</Text>
+  
+  <Text fontSize="2rem">⚙️ **Backend** ↔️ **Database**</Text>
+  <Text fontSize="1.5rem">SQL queries or API calls</Text>
+</FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Example Flow: Creating a Habit
+
+1. User submits habit form (Frontend)
+2. Frontend sends POST request to `/api/habits` (Backend)
+3. Backend validates data and saves to database
+4. Database returns saved habit with ID
+5. Backend sends success response to Frontend
+6. Frontend updates UI to show new habit
+</SlideLayout.Full>

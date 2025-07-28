@@ -1,0 +1,142 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Flexbox Layout
+
+<CodeDisplay >
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flexbox Layout</title>
+</head>
+<body>
+    <h2>Habit Tracker Dashboard</h2>
+    
+    <!-- Flex container -->
+    <div class="habit-container">
+        <div class="habit-card">
+            <h3>Morning Run</h3>
+            <p>Streak: 5 days</p>
+            <button>Complete</button>
+        </div>
+        
+        <div class="habit-card featured">
+            <h3>Read 30 min</h3>
+            <p>Streak: 12 days</p>
+            <button>Complete</button>
+        </div>
+        
+        <div class="habit-card">
+            <h3>Meditate</h3>
+            <p>Streak: 3 days</p>
+            <button>Complete</button>
+        </div>
+    </div>
+    
+    <!-- Navigation bar example -->
+    <nav class="flex-nav">
+        <div class="nav-brand">Habit Tracker</div>
+        <ul class="nav-links">
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">Habits</a></li>
+            <li><a href="#">Statistics</a></li>
+        </ul>
+        <button class="nav-button">Sign Out</button>
+    </nav>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Flex container for habit cards */
+.habit-container {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+}
+
+.habit-card {
+    flex: 1;
+    min-width: 200px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.habit-card.featured {
+    flex: 2;
+    background-color: #e3f2fd;
+    border-color: #2196F3;
+}
+
+.habit-card h3 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.habit-card button {
+    align-self: flex-start;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Flexbox navigation */
+.flex-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+}
+
+.nav-brand {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+.nav-button {
+    padding: 8px 16px;
+    background-color: #ff5722;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

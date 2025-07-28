@@ -1,0 +1,916 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests, Version } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Build a Global State System
+
+<CodeDisplay height="70vh">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global State Exercise</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { createContext, useContext, useState, useReducer } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// TODO: Build a todo app with global state management
+// Requirements:
+// 1. Create a TodoContext with state and actions
+// 2. Support adding, toggling, editing, and deleting todos
+// 3. Add filtering (all, active, completed)
+// 4. Add a separate ThemeContext for dark/light mode
+// 5. Create a StatsContext that tracks todo statistics
+// 6. Implement undo/redo functionality
+// 7. Persist todos to localStorage
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+  createdAt: Date;
+}
+
+// TODO: Create contexts
+
+// TODO: Create providers
+
+// TODO: Create custom hooks
+
+// TODO: Create components
+
+function App() {
+  return (
+    <div className="app">
+      <h1>Global Todo App</h1>
+      {/* TODO: Implement your app here */}
+      <p>Build your global state todo app</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <Version>
+```tsx
+// SOLUTION
+import React, { 
+  createContext, 
+  useContext, 
+  useState, 
+  useReducer, 
+  useEffect,
+  useMemo,
+  useCallback
+} from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+  createdAt: Date;
+}
+
+type Filter = 'all' | 'active' | 'completed';
+
+// Todo Context
+type TodoState = {
+  todos: Todo[];
+  filter: Filter;
+  history: Todo[][];
+  historyIndex: number;
+};
+
+type TodoAction =
+  | { type: 'ADD_TODO'; payload: string }
+  | { type: 'TOGGLE_TODO'; payload: number }
+  | { type: 'EDIT_TODO'; payload: { id: number; text: string } }
+  | { type: 'DELETE_TODO'; payload: number }
+  | { type: 'SET_FILTER'; payload: Filter }
+  | { type: 'UNDO' }
+  | { type: 'REDO' }
+  | { type: 'LOAD_TODOS'; payload: Todo[] };
+
+const initialTodoState: TodoState = {
+  todos: [],
+  filter: 'all',
+  history: [[]],
+  historyIndex: 0
+};
+
+function todoReducer(state: TodoState, action: TodoAction): TodoState {
+  switch (action.type) {
+    case 'ADD_TODO': {
+      const newTodo: Todo = {
+        id: Date.now(),
+        text: action.payload,
+        completed: false,
+        createdAt: new Date()
+      };
+      const newTodos = [...state.todos, newTodo];
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newTodos];
+      return {
+        ...state,
+        todos: newTodos,
+        history: newHistory,
+        historyIndex: newHistory.length - 1
+      };
+    }
+    
+    case 'TOGGLE_TODO': {
+      const newTodos = state.todos.map(todo =>
+        todo.id === action.payload
+          ? { ...todo, completed: !todo.completed }
+          : todo
+      );
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newTodos];
+      return {
+        ...state,
+        todos: newTodos,
+        history: newHistory,
+        historyIndex: newHistory.length - 1
+      };
+    }
+    
+    case 'EDIT_TODO': {
+      const newTodos = state.todos.map(todo =>
+        todo.id === action.payload.id
+          ? { ...todo, text: action.payload.text }
+          : todo
+      );
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newTodos];
+      return {
+        ...state,
+        todos: newTodos,
+        history: newHistory,
+        historyIndex: newHistory.length - 1
+      };
+    }
+    
+    case 'DELETE_TODO': {
+      const newTodos = state.todos.filter(todo => todo.id !== action.payload);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newTodos];
+      return {
+        ...state,
+        todos: newTodos,
+        history: newHistory,
+        historyIndex: newHistory.length - 1
+      };
+    }
+    
+    case 'SET_FILTER':
+      return { ...state, filter: action.payload };
+    
+    case 'UNDO':
+      if (state.historyIndex > 0) {
+        return {
+          ...state,
+          historyIndex: state.historyIndex - 1,
+          todos: state.history[state.historyIndex - 1]
+        };
+      }
+      return state;
+    
+    case 'REDO':
+      if (state.historyIndex < state.history.length - 1) {
+        return {
+          ...state,
+          historyIndex: state.historyIndex + 1,
+          todos: state.history[state.historyIndex + 1]
+        };
+      }
+      return state;
+    
+    case 'LOAD_TODOS':
+      return {
+        ...state,
+        todos: action.payload,
+        history: [action.payload],
+        historyIndex: 0
+      };
+    
+    default:
+      return state;
+  }
+}
+
+const TodoContext = createContext<{
+  state: TodoState;
+  dispatch: React.Dispatch<TodoAction>;
+} | undefined>(undefined);
+
+function TodoProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(todoReducer, initialTodoState);
+
+  // Load from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('todos');
+    if (saved) {
+      const todos = JSON.parse(saved, (key, value) => {
+        if (key === 'createdAt') return new Date(value);
+        return value;
+      });
+      dispatch({ type: 'LOAD_TODOS', payload: todos });
+    }
+  }, []);
+
+  // Save to localStorage
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(state.todos));
+  }, [state.todos]);
+
+  const value = useMemo(() => ({ state, dispatch }), [state]);
+
+  return (
+    <TodoContext.Provider value={value}>
+      {children}
+    </TodoContext.Provider>
+  );
+}
+
+function useTodos() {
+  const context = useContext(TodoContext);
+  if (!context) {
+    throw new Error('useTodos must be used within TodoProvider');
+  }
+  return context;
+}
+
+// Theme Context
+const ThemeContext = createContext<{
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+} | undefined>(undefined);
+
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved as 'light' | 'dark') || 'light';
+  });
+
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => {
+      const newTheme = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('theme', newTheme);
+      return newTheme;
+    });
+  }, []);
+
+  const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
+
+  return (
+    <ThemeContext.Provider value={value}>
+      <div className={`theme-wrapper ${theme}`}>
+        {children}
+      </div>
+    </ThemeContext.Provider>
+  );
+}
+
+function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
+  return context;
+}
+
+// Stats Context
+const StatsContext = createContext<{
+  total: number;
+  completed: number;
+  active: number;
+  completionRate: number;
+} | undefined>(undefined);
+
+function StatsProvider({ children }: { children: React.ReactNode }) {
+  const { state } = useTodos();
+  
+  const stats = useMemo(() => {
+    const total = state.todos.length;
+    const completed = state.todos.filter(t => t.completed).length;
+    const active = total - completed;
+    const completionRate = total > 0 ? (completed / total) * 100 : 0;
+    
+    return { total, completed, active, completionRate };
+  }, [state.todos]);
+
+  return (
+    <StatsContext.Provider value={stats}>
+      {children}
+    </StatsContext.Provider>
+  );
+}
+
+function useStats() {
+  const context = useContext(StatsContext);
+  if (!context) {
+    throw new Error('useStats must be used within StatsProvider');
+  }
+  return context;
+}
+
+// Components
+function TodoInput() {
+  const [input, setInput] = useState('');
+  const { dispatch } = useTodos();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      dispatch({ type: 'ADD_TODO', payload: input.trim() });
+      setInput('');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="todo-input">
+      <input
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="What needs to be done?"
+      />
+      <button type="submit">Add</button>
+    </form>
+  );
+}
+
+function TodoList() {
+  const { state, dispatch } = useTodos();
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editText, setEditText] = useState('');
+
+  const filteredTodos = state.todos.filter(todo => {
+    if (state.filter === 'active') return !todo.completed;
+    if (state.filter === 'completed') return todo.completed;
+    return true;
+  });
+
+  const handleEdit = (id: number, text: string) => {
+    setEditingId(id);
+    setEditText(text);
+  };
+
+  const saveEdit = () => {
+    if (editingId && editText.trim()) {
+      dispatch({ 
+        type: 'EDIT_TODO', 
+        payload: { id: editingId, text: editText.trim() } 
+      });
+    }
+    setEditingId(null);
+    setEditText('');
+  };
+
+  return (
+    <ul className="todo-list">
+      {filteredTodos.map(todo => (
+        <li key={todo.id} className={todo.completed ? 'completed' : ''}>
+          <input
+            type="checkbox"
+            checked={todo.completed}
+            onChange={() => dispatch({ type: 'TOGGLE_TODO', payload: todo.id })}
+          />
+          {editingId === todo.id ? (
+            <input
+              type="text"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              onBlur={saveEdit}
+              onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
+              autoFocus
+            />
+          ) : (
+            <span onDoubleClick={() => handleEdit(todo.id, todo.text)}>
+              {todo.text}
+            </span>
+          )}
+          <button
+            className="delete"
+            onClick={() => dispatch({ type: 'DELETE_TODO', payload: todo.id })}
+          >
+            ×
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function TodoFilters() {
+  const { state, dispatch } = useTodos();
+  const filters: Filter[] = ['all', 'active', 'completed'];
+
+  return (
+    <div className="filters">
+      {filters.map(filter => (
+        <button
+          key={filter}
+          className={state.filter === filter ? 'active' : ''}
+          onClick={() => dispatch({ type: 'SET_FILTER', payload: filter })}
+        >
+          {filter.charAt(0).toUpperCase() + filter.slice(1)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function TodoStats() {
+  const stats = useStats();
+
+  return (
+    <div className="stats">
+      <div>Total: {stats.total}</div>
+      <div>Active: {stats.active}</div>
+      <div>Completed: {stats.completed}</div>
+      <div>Completion: {stats.completionRate.toFixed(0)}%</div>
+    </div>
+  );
+}
+
+function UndoRedo() {
+  const { state, dispatch } = useTodos();
+  const canUndo = state.historyIndex > 0;
+  const canRedo = state.historyIndex < state.history.length - 1;
+
+  return (
+    <div className="undo-redo">
+      <button 
+        onClick={() => dispatch({ type: 'UNDO' })}
+        disabled={!canUndo}
+      >
+        ← Undo
+      </button>
+      <button 
+        onClick={() => dispatch({ type: 'REDO' })}
+        disabled={!canRedo}
+      >
+        Redo →
+      </button>
+    </div>
+  );
+}
+
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <button className="theme-toggle" onClick={toggleTheme}>
+      {theme === 'light' ? '🌙' : '☀️'} {theme === 'light' ? 'Dark' : 'Light'} Mode
+    </button>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <TodoProvider>
+        <StatsProvider>
+          <div className="app">
+            <header>
+              <h1>Global Todo App</h1>
+              <ThemeToggle />
+            </header>
+            
+            <TodoStats />
+            <TodoInput />
+            <TodoFilters />
+            <UndoRedo />
+            <TodoList />
+          </div>
+        </StatsProvider>
+      </TodoProvider>
+    </ThemeProvider>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </Version>
+  <File name="styles.css">
+```css
+* {
+  box-sizing: border-box;
+}
+
+.theme-wrapper {
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.theme-wrapper.light {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.theme-wrapper.dark {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.theme-toggle {
+  padding: 8px 16px;
+  background-color: transparent;
+  border: 2px solid currentColor;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.theme-wrapper.light .theme-toggle {
+  color: #333;
+}
+
+.theme-wrapper.dark .theme-toggle {
+  color: #f0f0f0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stats > div {
+  padding: 15px;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.theme-wrapper.light .stats > div {
+  background-color: #e0e0e0;
+}
+
+.theme-wrapper.dark .stats > div {
+  background-color: #2a2a2a;
+}
+
+.todo-input {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.todo-input input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.theme-wrapper.dark .todo-input input {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filters button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.theme-wrapper.dark .filters button {
+  background-color: #2a2a2a;
+  border-color: #444;
+  color: #f0f0f0;
+}
+
+.filters button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.undo-redo {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.undo-redo button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.theme-wrapper.light .todo-list li {
+  background-color: white;
+  border: 1px solid #ddd;
+}
+
+.theme-wrapper.dark .todo-list li {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+}
+
+.todo-list li.completed span {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.todo-list li span {
+  flex: 1;
+  cursor: pointer;
+}
+
+.todo-list li input[type="text"] {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+}
+
+.todo-list li .delete {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+```
+  </File>
+  <Tests>
+```javascript
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import userEvent from '@testing-library/user-event';
+
+// Import your App component
+import { App } from './App';
+
+describe('Global Todo App', () => {
+  beforeEach(() => {
+    // Clear localStorage before each test
+    localStorage.clear();
+    render(<App />);
+  });
+
+  it('should render the app title', () => {
+    expect(screen.getByText('Global Todo App')).toBeInTheDocument();
+  });
+
+  it('should have todo input form', () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const button = screen.getByRole('button', { name: /add/i });
+    
+    expect(input).toBeInTheDocument();
+    expect(button).toBeInTheDocument();
+  });
+
+  it('should add a new todo', async () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const button = screen.getByRole('button', { name: /add/i });
+    
+    await userEvent.type(input, 'New todo item');
+    await userEvent.click(button);
+    
+    expect(screen.getByText('New todo item')).toBeInTheDocument();
+    expect(input).toHaveValue('');
+  });
+
+  it('should toggle todo completion', async () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const addButton = screen.getByRole('button', { name: /add/i });
+    
+    await userEvent.type(input, 'Test todo');
+    await userEvent.click(addButton);
+    
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).not.toBeChecked();
+    
+    await userEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+  });
+
+  it('should edit todo on double click', async () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const addButton = screen.getByRole('button', { name: /add/i });
+    
+    await userEvent.type(input, 'Original text');
+    await userEvent.click(addButton);
+    
+    const todoText = screen.getByText('Original text');
+    await userEvent.dblClick(todoText);
+    
+    const editInput = screen.getByDisplayValue('Original text');
+    await userEvent.clear(editInput);
+    await userEvent.type(editInput, 'Edited text');
+    await userEvent.keyboard('{Enter}');
+    
+    expect(screen.getByText('Edited text')).toBeInTheDocument();
+    expect(screen.queryByText('Original text')).not.toBeInTheDocument();
+  });
+
+  it('should delete a todo', async () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const addButton = screen.getByRole('button', { name: /add/i });
+    
+    await userEvent.type(input, 'Todo to delete');
+    await userEvent.click(addButton);
+    
+    const deleteButton = screen.getByText('×');
+    await userEvent.click(deleteButton);
+    
+    expect(screen.queryByText('Todo to delete')).not.toBeInTheDocument();
+  });
+
+  it('should filter todos', async () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const addButton = screen.getByRole('button', { name: /add/i });
+    
+    // Add active todo
+    await userEvent.type(input, 'Active todo');
+    await userEvent.click(addButton);
+    
+    // Add completed todo
+    await userEvent.type(input, 'Completed todo');
+    await userEvent.click(addButton);
+    const checkboxes = screen.getAllByRole('checkbox');
+    await userEvent.click(checkboxes[1]);
+    
+    // Test All filter (default)
+    expect(screen.getByText('Active todo')).toBeInTheDocument();
+    expect(screen.getByText('Completed todo')).toBeInTheDocument();
+    
+    // Test Active filter
+    const activeFilter = screen.getByRole('button', { name: /active/i });
+    await userEvent.click(activeFilter);
+    expect(screen.getByText('Active todo')).toBeInTheDocument();
+    expect(screen.queryByText('Completed todo')).not.toBeInTheDocument();
+    
+    // Test Completed filter
+    const completedFilter = screen.getByRole('button', { name: /completed/i });
+    await userEvent.click(completedFilter);
+    expect(screen.queryByText('Active todo')).not.toBeInTheDocument();
+    expect(screen.getByText('Completed todo')).toBeInTheDocument();
+  });
+
+  it('should display correct stats', async () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const addButton = screen.getByRole('button', { name: /add/i });
+    
+    // Initially no todos
+    expect(screen.getByText('Total: 0')).toBeInTheDocument();
+    expect(screen.getByText('Active: 0')).toBeInTheDocument();
+    expect(screen.getByText('Completed: 0')).toBeInTheDocument();
+    expect(screen.getByText('Completion: 0%')).toBeInTheDocument();
+    
+    // Add 2 todos
+    await userEvent.type(input, 'Todo 1');
+    await userEvent.click(addButton);
+    await userEvent.type(input, 'Todo 2');
+    await userEvent.click(addButton);
+    
+    // Complete one todo
+    const checkboxes = screen.getAllByRole('checkbox');
+    await userEvent.click(checkboxes[0]);
+    
+    expect(screen.getByText('Total: 2')).toBeInTheDocument();
+    expect(screen.getByText('Active: 1')).toBeInTheDocument();
+    expect(screen.getByText('Completed: 1')).toBeInTheDocument();
+    expect(screen.getByText('Completion: 50%')).toBeInTheDocument();
+  });
+
+  it('should support undo/redo functionality', async () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const addButton = screen.getByRole('button', { name: /add/i });
+    const undoButton = screen.getByRole('button', { name: /undo/i });
+    const redoButton = screen.getByRole('button', { name: /redo/i });
+    
+    // Initially disabled
+    expect(undoButton).toBeDisabled();
+    expect(redoButton).toBeDisabled();
+    
+    // Add a todo
+    await userEvent.type(input, 'Test todo');
+    await userEvent.click(addButton);
+    expect(screen.getByText('Test todo')).toBeInTheDocument();
+    
+    // Undo should now be enabled
+    expect(undoButton).not.toBeDisabled();
+    await userEvent.click(undoButton);
+    expect(screen.queryByText('Test todo')).not.toBeInTheDocument();
+    
+    // Redo should now be enabled
+    expect(redoButton).not.toBeDisabled();
+    await userEvent.click(redoButton);
+    expect(screen.getByText('Test todo')).toBeInTheDocument();
+  });
+
+  it('should toggle theme', async () => {
+    const themeToggle = screen.getByRole('button', { name: /dark mode/i });
+    const wrapper = document.querySelector('.theme-wrapper');
+    
+    expect(wrapper).toHaveClass('light');
+    
+    await userEvent.click(themeToggle);
+    expect(wrapper).toHaveClass('dark');
+    expect(screen.getByRole('button', { name: /light mode/i })).toBeInTheDocument();
+  });
+
+  it('should persist todos to localStorage', async () => {
+    const input = screen.getByPlaceholderText(/what needs to be done/i);
+    const addButton = screen.getByRole('button', { name: /add/i });
+    
+    await userEvent.type(input, 'Persistent todo');
+    await userEvent.click(addButton);
+    
+    // Check localStorage
+    const savedTodos = JSON.parse(localStorage.getItem('todos') || '[]');
+    expect(savedTodos).toHaveLength(1);
+    expect(savedTodos[0].text).toBe('Persistent todo');
+  });
+
+  it('should persist theme preference', async () => {
+    const themeToggle = screen.getByRole('button', { name: /dark mode/i });
+    
+    await userEvent.click(themeToggle);
+    
+    expect(localStorage.getItem('theme')).toBe('dark');
+  });
+});
+```
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>

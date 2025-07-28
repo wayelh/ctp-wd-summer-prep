@@ -1,0 +1,39 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Common Generic Pitfalls
+
+**Avoid these common mistakes:**
+
+1. **Over-constraining generics**
+```typescript
+// ❌ Too restrictive
+function process<T extends { id: string, name: string, age: number }>(item: T) { }
+
+// ✅ Better - only constrain what you need
+function process<T extends { id: string }>(item: T) { }
+```
+
+2. **Not using inference**
+```typescript
+// ❌ Unnecessary type annotation
+const result = identity<string>("hello");
+
+// ✅ Let TypeScript infer
+const result = identity("hello");
+```
+
+3. **Generic overuse**
+```typescript
+// ❌ Generic when not needed
+function getUserName<T extends User>(user: T): string {
+  return user.name;
+}
+
+// ✅ Simple is better
+function getUserName(user: User): string {
+  return user.name;
+}
+```
+</SlideLayout.Full>

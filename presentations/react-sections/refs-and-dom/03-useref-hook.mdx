@@ -1,0 +1,70 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## useRef Hook
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>useRef Example</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+
+function FocusInput() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    // Focus input on mount
+    inputRef.current?.focus();
+  }, []);
+
+  const handleCopy = () => {
+    if (inputRef.current) {
+      inputRef.current.select();
+      document.execCommand('copy');
+      buttonRef.current?.focus();
+    }
+  };
+
+  return (
+    <div>
+      <h2>Auto-Focus Input</h2>
+      <input 
+        ref={inputRef}
+        type="text" 
+        placeholder="I'm focused on mount!"
+      />
+      <button ref={buttonRef} onClick={handleCopy}>
+        Copy Text
+      </button>
+    </div>
+  );
+}
+
+function App() {
+  return <FocusInput />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

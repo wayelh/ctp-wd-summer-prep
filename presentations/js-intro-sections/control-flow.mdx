@@ -1,28 +1,57 @@
 import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
-import { CodeDisplay, File, Version } from '../components/CodeDisplayWithSlideTracking'
+import { CodeDisplay, File, Version, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Control Flow
+
+Making decisions and repeating tasks in JavaScript
+</SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Understanding Decision Making in Code
 
 Programs need to make decisions based on data:
 
-**Conditional Statements (if/else)**
 - Execute different code based on conditions
 - Use comparison operators: `===`, `!==`, `>`, `<`, `>=`, `<=`
 - Combine conditions with `&&` (and), `||` (or), `!` (not)
-
-**Switch Statements**
-- Choose between multiple options
-- Cleaner than multiple if/else for many conditions
-- Don't forget `break` statements!
 
 **The Goal**: Build logic that responds to different situations
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Conditional Logic Patterns
+## Conditional Statements
 
-**if/else chains** - for multiple conditions:
+**if/else** - Basic decision making:
+```javascript
+if (condition) {
+  // code if true
+} else {
+  // code if false
+}
+```
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Conditional Statements
+**Switch** - Multiple options:
+```javascript
+switch (value) {
+  case option1:
+    // code
+    break;
+  case option2:
+    // code
+    break;
+  default:
+    // default code
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## if/else Chains
+
+For multiple conditions:
 ```javascript
 if (score >= 90) {
   grade = "A";
@@ -35,19 +64,53 @@ if (score >= 90) {
 }
 ```
 
-**Ternary operator** - for simple conditions:
+- Check conditions in order
+- First true condition wins
+- else catches everything else
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Ternary Operator
+
+For simple conditions:
 ```javascript
 const status = isLoggedIn ? "Welcome!" : "Please log in";
-```
 
-**Switch statements** - for many discrete options:
-```javascript
-switch (day) {
-  case "Monday": return "Start of work week";
-  case "Friday": return "TGIF!";
-  default: return "Regular day";
+// Same as:
+let status;
+if (isLoggedIn) {
+  status = "Welcome!";
+} else {
+  status = "Please log in";
 }
 ```
+
+- Concise conditional assignment
+- Best for simple true/false cases
+- Can be nested (but avoid complexity)
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Switch Statements
+
+For many discrete options:
+```javascript
+switch (day) {
+  case "Monday": 
+    return "Start of work week";
+  case "Friday": 
+    return "TGIF!";
+  case "Saturday":
+  case "Sunday":
+    return "Weekend!";
+  default: 
+    return "Regular day";
+}
+```
+
+- Cleaner than multiple if/else
+- Don't forget `break` statements!
+- Can group cases together
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -59,17 +122,19 @@ You'll build conditional logic for a habit tracker that:
 2. **Categorizes habits** with appropriate icons/styling  
 3. **Checks activity status** to show current state
 
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Exercise Overview: Habit Streak Messages
+
 **Key Concepts to Apply:**
 - if/else chains for streak milestones
 - Switch statement for category handling
 - Ternary operator for active/inactive status
-- String interpolation for dynamic messages
-
-**Think About**: What conditions matter most for motivating users?
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Control Flow
+## Control Flow Exercise
+
 <CodeDisplay >
   <File name="example.js">
     
@@ -173,7 +238,7 @@ describe('Habit Streak Messages', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Understanding Iteration and Data Processing
+## Understanding Iteration
 
 When you have collections of data, you need to process each item:
 
@@ -182,47 +247,144 @@ When you have collections of data, you need to process each item:
 - **for...of loop** - when you want to iterate over values  
 - **while loop** - when you don't know how many iterations needed
 - **Array methods** - functional programming approach
+</SlideLayout.Full>
 
-**Common Data Processing Tasks:**
+<SlideLayout.Full>
+## Common Data Processing Tasks
+
+With loops, you can:
 - Count items that meet criteria
 - Calculate totals/averages
 - Find maximum/minimum values
 - Transform data into new formats
 - Filter collections based on conditions
+
+Let's explore each loop type...
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Loop Patterns for Data Analysis
+## Traditional for Loop
 
-**Counting and Accumulating:**
+When you need index control:
 ```javascript
-let total = 0;
-for (const item of items) {
-  if (item.condition) {
-    total += item.value;
-  }
+for (let i = 0; i < array.length; i++) {
+  console.log(i, array[i]); // Access index and value
+}
+
+// Count backwards
+for (let i = array.length - 1; i >= 0; i--) {
+  console.log(array[i]);
+}
+
+// Skip every other item
+for (let i = 0; i < array.length; i += 2) {
+  console.log(array[i]);
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## for...of Loop
+
+When you just need values:
+```javascript
+const habits = ["Exercise", "Read", "Meditate"];
+
+for (const habit of habits) {
+  console.log(habit); // Direct access to value
+}
+
+// Works with strings too
+for (const char of "Hello") {
+  console.log(char); // H, e, l, l, o
 }
 ```
 
-**Finding Extremes:**
+Cleaner syntax when index isn't needed
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## while Loop
+
+When iteration count is unknown:
 ```javascript
+while (condition) {
+  // code
+  // update condition
+}
+
+// Example: Find first habit with 30+ streak
+let index = 0;
+while (index < habits.length && habits[index].streak < 30) {
+  index++;
+}
+```
+
+Be careful of infinite loops!
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Loop Patterns: Counting and Accumulating
+
+```javascript
+// Count items meeting criteria
+let count = 0;
+for (const item of items) {
+  if (item.completed) {
+    count++;
+  }
+}
+
+// Calculate total
+let total = 0;
+for (const item of items) {
+  total += item.points;
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Loop Patterns: Finding Extremes
+
+```javascript
+// Find maximum value
 let maxValue = 0;
 let bestItem = null;
+
 for (const item of items) {
   if (item.value > maxValue) {
     maxValue = item.value;
     bestItem = item;
   }
 }
-```
 
-**Building New Collections:**
+// Find first matching item
+let found = null;
+for (const item of items) {
+  if (item.name === searchName) {
+    found = item;
+    break; // Exit early
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Loop Patterns: Building Collections
+
 ```javascript
+// Filter items
 const results = [];
 for (const item of items) {
-  if (item.isValid) {
-    results.push(item.name);
+  if (item.isActive) {
+    results.push(item);
   }
+}
+
+// Transform items
+const names = [];
+for (const item of items) {
+  names.push(item.name.toUpperCase());
 }
 ```
 </SlideLayout.Full>
@@ -237,17 +399,12 @@ You'll process a week's worth of habit data to:
 3. **Find the best day** with highest points
 4. **List completed days** for reporting
 
-**Loop Techniques You'll Use:**
-- Traditional for loop with index
-- for...of loop for cleaner iteration
-- while loop for conditional processing
-- Array methods for functional style
-
-**Goal**: Extract meaningful insights from raw habit data
+You'll practice different loop techniques for each task!
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Loops and Iteration
+## Loops and Iteration Exercise
+
 <CodeDisplay >
   <File name="example.js">
     
@@ -355,76 +512,132 @@ describe('Weekly Habit Processing', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Common Control Flow Pitfalls
+## Common Pitfall: Missing break
 
-**Watch out for these gotchas:**
-
-1. **Forgetting `break` in switch statements**
 ```javascript
+// ❌ Wrong - falls through!
 switch (habitCategory) {
   case "health":
     icon = "💪";
-    // ❌ Missing break - falls through!
+    // Missing break!
   case "learning":
     icon = "📚"; // This always runs!
 }
-```
-
-2. **Off-by-one errors in loops**
-```javascript
-// ❌ Wrong - misses last element
-for (let i = 0; i < array.length - 1; i++) { }
 
 // ✅ Correct
-for (let i = 0; i < array.length; i++) { }
-```
-
-3. **Truthy/Falsy confusion**
-```javascript
-if (habit.streak) { // ❌ Fails when streak is 0
-  // 0 is falsy!
+switch (habitCategory) {
+  case "health":
+    icon = "💪";
+    break;
+  case "learning":
+    icon = "📚";
+    break;
 }
-
-// Better:
-if (habit.streak !== undefined) { }
 ```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Loop Performance Tips
+## Common Pitfall: Off-by-One Errors
 
-**Make your loops faster:**
-
-1. **Cache array length**
 ```javascript
-// Slower - calculates length each iteration
-for (let i = 0; i < habits.length; i++) { }
+// ❌ Wrong - misses last element
+for (let i = 0; i < array.length - 1; i++) { 
+  console.log(array[i]);
+}
 
-// Faster - cache length once
-const len = habits.length;
-for (let i = 0; i < len; i++) { }
+// ✅ Correct
+for (let i = 0; i < array.length; i++) { 
+  console.log(array[i]);
+}
+
+// ❌ Wrong - goes past array end
+for (let i = 0; i <= array.length; i++) { 
+  console.log(array[i]); // undefined on last iteration
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Pitfall: Truthy/Falsy Confusion
+
+```javascript
+// ❌ Fails when streak is 0
+if (habit.streak) { 
+  console.log("Has streak");
+}
+
+// ✅ Better - explicit check
+if (habit.streak !== undefined) { 
+  console.log("Has streak value");
+}
+
+// ✅ Or check for specific condition
+if (habit.streak > 0) { 
+  console.log("Has positive streak");
+}
 ```
 
-2. **Use appropriate iteration method**
+Remember: 0, "", null, undefined, false are all falsy!
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Loop Performance: Cache Array Length
+
 ```javascript
-// For simple iteration
-for (const habit of habits) { }
+// ❌ Slower - calculates length each iteration
+for (let i = 0; i < habits.length; i++) { 
+  // habits.length is evaluated every loop
+}
+
+// ✅ Faster - cache length once
+const len = habits.length;
+for (let i = 0; i < len; i++) { 
+  // len is just a variable lookup
+}
+```
+
+Most important for very large arrays
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Loop Performance: Choose the Right Method
+
+```javascript
+// Simple iteration
+for (const habit of habits) { 
+  console.log(habit);
+}
 
 // When you need index
-for (let i = 0; i < habits.length; i++) { }
+for (let i = 0; i < habits.length; i++) { 
+  console.log(i, habits[i]);
+}
 
-// For transformation
+// For transformation (functional)
 const names = habits.map(h => h.name);
 
-// For filtering
+// For filtering (functional)
 const active = habits.filter(h => h.isActive);
 ```
+</SlideLayout.Full>
 
-3. **Break early when possible**
+<SlideLayout.Full>
+## Loop Performance: Break Early
+
 ```javascript
+// ❌ Checks every item
+let found = null;
 for (const habit of habits) {
   if (habit.name === searchName) {
-    return habit; // Exit early
+    found = habit;
+  }
+}
+
+// ✅ Exits as soon as found
+for (const habit of habits) {
+  if (habit.name === searchName) {
+    found = habit;
+    break; // Stop searching!
   }
 }
 ```

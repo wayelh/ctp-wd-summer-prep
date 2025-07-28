@@ -1,0 +1,122 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Complex Example: Video Player
+
+<CodeDisplay>
+  <File name="VideoPlayer.tsx">
+```tsx
+import React, { useRef, useState, useEffect } from 'react';
+
+interface VideoPlayerProps {
+  src: string;
+  poster?: string;
+}
+
+function VideoPlayer({ src, poster }: VideoPlayerProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const updateTime = () => setCurrentTime(video.currentTime);
+    const updateDuration = () => setDuration(video.duration);
+    const updatePlayState = () => setIsPlaying(!video.paused);
+
+    video.addEventListener('timeupdate', updateTime);
+    video.addEventListener('loadedmetadata', updateDuration);
+    video.addEventListener('play', updatePlayState);
+    video.addEventListener('pause', updatePlayState);
+
+    return () => {
+      video.removeEventListener('timeupdate', updateTime);
+      video.removeEventListener('loadedmetadata', updateDuration);
+      video.removeEventListener('play', updatePlayState);
+      video.removeEventListener('pause', updatePlayState);
+    };
+  }, []);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+    }
+  };
+
+  const seek = (time: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  };
+
+  const changeVolume = (newVolume: number) => {
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume;
+      setVolume(newVolume);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div style={{ maxWidth: '600px' }}>
+      <video
+        ref={videoRef}
+        src={src}
+        poster={poster}
+        style={{ width: '100%', height: 'auto' }}
+      />
+      
+      <div style={{ padding: '10px', backgroundColor: '#333', color: 'white' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button onClick={togglePlay}>
+            {isPlaying ? '⏸️' : '▶️'}
+          </button>
+          
+          <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+          
+          <input
+            type="range"
+            min={0}
+            max={duration}
+            value={currentTime}
+            onChange={(e) => seek(Number(e.target.value))}
+            style={{ flex: 1 }}
+          />
+          
+          <span>🔊</span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.1}
+            value={volume}
+            onChange={(e) => changeVolume(Number(e.target.value))}
+            style={{ width: '80px' }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default VideoPlayer;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

@@ -1,0 +1,52 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Habit Analytics
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build analytics for habit data
+// TODO: Implement methods to analyze habit performance
+
+const habitAnalytics = {
+  // TODO: Calculate completion rate for a habit
+  getCompletionRate(habit, daysTracked) {
+    // Return percentage of days completed
+    // Your code here...
+  },
+  
+  // TODO: Get habits by category
+  getHabitsByCategory(habits, category) {
+    // Return array of habits in given category
+    // Your code here...
+  },
+  
+  // TODO: Find best performing habits
+  getTopHabits(habits, limit = 3) {
+    // Return top habits by completion count
+    // Your code here...
+  },
+  
+  // TODO: Calculate category statistics
+  getCategoryStats(habits) {
+    // Return object with stats per category
+    // { category: { count, totalCompletions, avgStreak } }
+    // Your code here...
+  }
+};
+
+// Test data
+const sampleHabits = [
+  { name: "Exercise", category: "health", completions: 45, streak: 15 },
+  { name: "Meditate", category: "wellness", completions: 30, streak: 10 },
+  { name: "Read", category: "learning", completions: 60, streak: 20 },
+  { name: "Water", category: "health", completions: 90, streak: 30 },
+  { name: "Journal", category: "wellness", completions: 25, streak: 5 }
+];
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

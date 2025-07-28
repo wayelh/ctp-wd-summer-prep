@@ -1,0 +1,31 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Benefits of Objects
+
+**Why use objects over separate variables?**
+
+- **Organized, maintainable code**
+  - Related data stays together
+  - Easy to find and update
+
+- **Easier to pass around related data**
+  - One parameter instead of many
+  - Clear relationships
+
+- **Foundation for more advanced patterns**
+  - Classes, inheritance, composition
+  - Design patterns and architectures
+
+```javascript
+// Easy to pass complete habit data
+function saveHabit(habit) {
+  localStorage.setItem(`habit_${habit.id}`, JSON.stringify(habit));
+}
+
+// Easy to work with collections
+const habits = [exerciseHabit, readingHabit, meditationHabit];
+habits.forEach(habit => habit.complete());
+```
+</SlideLayout.Full>

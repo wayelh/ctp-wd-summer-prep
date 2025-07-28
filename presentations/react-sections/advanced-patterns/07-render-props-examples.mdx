@@ -1,0 +1,177 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Render Props Examples
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render Props Example</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, ReactNode, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Render prop component for mouse tracking
+interface MouseTrackerProps {
+  children: (position: { x: number; y: number }) => ReactNode;
+}
+
+function MouseTracker({ children }: MouseTrackerProps) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  return (
+    <div 
+      onMouseMove={handleMouseMove}
+      style={{ height: '300px', background: '#f5f5f5' }}
+    >
+      {children(position)}
+    </div>
+  );
+}
+
+// Toggle render prop component
+interface ToggleProps {
+  children: (props: {
+    on: boolean;
+    toggle: () => void;
+    setOn: (value: boolean) => void;
+  }) => ReactNode;
+  initialOn?: boolean;
+}
+
+function Toggle({ children, initialOn = false }: ToggleProps) {
+  const [on, setOn] = useState(initialOn);
+  
+  const toggle = () => setOn(!on);
+
+  return <>{children({ on, toggle, setOn })}</>;
+}
+
+// Data fetcher with render props
+interface DataFetcherProps<T> {
+  url: string;
+  children: (props: {
+    data: T | null;
+    loading: boolean;
+    error: Error | null;
+    refetch: () => void;
+  }) => ReactNode;
+}
+
+function DataFetcher<T>({ url, children }: DataFetcherProps<T>) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(url);
+      const result = await response.json();
+      setData(result);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [url]);
+
+  return <>{children({ data, loading, error, refetch: fetchData })}</>;
+}
+
+// Usage examples
+function App() {
+  return (
+    <div>
+      <h2>Render Props Examples</h2>
+
+      {/* Mouse tracker example */}
+      <h3>Mouse Tracker</h3>
+      <MouseTracker>
+        {({ x, y }) => (
+          <div>
+            <p>Mouse position: ({x}, {y})</p>
+            <div
+              style={{
+                position: 'absolute',
+                left: x - 10,
+                top: y - 10,
+                width: 20,
+                height: 20,
+                background: 'red',
+                borderRadius: '50%',
+                pointerEvents: 'none'
+              }}
+            />
+          </div>
+        )}
+      </MouseTracker>
+
+      {/* Toggle example */}
+      <h3>Toggle Component</h3>
+      <Toggle>
+        {({ on, toggle }) => (
+          <div>
+            <button onClick={toggle}>
+              {on ? 'ON' : 'OFF'}
+            </button>
+            {on && <p>The toggle is ON!</p>}
+          </div>
+        )}
+      </Toggle>
+
+      {/* Data fetcher example */}
+      <h3>Data Fetcher</h3>
+      <DataFetcher<{ name: string; email: string }> 
+        url="/api/user"
+      >
+        {({ data, loading, error, refetch }) => {
+          if (loading) return <div>Loading user...</div>;
+          if (error) return <div>Error: {error.message}</div>;
+          if (!data) return null;
+          
+          return (
+            <div>
+              <p>Name: {data.name}</p>
+              <p>Email: {data.email}</p>
+              <button onClick={refetch}>Refresh</button>
+            </div>
+          );
+        }}
+      </DataFetcher>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

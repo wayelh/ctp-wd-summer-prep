@@ -1,0 +1,17 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Render Props Pattern
+
+The Render Props pattern involves a component that accepts a function as a prop and calls that function with data to render. This pattern provides a flexible way to share component logic and state without using HOCs or inheritance.
+
+</SlideLayout.Full>
+<SlideLayout.Full>
+### Key Concepts:
+- **Component receives a function** that returns JSX
+- **Shares state and logic** through function parameters
+- **More flexible** than HOCs for dynamic composition
+- **Common uses**: mouse tracking, data fetching, toggles
+
+</SlideLayout.Full>

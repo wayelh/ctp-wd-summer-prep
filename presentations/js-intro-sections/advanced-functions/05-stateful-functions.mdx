@@ -1,0 +1,26 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Closure Benefits: Stateful Functions
+
+**2. Stateful Functions**
+Functions can maintain state between calls
+
+```javascript
+function createCounter() {
+  let count = 0;
+  
+  return function() {
+    return ++count;
+  };
+}
+
+const counter1 = createCounter();
+const counter2 = createCounter();
+
+console.log(counter1()); // 1
+console.log(counter1()); // 2
+console.log(counter2()); // 1 (independent!)
+```
+</SlideLayout.Full>

@@ -1,0 +1,670 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Conditional Rendering with Habit Lists
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit List Conditionals</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface Habit {
+  id: number;
+  name: string;
+  completed: boolean;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  category: 'health' | 'productivity' | 'personal' | 'learning';
+  streak: number;
+  dueToday: boolean;
+}
+
+// Filtering and conditional rendering for habits
+function HabitList(): JSX.Element {
+  const [habits, setHabits] = useState<Habit[]>([
+    { id: 1, name: 'Morning Meditation', completed: true, frequency: 'daily', category: 'personal', streak: 15, dueToday: true },
+    { id: 2, name: 'Exercise', completed: false, frequency: 'daily', category: 'health', streak: 7, dueToday: true },
+    { id: 3, name: 'Read for 30 mins', completed: false, frequency: 'daily', category: 'learning', streak: 3, dueToday: true },
+    { id: 4, name: 'Weekly Review', completed: false, frequency: 'weekly', category: 'productivity', streak: 4, dueToday: false },
+    { id: 5, name: 'Monthly Goals Review', completed: true, frequency: 'monthly', category: 'productivity', streak: 2, dueToday: false },
+  ]);
+  
+  const [filter, setFilter] = useState<'all' | 'today' | 'completed' | 'incomplete'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | Habit['category']>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'streak' | 'frequency'>('name');
+
+  // Complex filtering logic
+  const filteredHabits = habits
+    .filter(habit => {
+      if (filter === 'today') return habit.dueToday;
+      if (filter === 'completed') return habit.completed;
+      if (filter === 'incomplete') return !habit.completed;
+      return true;
+    })
+    .filter(habit => {
+      if (categoryFilter === 'all') return true;
+      return habit.category === categoryFilter;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return a.name.localeCompare(b.name);
+      if (sortBy === 'streak') return b.streak - a.streak;
+      if (sortBy === 'frequency') {
+        const order = { daily: 0, weekly: 1, monthly: 2 };
+        return order[a.frequency] - order[b.frequency];
+      }
+      return 0;
+    });
+
+  const toggleHabit = (id: number) => {
+    setHabits(habits.map(habit =>
+      habit.id === id 
+        ? { ...habit, completed: !habit.completed }
+        : habit
+    ));
+  };
+
+  // Calculate statistics
+  const stats = {
+    total: habits.length,
+    completed: habits.filter(h => h.completed).length,
+    todayTotal: habits.filter(h => h.dueToday).length,
+    todayCompleted: habits.filter(h => h.dueToday && h.completed).length,
+  };
+
+  const completionRate = stats.todayTotal > 0 
+    ? Math.round((stats.todayCompleted / stats.todayTotal) * 100)
+    : 0;
+
+  // Conditional empty states
+  if (habits.length === 0) {
+    return (
+      <div className="habit-container">
+        <div className="empty-state">
+          <span className="empty-icon">🎯</span>
+          <h2>Welcome to Your Habit Tracker!</h2>
+          <p>Start building better habits today</p>
+          <button className="add-habit-btn">Add Your First Habit</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="habit-container">
+      <h1>My Habits</h1>
+      
+      {/* Progress Overview - Only show if there are habits due today */}
+      {stats.todayTotal > 0 && (
+        <div className="progress-overview">
+          <h3>Today's Progress</h3>
+          <div className="progress-bar-container">
+            <div 
+              className="progress-bar-fill"
+              style={{ width: `${completionRate}%` }}
+            />
+          </div>
+          <p>{stats.todayCompleted} of {stats.todayTotal} habits completed ({completionRate}%)</p>
+          
+          {completionRate === 100 && (
+            <div className="celebration">
+              🎉 Perfect day! All habits completed!
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="filters">
+        <div className="filter-group">
+          <label>Show:</label>
+          <select value={filter} onChange={(e) => setFilter(e.target.value as any)}>
+            <option value="all">All Habits ({habits.length})</option>
+            <option value="today">Due Today ({stats.todayTotal})</option>
+            <option value="completed">Completed ({stats.completed})</option>
+            <option value="incomplete">Incomplete ({habits.length - stats.completed})</option>
+          </select>
+        </div>
+        
+        <div className="filter-group">
+          <label>Category:</label>
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value as any)}>
+            <option value="all">All Categories</option>
+            <option value="health">Health</option>
+            <option value="productivity">Productivity</option>
+            <option value="personal">Personal</option>
+            <option value="learning">Learning</option>
+          </select>
+        </div>
+        
+        <div className="filter-group">
+          <label>Sort by:</label>
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)}>
+            <option value="name">Name</option>
+            <option value="streak">Streak</option>
+            <option value="frequency">Frequency</option>
+          </select>
+        </div>
+      </div>
+
+      {filteredHabits.length === 0 ? (
+        <p className="no-results">
+          No habits match your current filters. Try adjusting them.
+        </p>
+      ) : (
+        <div className="habits-grid">
+          {filteredHabits.map(habit => (
+            <div 
+              key={habit.id} 
+              className={`habit-item ${habit.completed ? 'completed' : ''}`}
+            >
+              <div className="habit-header">
+                <input
+                  type="checkbox"
+                  checked={habit.completed}
+                  onChange={() => toggleHabit(habit.id)}
+                  disabled={!habit.dueToday}
+                />
+                <h3>{habit.name}</h3>
+                {!habit.dueToday && (
+                  <span className="not-due-badge">Not due today</span>
+                )}
+              </div>
+              
+              <div className="habit-meta">
+                <span className={`category-tag ${habit.category}`}>
+                  {habit.category}
+                </span>
+                <span className="frequency-tag">
+                  {habit.frequency}
+                </span>
+                {habit.streak > 0 && (
+                  <span className="streak-tag">
+                    🔥 {habit.streak} days
+                  </span>
+                )}
+              </div>
+              
+              {/* Conditional motivational message */}
+              {!habit.completed && habit.dueToday && (
+                <p className="motivation">
+                  {habit.streak > 10 
+                    ? `Don't break your ${habit.streak} day streak!`
+                    : habit.streak > 0
+                    ? 'Keep the momentum going!'
+                    : 'Start your streak today!'}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Summary section - only show if viewing all habits */}
+      {filter === 'all' && habits.length > 0 && (
+        <div className="summary-section">
+          <h3>Habit Summary</h3>
+          <div className="summary-grid">
+            <div className="summary-item">
+              <span className="summary-value">{habits.filter(h => h.frequency === 'daily').length}</span>
+              <span className="summary-label">Daily Habits</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-value">{habits.filter(h => h.frequency === 'weekly').length}</span>
+              <span className="summary-label">Weekly Habits</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-value">{Math.max(...habits.map(h => h.streak))}</span>
+              <span className="summary-label">Longest Streak</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Habit Insights Component with conditional rendering
+function HabitInsights(): JSX.Element {
+  const [viewMode, setViewMode] = useState<'streaks' | 'categories' | 'completion'>('streaks');
+  const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
+  
+  return (
+    <div className="insights-section">
+      <h2>Habit Insights</h2>
+      
+      <div className="view-toggle">
+        <button 
+          className={viewMode === 'streaks' ? 'active' : ''}
+          onClick={() => setViewMode('streaks')}
+        >
+          Streaks
+        </button>
+        <button 
+          className={viewMode === 'categories' ? 'active' : ''}
+          onClick={() => setViewMode('categories')}
+        >
+          Categories
+        </button>
+        <button 
+          className={viewMode === 'completion' ? 'active' : ''}
+          onClick={() => setViewMode('completion')}
+        >
+          Completion Rate
+        </button>
+      </div>
+
+      {viewMode === 'streaks' && (
+        <div className="streaks-view">
+          <h3>Current Streaks</h3>
+          <div className="streak-list">
+            <div className="streak-item gold">
+              <span className="icon">🏆</span>
+              <span>Morning Meditation: 15 days</span>
+            </div>
+            <div className="streak-item silver">
+              <span className="icon">🥈</span>
+              <span>Exercise: 7 days</span>
+            </div>
+            <div className="streak-item bronze">
+              <span className="icon">🥉</span>
+              <span>Reading: 3 days</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'categories' && (
+        <div className="categories-view">
+          <h3>Habits by Category</h3>
+          <div className="category-breakdown">
+            <div className="category-bar health" style={{ width: '40%' }}>
+              Health (40%)
+            </div>
+            <div className="category-bar productivity" style={{ width: '30%' }}>
+              Productivity (30%)
+            </div>
+            <div className="category-bar personal" style={{ width: '20%' }}>
+              Personal (20%)
+            </div>
+            <div className="category-bar learning" style={{ width: '10%' }}>
+              Learning (10%)
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'completion' && (
+        <div className="completion-view">
+          <h3>Completion Rate - Last {timeRange}</h3>
+          <select value={timeRange} onChange={(e) => setTimeRange(e.target.value as any)}>
+            <option value="week">Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </select>
+          <div className="completion-chart">
+            <div className="chart-placeholder">
+              {timeRange === 'week' && '📊 85% completion rate this week'}
+              {timeRange === 'month' && '📊 78% completion rate this month'}
+              {timeRange === 'year' && '📊 82% completion rate this year'}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  return (
+    <div className="app">
+      <HabitList />
+      <HabitInsights />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.habit-container {
+  margin-bottom: 40px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+.empty-icon {
+  font-size: 72px;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.add-habit-btn {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.progress-overview {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 20px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+  margin: 15px 0;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: white;
+  transition: width 0.3s ease;
+}
+
+.celebration {
+  background: rgba(255,255,255,0.2);
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 18px;
+  margin-top: 15px;
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.filters {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #666;
+}
+
+.filter-group select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+}
+
+.no-results {
+  text-align: center;
+  color: #666;
+  padding: 40px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.habits-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.habit-item {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.habit-item:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.habit-item.completed {
+  background: #f0f9ff;
+  border-color: #4caf50;
+}
+
+.habit-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.habit-header input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.habit-header input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.habit-header h3 {
+  margin: 0;
+  flex: 1;
+}
+
+.not-due-badge {
+  background: #ffc107;
+  color: #333;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.habit-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.category-tag,
+.frequency-tag,
+.streak-tag {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.category-tag.health { background: #e8f5e9; color: #2e7d32; }
+.category-tag.productivity { background: #fff3e0; color: #e65100; }
+.category-tag.personal { background: #f3e5f5; color: #6a1b9a; }
+.category-tag.learning { background: #e3f2fd; color: #1565c0; }
+
+.frequency-tag {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.streak-tag {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.motivation {
+  margin: 0;
+  color: #666;
+  font-style: italic;
+  font-size: 14px;
+}
+
+.summary-section {
+  margin-top: 40px;
+  padding: 25px;
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.summary-item {
+  text-align: center;
+}
+
+.summary-value {
+  display: block;
+  font-size: 36px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.summary-label {
+  display: block;
+  color: #666;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.insights-section {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 25px;
+  margin-top: 40px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.view-toggle button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-toggle button.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.streak-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.streak-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.streak-item.gold { background: #fff8e1; }
+.streak-item.silver { background: #f5f5f5; }
+.streak-item.bronze { background: #fff3e0; }
+
+.streak-item .icon {
+  font-size: 24px;
+}
+
+.category-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.category-bar {
+  padding: 12px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.category-bar.health { background: #4caf50; }
+.category-bar.productivity { background: #ff9800; }
+.category-bar.personal { background: #9c27b0; }
+.category-bar.learning { background: #2196f3; }
+
+.completion-view select {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.chart-placeholder {
+  margin-top: 20px;
+  padding: 40px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,31 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Modern Object Features
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Destructuring - extract values easily
+const { name, category } = habit;
+
+// Spread operator - copy and extend objects
+const updatedHabit = { ...habit, streak: 10 };
+
+// Computed property names
+const propName = "lastCompleted";
+const habitWithDate = {
+  ...habit,
+  [propName]: "2024-01-20"
+};
+
+// Object shorthand
+const streak = 7;
+const points = 100;
+const stats = { streak, points }; // Same as { streak: streak, points: points }
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,40 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Promises: A Better Way
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Promises - objects representing future values
+function loadHabitData(habitId) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const data = { id: habitId, name: "Exercise", streak: 5 };
+      resolve(data); // Success!
+      // reject(new Error("Failed")); // For errors
+    }, 1000);
+  });
+}
+
+// Usage with .then() and .catch()
+loadHabitData(123)
+  .then(habitData => {
+    console.log("Got habit:", habitData.name);
+    return updateHabitStreak(habitData.id);
+  })
+  .then(result => {
+    return saveToDatabase(result);
+  })
+  .then(saved => {
+    console.log("All done!");
+  })
+  .catch(error => {
+    console.error("Something failed:", error);
+  });
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

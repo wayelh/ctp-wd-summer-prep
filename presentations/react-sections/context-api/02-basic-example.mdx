@@ -1,0 +1,223 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Basic Context Example
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Context</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { createContext, useContext, useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// 1. Create a Context
+const ThemeContext = createContext<{
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+} | undefined>(undefined);
+
+// 2. Create a Provider Component
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+// 3. Create a custom hook for using the context
+function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}
+
+// Components that use the context
+function Header() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <header className={`header ${theme}`}>
+      <h1>My App</h1>
+      <button onClick={toggleTheme}>
+        Switch to {theme === 'light' ? 'dark' : 'light'} mode
+      </button>
+    </header>
+  );
+}
+
+function MainContent() {
+  const { theme } = useTheme();
+
+  return (
+    <main className={`main ${theme}`}>
+      <h2>Welcome!</h2>
+      <p>This content adapts to the {theme} theme.</p>
+      <Card />
+    </main>
+  );
+}
+
+function Card() {
+  const { theme } = useTheme();
+
+  return (
+    <div className={`card ${theme}`}>
+      <h3>Feature Card</h3>
+      <p>I'm a deeply nested component that still has access to the theme!</p>
+    </div>
+  );
+}
+
+// App component wraps everything with the Provider
+function App() {
+  return (
+    <ThemeProvider>
+      <div className="app">
+        <Header />
+        <MainContent />
+      </div>
+    </ThemeProvider>
+  );
+}
+
+// Without Context (Prop Drilling Example)
+function PropDrillingExample() {
+  const [user, setUser] = useState({ name: 'John', role: 'admin' });
+
+  return (
+    <div>
+      <h2>Without Context (Prop Drilling)</h2>
+      <Dashboard user={user} />
+    </div>
+  );
+}
+
+function Dashboard({ user }: { user: { name: string; role: string } }) {
+  return <Widget user={user} />;
+}
+
+function Widget({ user }: { user: { name: string; role: string } }) {
+  return <UserInfo user={user} />;
+}
+
+function UserInfo({ user }: { user: { name: string; role: string } }) {
+  return <p>Welcome, {user.name} ({user.role})</p>;
+}
+
+// Render both examples
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(
+  <>
+    <App />
+    <hr />
+    <PropDrillingExample />
+  </>
+);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  min-height: 400px;
+  transition: all 0.3s ease;
+}
+
+.header {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.header.light {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.header.dark {
+  background-color: #333;
+  color: #f0f0f0;
+}
+
+.main {
+  padding: 20px;
+  min-height: 300px;
+  transition: all 0.3s ease;
+}
+
+.main.light {
+  background-color: white;
+  color: #333;
+}
+
+.main.dark {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+.card {
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.card.light {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+}
+
+.card.dark {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+}
+
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+hr {
+  margin: 40px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

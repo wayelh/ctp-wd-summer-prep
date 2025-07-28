@@ -1,0 +1,44 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Props Best Practices for Habit Tracking
+
+### 1. **Use TypeScript Interfaces**
+```tsx
+interface HabitProps {
+  id: number;
+  name: string;
+  streak?: number;  // Optional with ?
+  onComplete: (id: number) => void;
+}
+```
+
+### 2. **Group Related Props**
+```tsx
+interface HabitTimingProps {
+  frequency: 'daily' | 'weekly' | 'monthly';
+  targetDays: number;
+  completedDays: number;
+}
+```
+
+### 3. **Provide Sensible Defaults**
+```tsx
+function HabitCard({ 
+  streak = 0,
+  icon = '📌',
+  color = '#3b82f6' 
+}: HabitProps) {
+  // Component logic
+}
+```
+
+### 4. **Keep Props Focused**
+- Pass only what the component needs
+- Don't pass entire habit object if only name is needed
+
+### 5. **Use Composition for Complex UIs**
+- Break down complex habit displays into smaller components
+- Makes testing and reuse easier
+
+</SlideLayout.Full>

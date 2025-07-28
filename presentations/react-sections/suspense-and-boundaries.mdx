@@ -1,0 +1,29 @@
+import Overview from './suspense-and-boundaries/00-overview.mdx';
+import HandlingLoadingErrors from './suspense-and-boundaries/01-handling-loading-errors.mdx';
+import WhatIsSuspense from './suspense-and-boundaries/02-what-is-suspense.mdx';
+import BasicSuspense from './suspense-and-boundaries/03-basic-suspense.mdx';
+import MultipleLazyComponents from './suspense-and-boundaries/04-multiple-lazy-components.mdx';
+import ErrorBoundaries from './suspense-and-boundaries/05-error-boundaries.mdx';
+import SuspenseDataFetching from './suspense-and-boundaries/06-suspense-data-fetching.mdx';
+import SuspenseList from './suspense-and-boundaries/07-suspense-list.mdx';
+import SuspenseErrorTogether from './suspense-and-boundaries/08-suspense-error-together.mdx';
+import BestPractices from './suspense-and-boundaries/09-best-practices.mdx';
+import Summary from './suspense-and-boundaries/10-summary.mdx';
+
+export default function SuspenseAndBoundaries(props) {
+  return (
+    <>
+      <Overview {...props} />
+      <HandlingLoadingErrors {...props} />
+      <WhatIsSuspense {...props} />
+      <BasicSuspense {...props} />
+      <MultipleLazyComponents {...props} />
+      <ErrorBoundaries {...props} />
+      <SuspenseDataFetching {...props} />
+      <SuspenseList {...props} />
+      <SuspenseErrorTogether {...props} />
+      <BestPractices {...props} />
+      <Summary {...props} />
+    </>
+  );
+}

@@ -1,0 +1,46 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Synchronous vs Asynchronous
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Synchronous - blocks execution
+console.log("1. Starting habit sync");
+const data = loadHabitsFromFile(); // Blocks here!
+console.log("2. Got data:", data);
+console.log("3. Done");
+
+// Asynchronous - non-blocking
+console.log("1. Starting habit sync");
+loadHabitsAsync((data) => {
+  console.log("3. Got data:", data);
+});
+console.log("2. Continuing..."); // Runs immediately!
+
+// Output order: 1, 2, 3 (not 1, 3, 2!)
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Evolution of Async Patterns
+    1. Callbacks (Traditional)
+      - Function passed as argument
+      - Called when operation completes
+      - Can lead to "callback hell"
+    2. Promises (ES6)
+      - Object representing future value
+      - Chainable with .then() and .catch()
+      - Better error handling
+    3. Async/Await (ES2017)
+      - Write async code that looks synchronous
+      - Built on top of Promises
+      - Cleaner, more readable code
+  </FlexBox>
+</SlideLayout.Full>

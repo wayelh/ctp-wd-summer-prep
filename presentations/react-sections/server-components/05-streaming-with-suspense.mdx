@@ -1,0 +1,123 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Streaming with Suspense
+
+<CodeDisplay>
+  <File name="app/dashboard/page.tsx">
+```tsx
+import { Suspense } from 'react';
+
+// Main page component
+export default function DashboardPage() {
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      
+      {/* Quick stats load fast */}
+      <Suspense fallback={<StatsSkeleton />}>
+        <QuickStats />
+      </Suspense>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        {/* Charts might take longer */}
+        <Suspense fallback={<ChartSkeleton />}>
+          <RevenueChart />
+        </Suspense>
+
+        <Suspense fallback={<ChartSkeleton />}>
+          <UserActivityChart />
+        </Suspense>
+      </div>
+
+      {/* Table loads last */}
+      <Suspense fallback={<TableSkeleton />}>
+        <RecentTransactions />
+      </Suspense>
+    </div>
+  );
+}
+
+// Fast-loading component
+async function QuickStats() {
+  const stats = await fetch('/api/stats/quick').then(r => r.json());
+  
+  return (
+    <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+      <StatCard title="Revenue" value={stats.revenue} />
+      <StatCard title="Users" value={stats.users} />
+      <StatCard title="Orders" value={stats.orders} />
+    </div>
+  );
+}
+
+// Slower component - will stream in later
+async function RevenueChart() {
+  // Simulate slow data fetching
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  const data = await fetch('/api/charts/revenue').then(r => r.json());
+  
+  return (
+    <div style={{ padding: '20px', background: '#f5f5f5', borderRadius: '8px' }}>
+      <h3>Revenue Chart</h3>
+      <ChartComponent data={data} />
+    </div>
+  );
+}
+
+// Loading skeletons
+function StatsSkeleton() {
+  return (
+    <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+      {[1, 2, 3].map(i => (
+        <div key={i} style={{ 
+          width: '200px', 
+          height: '100px', 
+          background: '#e0e0e0',
+          borderRadius: '8px',
+          animation: 'pulse 1.5s infinite'
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function ChartSkeleton() {
+  return (
+    <div style={{ 
+      height: '300px', 
+      background: '#e0e0e0',
+      borderRadius: '8px',
+      animation: 'pulse 1.5s infinite'
+    }} />
+  );
+}
+
+// Client Component for interactive chart
+'use client';
+
+function ChartComponent({ data }: { data: any }) {
+  // Chart rendering logic with client-side library
+  return <div>Chart visualization here</div>;
+}
+
+// Shared component
+function StatCard({ title, value }: { title: string; value: string }) {
+  return (
+    <div style={{ 
+      padding: '20px', 
+      background: 'white',
+      borderRadius: '8px',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    }}>
+      <h4>{title}</h4>
+      <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{value}</p>
+    </div>
+  );
+}
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

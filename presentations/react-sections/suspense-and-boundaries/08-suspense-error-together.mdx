@@ -1,0 +1,178 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Suspense & Error Boundary Together
+
+<CodeDisplay>
+  <File name="CombinedExample.tsx">
+```tsx
+import React, { Suspense, useState } from 'react';
+
+// Combined error boundary and loading states
+class ErrorBoundaryWithRetry extends React.Component<
+  { children: React.ReactNode; fallback?: React.ComponentType<{ error: Error; retry: () => void }> },
+  { hasError: boolean; error: Error | null; retryCount: number }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null, retryCount: 0 };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidUpdate(prevProps: any, prevState: any) {
+    if (prevState.retryCount !== this.state.retryCount && this.state.hasError) {
+      this.setState({ hasError: false, error: null });
+    }
+  }
+
+  retry = () => {
+    this.setState(state => ({ retryCount: state.retryCount + 1 }));
+  };
+
+  render() {
+    if (this.state.hasError && this.state.error) {
+      if (this.props.fallback) {
+        const Fallback = this.props.fallback;
+        return <Fallback error={this.state.error} retry={this.retry} />;
+      }
+
+      return (
+        <div style={{ padding: '20px', background: '#ffebee', borderRadius: '8px' }}>
+          <h3>Error: {this.state.error.message}</h3>
+          <button onClick={this.retry}>Retry (Attempt #{this.state.retryCount + 1})</button>
+        </div>
+      );
+    }
+
+    return <React.Fragment key={this.state.retryCount}>{this.props.children}</React.Fragment>;
+  }
+}
+
+// Flaky component that sometimes fails
+const FlakyComponent = React.lazy(() => 
+  new Promise<{ default: React.ComponentType }>((resolve, reject) => {
+    setTimeout(() => {
+      if (Math.random() > 0.5) {
+        resolve({
+          default: () => (
+            <div style={{ padding: '20px', background: '#c8e6c9' }}>
+              <h3>Success! 🎉</h3>
+              <p>The component loaded successfully.</p>
+            </div>
+          )
+        });
+      } else {
+        reject(new Error('Random failure! Try again.'));
+      }
+    }, 1500);
+  })
+);
+
+// Loading component with progress
+function LoadingWithProgress() {
+  const [progress, setProgress] = useState(0);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress(p => Math.min(p + 10, 90));
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <div style={{ 
+        width: '100%', 
+        height: '20px', 
+        background: '#e0e0e0',
+        borderRadius: '10px',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          width: `${progress}%`,
+          height: '100%',
+          background: '#2196f3',
+          transition: 'width 0.3s'
+        }} />
+      </div>
+      <p>Loading... {progress}%</p>
+    </div>
+  );
+}
+
+// Main app demonstrating combined usage
+function App() {
+  const [showComponent, setShowComponent] = useState(false);
+
+  return (
+    <div>
+      <h1>Combined Suspense & Error Boundaries</h1>
+      
+      <button onClick={() => setShowComponent(!showComponent)}>
+        {showComponent ? 'Hide' : 'Show'} Flaky Component
+      </button>
+
+      {showComponent && (
+        <div style={{ marginTop: '20px' }}>
+          <ErrorBoundaryWithRetry
+            fallback={({ error, retry }) => (
+              <div style={{ 
+                padding: '20px', 
+                background: '#ffcdd2',
+                borderRadius: '8px',
+                border: '2px solid #f44336'
+              }}>
+                <h3>⚠️ Loading Failed</h3>
+                <p>{error.message}</p>
+                <button 
+                  onClick={retry}
+                  style={{
+                    padding: '8px 16px',
+                    background: '#f44336',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+          >
+            <Suspense fallback={<LoadingWithProgress />}>
+              <FlakyComponent />
+            </Suspense>
+          </ErrorBoundaryWithRetry>
+        </div>
+      )}
+
+      <div style={{ 
+        marginTop: '40px', 
+        padding: '20px', 
+        background: '#e1f5fe',
+        borderRadius: '8px'
+      }}>
+        <h3>How it works:</h3>
+        <ul>
+          <li>50% chance of success/failure</li>
+          <li>Shows loading progress while component loads</li>
+          <li>Error boundary catches failures</li>
+          <li>Retry button reloads the component</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

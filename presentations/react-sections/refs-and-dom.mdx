@@ -1,0 +1,33 @@
+import Overview from './refs-and-dom/00-overview.mdx';
+import DirectDomManipulation from './refs-and-dom/01-direct-dom-manipulation.mdx';
+import WhatAreRefs from './refs-and-dom/02-what-are-refs.mdx';
+import UseRefHook from './refs-and-dom/03-useref-hook.mdx';
+import StoringMutableValues from './refs-and-dom/04-storing-mutable-values.mdx';
+import PreviousValuePattern from './refs-and-dom/05-previous-value-pattern.mdx';
+import ForwardRef from './refs-and-dom/06-forwardref.mdx';
+import DomMeasurements from './refs-and-dom/07-dom-measurements.mdx';
+import ThirdPartyIntegration from './refs-and-dom/08-third-party-integration.mdx';
+import CallbackRefs from './refs-and-dom/09-callback-refs.mdx';
+import ComplexExampleVideoPlayer from './refs-and-dom/10-complex-example-video-player.mdx';
+import BestPractices from './refs-and-dom/11-best-practices.mdx';
+import Summary from './refs-and-dom/12-summary.mdx';
+
+export default function RefsAndDom(props) {
+  return (
+    <>
+      <Overview {...props} />
+      <DirectDomManipulation {...props} />
+      <WhatAreRefs {...props} />
+      <UseRefHook {...props} />
+      <StoringMutableValues {...props} />
+      <PreviousValuePattern {...props} />
+      <ForwardRef {...props} />
+      <DomMeasurements {...props} />
+      <ThirdPartyIntegration {...props} />
+      <CallbackRefs {...props} />
+      <ComplexExampleVideoPlayer {...props} />
+      <BestPractices {...props} />
+      <Summary {...props} />
+    </>
+  );
+}

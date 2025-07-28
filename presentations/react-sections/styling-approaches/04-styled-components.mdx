@@ -1,0 +1,262 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Styled Components
+
+<CodeDisplay>
+  <File name="StyledComponents.tsx">
+```tsx
+import React, { useState } from 'react';
+import styled, { css, ThemeProvider, createGlobalStyle } from 'styled-components';
+
+// Global styles
+const GlobalStyle = createGlobalStyle`
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, sans-serif;
+    background-color: ${props => props.theme.colors.background};
+    color: ${props => props.theme.colors.text};
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+`;
+
+// Theme definition
+const lightTheme = {
+  colors: {
+    primary: '#2196f3',
+    secondary: '#f50057',
+    background: '#ffffff',
+    surface: '#f5f5f5',
+    text: '#333333',
+    textLight: '#666666'
+  },
+  spacing: {
+    small: '8px',
+    medium: '16px',
+    large: '24px'
+  },
+  borderRadius: '4px',
+  transitions: {
+    fast: '0.2s ease',
+    normal: '0.3s ease'
+  }
+};
+
+const darkTheme = {
+  ...lightTheme,
+  colors: {
+    ...lightTheme.colors,
+    background: '#121212',
+    surface: '#1e1e1e',
+    text: '#ffffff',
+    textLight: '#aaaaaa'
+  }
+};
+
+// Basic styled component
+const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+  padding: ${props => props.theme.spacing.small} ${props => props.theme.spacing.medium};
+  border: none;
+  border-radius: ${props => props.theme.borderRadius};
+  font-size: 16px;
+  cursor: pointer;
+  transition: all ${props => props.theme.transitions.fast};
+  
+  ${props => props.variant === 'primary' && css`
+    background-color: ${props.theme.colors.primary};
+    color: white;
+    
+    &:hover {
+      background-color: ${props.theme.colors.primary}dd;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+  `}
+  
+  ${props => props.variant === 'secondary' && css`
+    background-color: transparent;
+    color: ${props.theme.colors.primary};
+    border: 2px solid ${props.theme.colors.primary};
+    
+    &:hover {
+      background-color: ${props.theme.colors.primary};
+      color: white;
+    }
+  `}
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+// Extending styled components
+const PrimaryButton = styled(Button)`
+  background-color: ${props => props.theme.colors.primary};
+  color: white;
+`;
+
+// Complex component with props
+const Card = styled.div<{ elevated?: boolean }>`
+  background-color: ${props => props.theme.colors.surface};
+  border-radius: ${props => props.theme.borderRadius};
+  padding: ${props => props.theme.spacing.large};
+  transition: all ${props => props.theme.transitions.normal};
+  
+  ${props => props.elevated && css`
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+  `}
+`;
+
+// Dynamic styles based on props
+const Badge = styled.span<{ color?: string; size?: 'small' | 'large' }>`
+  display: inline-block;
+  padding: ${props => props.size === 'large' ? '6px 12px' : '4px 8px'};
+  background-color: ${props => props.color || props.theme.colors.primary};
+  color: white;
+  border-radius: ${props => props.size === 'large' ? '20px' : '12px'};
+  font-size: ${props => props.size === 'large' ? '14px' : '12px'};
+  font-weight: bold;
+`;
+
+// Styled component with animations
+const AnimatedLogo = styled.div`
+  width: 50px;
+  height: 50px;
+  background-color: ${props => props.theme.colors.primary};
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+// Component using attrs for DOM attributes
+const Input = styled.input.attrs<{ type?: string }>(props => ({
+  type: props.type || 'text',
+}))`
+  padding: ${props => props.theme.spacing.small};
+  border: 2px solid ${props => props.theme.colors.primary}33;
+  border-radius: ${props => props.theme.borderRadius};
+  font-size: 16px;
+  transition: border-color ${props => props.theme.transitions.fast};
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.colors.primary};
+  }
+  
+  &::placeholder {
+    color: ${props => props.theme.colors.textLight};
+  }
+`;
+
+// Main App
+function App() {
+  const [isDark, setIsDark] = useState(false);
+  const theme = isDark ? darkTheme : lightTheme;
+
+  return (
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      <Container>
+        <Header>
+          <AnimatedLogo />
+          <Title>Styled Components Demo</Title>
+          <Button onClick={() => setIsDark(!isDark)}>
+            {isDark ? '☀️' : '🌙'} Toggle Theme
+          </Button>
+        </Header>
+
+        <Section>
+          <Card elevated>
+            <h2>Buttons</h2>
+            <ButtonGroup>
+              <Button variant="primary">Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <PrimaryButton>Extended</PrimaryButton>
+              <Button disabled>Disabled</Button>
+            </ButtonGroup>
+          </Card>
+
+          <Card>
+            <h2>Form Elements</h2>
+            <Input placeholder="Enter your name" />
+            <Input type="email" placeholder="Enter your email" />
+          </Card>
+
+          <Card>
+            <h2>Badges</h2>
+            <BadgeGroup>
+              <Badge>Default</Badge>
+              <Badge color="#4caf50">Success</Badge>
+              <Badge color="#f44336" size="large">Error</Badge>
+              <Badge color="#ff9800" size="small">Warning</Badge>
+            </BadgeGroup>
+          </Card>
+        </Section>
+      </Container>
+    </ThemeProvider>
+  );
+}
+
+// Additional styled components
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${props => props.theme.spacing.large};
+`;
+
+const Header = styled.header`
+  display: flex;
+  align-items: center;
+  gap: ${props => props.theme.spacing.medium};
+  margin-bottom: ${props => props.theme.spacing.large};
+`;
+
+const Title = styled.h1`
+  flex: 1;
+  margin: 0;
+  color: ${props => props.theme.colors.text};
+`;
+
+const Section = styled.section`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: ${props => props.theme.spacing.large};
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: ${props => props.theme.spacing.small};
+  flex-wrap: wrap;
+`;
+
+const BadgeGroup = styled.div`
+  display: flex;
+  gap: ${props => props.theme.spacing.small};
+  align-items: center;
+`;
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

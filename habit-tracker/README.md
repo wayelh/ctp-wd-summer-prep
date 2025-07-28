@@ -24,12 +24,14 @@ By completing this project, you will:
 
 **Key Concepts**: DOM manipulation, event handling, local storage, date/time operations, array methods
 
+**Starting Point**: Use the provided `template/` directory which includes a basic Vite setup with HTML structure, CSS foundation, and development tooling.
+
 **Deliverables**:
-- Basic HTML structure with forms for adding habits
+- Basic HTML structure with forms for adding habits (extend the template)
 - JavaScript functions for habit CRUD operations
 - Streak calculation and progress tracking logic
 - Local storage implementation for data persistence
-- Simple CSS for basic styling
+- Enhanced CSS styling building on the template foundation
 
 **Core Features to Implement**:
 - Add new habits with custom names and target frequencies
@@ -86,18 +88,60 @@ By completing this project, you will:
 
 ### Development Tools
 - Git for version control
+- GitHub Codespace for this repo
 - npm for package management
 - TypeScript compiler
 - Browser developer tools
 
 ## 🚀 Getting Started
 
+### Fork and Clone Setup
+
+1. **Fork this repository** to your GitHub account
+2. **Clone your fork** to your local machine or GitHub Codespace
+3. **Create your working directory**:
+   ```bash
+   # Navigate to the habit-tracker directory
+   cd habit-tracker
+   
+   # Create your personal working directory
+   mkdir -p <your-cohort>/<your-github-username>
+   # Example: mkdir -p C11/johndoe
+   
+   # Copy the template to your directory
+   cp -r template/ <your-cohort>/<your-github-username>/
+   cd <your-cohort>/<your-github-username>/
+   ```
+
+### Submitting Your Work
+
+1. **Commit your changes** regularly to your fork
+2. **Push to your fork** on GitHub
+3. **Create a Pull Request** from your fork back to the main repository
+4. **Title your PR**: `[Your Cohort] Your Name - Week X Submission`
+   - Example: `[C11] John Doe - Week 1 Submission`
+
+### Project Template
+
+This repository includes a `template/` directory with a pre-configured Vite project that provides:
+- Modern development environment with hot reloading
+- Basic HTML structure and CSS setup
+- Package.json with useful development scripts
+- Clean starting point for Week 1 implementation
+
 ### Week 1 Setup
 ```bash
-# Create project directory
-mkdir habit-tracker
-cd habit-tracker
+# From your personal directory (e.g., C11/johndoe/)
+# Install dependencies
+npm install
 
+# Start development server
+npm run dev
+```
+
+**Alternative manual setup** (if you prefer to start from scratch):
+```bash
+# From your personal directory (e.g., C11/johndoe/)
 # Create basic file structure
 mkdir css js
 touch index.html css/styles.css js/app.js
@@ -285,10 +329,15 @@ Your project will be considered successful if:
 
 ## 📝 Submission Guidelines
 
-1. **Code Repository**: Push all code to a Git repository
-2. **README**: Include setup instructions and feature descriptions
-3. **Demo**: Prepare a 5-minute demonstration of your application
-4. **Reflection**: Write a brief reflection on what you learned each week
+1. **Work Location**: All your code should be in `/habit-tracker/<your-cohort>/<your-github-username>/`
+2. **Pull Request**: Submit a PR from your fork to the main repository
+3. **PR Title Format**: `[Your Cohort] Your Name - Week X Submission`
+4. **PR Description**: Include:
+   - Brief summary of what you implemented
+   - Any challenges you faced
+   - Features you're most proud of
+5. **Demo**: Be prepared to demonstrate your application during class
+6. **Code Quality**: Ensure your code is well-commented and organized
 
 ---
 

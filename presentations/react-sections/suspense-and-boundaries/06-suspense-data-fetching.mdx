@@ -1,0 +1,162 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Suspense with Data Fetching
+
+<CodeDisplay>
+  <File name="DataFetching.tsx">
+```tsx
+import React, { Suspense, useState } from 'react';
+
+// Resource for Suspense data fetching
+function createResource<T>(promise: Promise<T>) {
+  let status: 'pending' | 'success' | 'error' = 'pending';
+  let result: T;
+  let error: any;
+
+  const suspender = promise.then(
+    (data) => {
+      status = 'success';
+      result = data;
+    },
+    (err) => {
+      status = 'error';
+      error = err;
+    }
+  );
+
+  return {
+    read() {
+      if (status === 'pending') {
+        throw suspender;
+      } else if (status === 'error') {
+        throw error;
+      } else if (status === 'success') {
+        return result;
+      }
+    }
+  };
+}
+
+// Simulated API
+const fetchUser = (id: number) => 
+  new Promise<{ id: number; name: string; email: string }>((resolve) => {
+    setTimeout(() => {
+      resolve({
+        id,
+        name: `User ${id}`,
+        email: `user${id}@example.com`
+      });
+    }, 1000 + Math.random() * 1000);
+  });
+
+const fetchPosts = (userId: number) =>
+  new Promise<Array<{ id: number; title: string; body: string }>>((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { id: 1, title: `Post 1 by User ${userId}`, body: 'Lorem ipsum...' },
+        { id: 2, title: `Post 2 by User ${userId}`, body: 'Dolor sit amet...' },
+        { id: 3, title: `Post 3 by User ${userId}`, body: 'Consectetur adipiscing...' }
+      ]);
+    }, 1500 + Math.random() * 1000);
+  });
+
+// Components that read from resources
+function UserDetails({ resource }: { resource: ReturnType<typeof createResource> }) {
+  const user = resource.read();
+  
+  return (
+    <div style={{ padding: '20px', background: '#e3f2fd', borderRadius: '8px' }}>
+      <h3>{user.name}</h3>
+      <p>Email: {user.email}</p>
+    </div>
+  );
+}
+
+function UserPosts({ resource }: { resource: ReturnType<typeof createResource> }) {
+  const posts = resource.read();
+  
+  return (
+    <div style={{ marginTop: '20px' }}>
+      <h3>Posts</h3>
+      {posts.map(post => (
+        <div key={post.id} style={{ 
+          padding: '15px', 
+          marginBottom: '10px',
+          background: '#f5f5f5',
+          borderRadius: '4px'
+        }}>
+          <h4>{post.title}</h4>
+          <p>{post.body}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function UserProfile({ userId }: { userId: number }) {
+  const [userResource] = useState(() => createResource(fetchUser(userId)));
+  const [postsResource] = useState(() => createResource(fetchPosts(userId)));
+
+  return (
+    <div>
+      <Suspense fallback={<div>Loading user details...</div>}>
+        <UserDetails resource={userResource} />
+      </Suspense>
+      
+      <Suspense fallback={<div>Loading posts...</div>}>
+        <UserPosts resource={postsResource} />
+      </Suspense>
+    </div>
+  );
+}
+
+// Simple ErrorBoundary for this example
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return <div>Something went wrong!</div>;
+    }
+    return this.props.children;
+  }
+}
+
+// Main App with user switching
+function App() {
+  const [userId, setUserId] = useState(1);
+
+  return (
+    <div>
+      <h1>Suspense Data Fetching</h1>
+      
+      <div style={{ marginBottom: '20px' }}>
+        <button onClick={() => setUserId(1)}>User 1</button>
+        <button onClick={() => setUserId(2)} style={{ marginLeft: '10px' }}>User 2</button>
+        <button onClick={() => setUserId(3)} style={{ marginLeft: '10px' }}>User 3</button>
+      </div>
+
+      <ErrorBoundary>
+        <Suspense fallback={<div>Loading user profile...</div>}>
+          <UserProfile key={userId} userId={userId} />
+        </Suspense>
+      </ErrorBoundary>
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

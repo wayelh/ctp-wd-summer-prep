@@ -1,0 +1,118 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Third-Party Library Integration
+
+<CodeDisplay>
+  <File name="ChartIntegration.tsx">
+```tsx
+import React, { useRef, useEffect } from 'react';
+
+// Simulating a third-party charting library
+class SimpleChart {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private data: number[];
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d')!;
+    this.data = [];
+  }
+
+  setData(data: number[]) {
+    this.data = data;
+    this.render();
+  }
+
+  render() {
+    const { width, height } = this.canvas;
+    this.ctx.clearRect(0, 0, width, height);
+    
+    if (this.data.length === 0) return;
+
+    const barWidth = width / this.data.length;
+    const maxValue = Math.max(...this.data);
+
+    this.data.forEach((value, index) => {
+      const barHeight = (value / maxValue) * height * 0.8;
+      const x = index * barWidth;
+      const y = height - barHeight;
+
+      this.ctx.fillStyle = '#4CAF50';
+      this.ctx.fillRect(x + 2, y, barWidth - 4, barHeight);
+      
+      this.ctx.fillStyle = '#333';
+      this.ctx.fillText(
+        value.toString(), 
+        x + barWidth / 2 - 5, 
+        y - 5
+      );
+    });
+  }
+
+  destroy() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+}
+
+function ChartComponent({ data }: { data: number[] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const chartRef = useRef<SimpleChart | null>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    // Initialize chart
+    chartRef.current = new SimpleChart(canvasRef.current);
+    chartRef.current.setData(data);
+
+    // Cleanup
+    return () => {
+      chartRef.current?.destroy();
+      chartRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    // Update chart when data changes
+    chartRef.current?.setData(data);
+  }, [data]);
+
+  return (
+    <div>
+      <h3>Third-Party Chart Integration</h3>
+      <canvas
+        ref={canvasRef}
+        width={400}
+        height={200}
+        style={{ border: '1px solid #ccc' }}
+      />
+    </div>
+  );
+}
+
+function App() {
+  const [data, setData] = useState([30, 60, 45, 80, 20, 90, 55]);
+
+  const randomizeData = () => {
+    setData(Array.from({ length: 7 }, () => 
+      Math.floor(Math.random() * 100)
+    ));
+  };
+
+  return (
+    <div>
+      <ChartComponent data={data} />
+      <button onClick={randomizeData}>Randomize Data</button>
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

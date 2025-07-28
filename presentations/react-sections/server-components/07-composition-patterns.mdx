@@ -1,0 +1,121 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Composition Patterns
+
+<CodeDisplay>
+  <File name="app/article/[id]/page.tsx">
+```tsx
+// Mixing Server and Client Components
+export default async function ArticlePage({ 
+  params 
+}: { 
+  params: { id: string } 
+}) {
+  const article = await fetchArticle(params.id);
+
+  return (
+    <article>
+      {/* Server Component - renders markdown */}
+      <ArticleContent article={article} />
+      
+      {/* Client Component - interactive features */}
+      <ArticleInteractions articleId={article.id} />
+      
+      {/* Server Component with Suspense */}
+      <Suspense fallback={<CommentsSkeleton />}>
+        <Comments articleId={article.id} />
+      </Suspense>
+    </article>
+  );
+}
+
+// Server Component - no JS bundle
+async function ArticleContent({ article }: { article: Article }) {
+  const html = await markdownToHtml(article.content);
+  
+  return (
+    <div>
+      <h1>{article.title}</h1>
+      <div dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  );
+}
+
+// Client Component - adds interactivity
+'use client';
+
+import { useState } from 'react';
+
+function ArticleInteractions({ articleId }: { articleId: string }) {
+  const [bookmarked, setBookmarked] = useState(false);
+  const [shared, setShared] = useState(false);
+
+  return (
+    <div style={{ 
+      position: 'sticky',
+      top: '20px',
+      padding: '20px',
+      background: 'white',
+      borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    }}>
+      <button
+        onClick={() => setBookmarked(!bookmarked)}
+        style={{ 
+          background: bookmarked ? '#2196f3' : 'white',
+          color: bookmarked ? 'white' : '#2196f3'
+        }}
+      >
+        {bookmarked ? 'Bookmarked' : 'Bookmark'}
+      </button>
+      
+      <button
+        onClick={async () => {
+          await navigator.share({
+            title: 'Check out this article',
+            url: window.location.href
+          });
+          setShared(true);
+        }}
+      >
+        Share
+      </button>
+    </div>
+  );
+}
+
+// Server Component - can be cached
+async function Comments({ articleId }: { articleId: string }) {
+  const comments = await fetchComments(articleId);
+  
+  return (
+    <section>
+      <h2>Comments ({comments.length})</h2>
+      <CommentForm articleId={articleId} />
+      <CommentList comments={comments} />
+    </section>
+  );
+}
+
+// Client Component for form
+'use client';
+
+function CommentForm({ articleId }: { articleId: string }) {
+  return (
+    <form action={async (formData: FormData) => {
+      'use server';
+      // Server action to add comment
+      await addComment(articleId, formData);
+    }}>
+      <textarea name="comment" required />
+      <button type="submit">Post Comment</button>
+    </form>
+  );
+}
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

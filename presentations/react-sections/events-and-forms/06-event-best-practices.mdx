@@ -1,0 +1,44 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Event Types & Prevention
+
+### 1. **Use Proper Event Types**
+```tsx
+// TypeScript provides proper event types
+onClick: (e: MouseEvent<HTMLButtonElement>) => void
+onChange: (e: ChangeEvent<HTMLInputElement>) => void
+onSubmit: (e: FormEvent<HTMLFormElement>) => void
+```
+
+### 2. **Prevent Default When Needed**
+```tsx
+const handleSubmit = (e: FormEvent) => {
+  e.preventDefault(); // Prevent page reload
+  // Handle form submission
+};
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Event Optimization & Cleanup
+
+### 3. **Use Event Delegation Wisely**
+- React handles event delegation automatically
+- Attach handlers to parent elements when dealing with lists
+
+### 4. **Optimize Event Handlers**
+- Use `useCallback` for handlers passed to child components
+- Avoid creating new functions in render when possible
+
+### 5. **Clean Up Event Listeners**
+```tsx
+useEffect(() => {
+  const handler = () => {};
+  window.addEventListener('resize', handler);
+  return () => window.removeEventListener('resize', handler);
+}, []);
+```
+
+</SlideLayout.Full>

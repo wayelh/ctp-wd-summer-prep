@@ -1,0 +1,42 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Best Practices
+
+### Suspense Guidelines:
+- **Place boundaries strategically** - Not too many, not too few
+- **Provide meaningful fallbacks** - Show relevant loading states
+- **Consider nested boundaries** - For granular loading
+- **Handle errors** - Always pair with error boundaries
+- **Test loading states** - Ensure good UX
+
+### Error Boundary Guidelines:
+- **Log errors** to monitoring services
+- **Provide recovery options** - Reset buttons
+- **Show helpful messages** - Not just "Something went wrong"
+- **Isolate failures** - Don't let one component crash the app
+- **Test error scenarios** - Ensure boundaries work
+
+### Common Patterns:
+```tsx
+// ✅ Good: Meaningful loading states
+<Suspense fallback={<UserSkeleton />}>
+  <UserProfile />
+</Suspense>
+
+// ❌ Bad: Generic spinner for everything
+<Suspense fallback={<Spinner />}>
+
+// ✅ Good: Error boundary with recovery
+<ErrorBoundary fallback={ErrorFallback} onError={logError}>
+
+// ✅ Good: Combined boundaries
+<ErrorBoundary>
+  <Suspense fallback={<Loading />}>
+    <Component />
+  </Suspense>
+</ErrorBoundary>
+```
+
+</SlideLayout.Full>

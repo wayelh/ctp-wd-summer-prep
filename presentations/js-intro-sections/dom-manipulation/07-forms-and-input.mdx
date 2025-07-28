@@ -1,0 +1,44 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Working with Forms and Input
+
+- Forms are essential for user interaction:
+- Get user input with value property
+  - Listen for 'submit' event on forms
+  - Prevent default behavior with preventDefault()
+  - Validate input before processing
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Form Best Practices
+
+- Essential form handling practices:
+- Always trim() user input
+  - Provide clear error messages
+  - Disable submit during processing
+  - Reset form after successful submission
+
+```javascript
+function handleFormSubmit(event) {
+  event.preventDefault();
+  
+  const input = document.getElementById('habitName');
+  const value = input.value.trim(); // Always trim!
+  
+  if (!value) {
+    showError('Habit name is required');
+    return;
+  }
+  
+  // Disable during processing
+  submitButton.disabled = true;
+  
+  // Process form...
+  
+  // Reset after success
+  input.value = '';
+  submitButton.disabled = false;
+}
+```
+</SlideLayout.Full>

@@ -1,40 +1,29 @@
-import React, { useEffect, useState, useCallback, useRef, useContext } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useCallback, useRef, useContext } from 'react';
+import { useTheme } from './ThemeContext';
 import Editor, { EditorProps, useMonaco, DiffEditor } from '@monaco-editor/react';
 import * as ts from 'typescript';
 import { SlideContext } from 'spectacle';
+import { 
+  FileContent, 
+  MultiFileCodeDisplayProps, 
+  ConsoleOutput as ConsoleOutputType, 
+  TestResult,
+  parseFilesFromCode,
+  getLanguageFromExtension,
+  safeBase64Encode,
+  FileManager,
+  ConsoleOutput,
+  TestResults,
+  OutputTabs,
+  configureMonaco,
+  getThemeColors,
+  REACT_TYPES,
+  REACT_DOM_TYPES
+} from './MultiFileCodeDisplay/index';
 
-interface FileContent {
-  fileName: string;
-  language: 'html' | 'css' | 'javascript' | 'typescript' | 'tsx' | 'jsx';
-  content: string;
-  versions?: string[];
-}
 
-interface MultiFileCodeDisplayProps {
-  files?: FileContent[];
-  code?: string;
-  height?: string;
-  theme?: 'light' | 'dark' | 'vs-dark';
-  readOnly?: boolean;
-  onChange?: (fileName: string, value: string | undefined) => void;
-  options?: any;
-  enableVersions?: boolean;
-}
-
-interface ConsoleOutput {
-  type: 'log' | 'error' | 'warn' | 'info';
-  message: string;
-  timestamp: Date;
-}
-
-interface TestResult {
-  passed: boolean;
-  description: string;
-  error?: string;
-}
-
-// Parse files from code string using // @@@ filename syntax
-const parseFilesFromCode = (code: string): FileContent[] => {
+// Helper function to parse files using old syntax (// @@@)
+const parseFilesFromCodeLegacy = (code: string): FileContent[] => {
   const lines = code.split('\n');
   const files: FileContent[] = [];
   let currentFile: FileContent | null = null;
@@ -122,14 +111,14 @@ const parseFilesFromCode = (code: string): FileContent[] => {
   return processedFiles;
 };
 
-const getLanguageFromExtension = (ext: string): FileContent['language'] => {
+const getLanguageFromExtension = (ext: string): string => {
   switch (ext) {
     case 'html': return 'html';
     case 'css': return 'css';
     case 'js': return 'javascript';
     case 'ts': return 'typescript';
-    case 'tsx': return 'tsx';
-    case 'jsx': return 'jsx';
+    case 'tsx': return 'typescriptreact';
+    case 'jsx': return 'javascriptreact';
     default: return 'javascript';
   }
 };
@@ -157,23 +146,72 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
   const monaco = useMonaco();
   const slideContext = useContext(SlideContext);
   
+  // Configure Monaco for TypeScript/TSX support
+  useEffect(() => {
+    if (monaco) {
+      // Set TypeScript compiler options
+      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ES2020,
+        allowNonTsExtensions: true,
+        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+        module: monaco.languages.typescript.ModuleKind.ESNext,
+        noEmit: true,
+        esModuleInterop: true,
+        jsx: monaco.languages.typescript.JsxEmit.React,
+        reactNamespace: 'React',
+        allowJs: true,
+        typeRoots: ['node_modules/@types'],
+        // Explicitly enable JSX in .tsx files
+        jsxFactory: 'React.createElement',
+        jsxFragmentFactory: 'React.Fragment'
+      });
+      
+      // Also configure JavaScript defaults for JSX
+      monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ES2020,
+        allowNonTsExtensions: true,
+        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+        module: monaco.languages.typescript.ModuleKind.ESNext,
+        noEmit: true,
+        esModuleInterop: true,
+        jsx: monaco.languages.typescript.JsxEmit.React,
+        reactNamespace: 'React',
+        allowJs: true,
+        // Explicitly enable JSX
+        jsxFactory: 'React.createElement',
+        jsxFragmentFactory: 'React.Fragment'
+      });
+      
+      // Set diagnostic options to enable JSX
+      monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+        noSemanticValidation: false,
+        noSyntaxValidation: false
+      });
+      
+      // Ensure TSX files are treated as TypeScript
+      monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);
+      
+      // Types will be loaded dynamically based on imports
+    }
+  }, [monaco]);
+  
   // Create a unique instance ID for this component
   const instanceId = React.useRef(`instance-${Date.now()}-${Math.random()}`).current;
+  
+  // Type definition cache
+  const typeCache = useRef<Map<string, string>>(new Map());
+  const loadingTypes = useRef<Set<string>>(new Set());
   
   // State management
   const [currentFileIndex, setCurrentFileIndex] = useState(0);
   const [fileContents, setFileContents] = useState<Record<string, string>>({});
-  const [consoleOutput, setConsoleOutput] = useState<ConsoleOutput[]>([]);
+  const [consoleOutput, setConsoleOutput] = useState<ConsoleOutputType[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<'code' | 'console' | 'tests' | 'preview' | 'diff'>('console');
   const [scratchPadContents, setScratchPadContents] = useState<Record<string, string>>({});
   const [selectedSolutionVersion, setSelectedSolutionVersion] = useState(1); // Start at version 1 (first solution)
-  const [currentTheme, setCurrentTheme] = useState<'solarized-dark' | 'solarized-light'>(() => {
-    // Load theme preference from localStorage
-    const savedTheme = localStorage.getItem('ctp-editor-theme');
-    return savedTheme === 'solarized-light' ? 'solarized-light' : 'solarized-dark';
-  });
+  const { theme: currentTheme, toggleTheme } = useTheme();
   
   // Pane state
   const [isPaneCollapsed, setIsPaneCollapsed] = useState(false);
@@ -185,6 +223,13 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
   const [previewWidth, setPreviewWidth] = useState<number | string>('100%');
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile' | 'custom'>('desktop');
   const [isRotated, setIsRotated] = useState(false);
+  const [deviceScale, setDeviceScale] = useState(1);
+  const [zoomLevel, setZoomLevelRaw] = useState(100); // Zoom percentage
+  
+  // Ensure zoom level is always positive
+  const setZoomLevel = (value: number) => {
+    setZoomLevelRaw(Math.max(100, Math.abs(value)));
+  };
   
   // Device presets
   const devicePresets = {
@@ -206,248 +251,175 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
     { name: 'Wide', width: '1920px' }
   ];
   
-  // Update global Monaco styles when theme changes
-  useEffect(() => {
-    const existingStyle = document.getElementById('monaco-theme-overrides');
-    if (existingStyle) {
-      existingStyle.remove();
-    }
-    
-    // Force context menu backgrounds with MutationObserver
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node instanceof HTMLElement) {
-            // Check for context menu containers
-            if (node.classList.contains('context-view') || 
-                node.classList.contains('monaco-menu-container') ||
-                node.classList.contains('monaco-menu')) {
-              // Force background color
-              node.style.backgroundColor = currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5';
-              node.style.opacity = '1';
-              node.style.border = '1px solid #ffffff';
-              node.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
-              
-              // Apply to all descendants
-              const applyBackground = (element: HTMLElement) => {
-                if (element.classList.contains('monaco-menu') ||
-                    element.classList.contains('monaco-scrollable-element') ||
-                    element.classList.contains('monaco-list') ||
-                    element.classList.contains('monaco-list-rows') ||
-                    element.classList.contains('monaco-action-bar')) {
-                  element.style.backgroundColor = currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5';
-                }
-                
-                // Apply to menu items
-                if (element.classList.contains('monaco-list-row') ||
-                    element.classList.contains('action-item')) {
-                  element.style.backgroundColor = currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5';
-                  element.style.color = currentTheme === 'solarized-dark' ? '#ffffff' : '#000000';
-                }
-                
-                // Apply to labels
-                if (element.classList.contains('action-label') ||
-                    element.classList.contains('monaco-icon-label') ||
-                    element.classList.contains('label-name') ||
-                    element.classList.contains('label-description')) {
-                  element.style.color = currentTheme === 'solarized-dark' ? '#ffffff' : '#000000';
-                }
-                
-                // Recursively apply to children
-                Array.from(element.children).forEach(child => {
-                  if (child instanceof HTMLElement) {
-                    applyBackground(child);
-                  }
-                });
-              };
-              
-              applyBackground(node);
-              
-              // Also observe changes to this node
-              observer.observe(node, { childList: true, subtree: true });
-            }
-          }
-        });
-      });
-    });
-    
-    // Start observing
-    observer.observe(document.body, { childList: true, subtree: true });
-    
-    // Also check for shadow roots periodically
-    const shadowRootInterval = setInterval(() => {
-      // Find all elements that might have shadow roots
-      document.querySelectorAll('*').forEach(element => {
-        if (element.shadowRoot) {
-          // Apply styles to shadow root
-          const shadowStyle = document.createElement('style');
-          shadowStyle.textContent = `
-            .monaco-menu,
-            .monaco-menu-container,
-            .context-view {
-              background-color: ${currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5'} !important;
-              opacity: 1 !important;
-              border: 1px solid #ffffff !important;
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-            }
-            
-            .monaco-list,
-            .monaco-scrollable-element,
-            .monaco-action-bar {
-              background-color: ${currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5'} !important;
-              opacity: 1 !important;
-            }
-            
-            .monaco-list-row,
-            .action-item {
-              background-color: ${currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5'} !important;
-              color: ${currentTheme === 'solarized-dark' ? '#ffffff' : '#000000'} !important;
-            }
-            
-            .monaco-list-row:hover,
-            .action-item:hover {
-              background-color: ${currentTheme === 'solarized-dark' ? '#586e75' : '#93a1a1'} !important;
-              color: ${currentTheme === 'solarized-dark' ? '#ffffff' : '#000000'} !important;
-            }
-            
-            .action-label,
-            .monaco-list-row .monaco-icon-label,
-            .monaco-list-row .label-name,
-            .monaco-list-row .label-description {
-              color: ${currentTheme === 'solarized-dark' ? '#ffffff' : '#000000'} !important;
-            }
-          `;
-          
-          if (!element.shadowRoot.querySelector('#monaco-shadow-style')) {
-            shadowStyle.id = 'monaco-shadow-style';
-            element.shadowRoot.appendChild(shadowStyle);
-          }
-        }
-      });
-    }, 100);
-    
-    const style = document.createElement('style');
-    style.id = 'monaco-theme-overrides';
-    style.innerHTML = currentTheme === 'solarized-dark' ? `
-      .monaco-hover,
-      .monaco-editor-hover,
-      .monaco-hover-content,
-      .monaco-hover .hover-contents {
-        background-color: #073642 !important;
-        border: 1px solid #586e75 !important;
-        color: #839496 !important;
-      }
-      
-      .monaco-menu,
-      .context-view.monaco-menu-container,
-      .monaco-action-bar {
-        background-color: #073642 !important;
-        border: 1px solid #586e75 !important;
-        color: #839496 !important;
-      }
-      
-      .monaco-menu .action-label {
-        color: #839496 !important;
-      }
-      
-      .monaco-menu .action-item:hover {
-        background-color: #586e75 !important;
-      }
-      
-      /* More specific context menu selectors */
-      .context-view .monaco-menu {
-        background-color: #073642 !important;
-      }
-      
-      .context-view .monaco-action-bar {
-        background-color: #073642 !important;
-      }
-      
-      .shadow-root-host .monaco-menu {
-        background-color: #073642 !important;
-      }
-    ` : `
-      .monaco-hover,
-      .monaco-editor-hover,
-      .monaco-hover-content,
-      .monaco-hover .hover-contents {
-        background-color: #eee8d5 !important;
-        border: 1px solid #93a1a1 !important;
-        color: #657b83 !important;
-      }
-      
-      .monaco-menu,
-      .context-view.monaco-menu-container,
-      .monaco-action-bar {
-        background-color: #eee8d5 !important;
-        border: 1px solid #93a1a1 !important;
-        color: #657b83 !important;
-      }
-      
-      .monaco-menu .action-label {
-        color: #657b83 !important;
-      }
-      
-      .monaco-menu .action-item:hover {
-        background-color: #93a1a1 !important;
-        color: #002b36 !important;
-      }
-      
-      /* More specific context menu selectors */
-      .context-view .monaco-menu {
-        background-color: #eee8d5 !important;
-      }
-      
-      .context-view .monaco-action-bar {
-        background-color: #eee8d5 !important;
-      }
-      
-      .shadow-root-host .monaco-menu {
-        background-color: #eee8d5 !important;
-      }
-    `;
-    document.head.appendChild(style);
-    
-    // Cleanup
-    return () => {
-      observer.disconnect();
-      clearInterval(shadowRootInterval);
-      if (style.parentNode) {
-        style.parentNode.removeChild(style);
-      }
-    };
-  }, [currentTheme]);
   
   // Theme colors helper
-  const themeColors = currentTheme === 'solarized-dark' ? {
-    background: '#002b36',
-    backgroundSecondary: '#073642',
-    foreground: '#839496',
-    border: '#586e75',
-    borderLight: '#073642',
-    success: '#859900',
-    error: '#dc322f',
-    warning: '#b58900',
-    info: '#268bd2',
-    muted: '#586e75',
-  } : {
-    background: '#fdf6e3',
-    backgroundSecondary: '#eee8d5',
-    foreground: '#657b83',
-    border: '#93a1a1',
-    borderLight: '#eee8d5',
-    success: '#859900',
-    error: '#dc322f',
-    warning: '#b58900',
-    info: '#268bd2',
-    muted: '#93a1a1',
-  };
+  const themeColors = getThemeColors(currentTheme);
   
   // Refs
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const previewIframeRef = useRef<HTMLIFrameElement>(null);
   const editorRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Fetch type definitions from esm.sh
+  const fetchTypeDefinitions = useCallback(async (packageName: string, version: string = 'latest') => {
+    const cacheKey = `${packageName}@${version}`;
+    
+    // Check cache first
+    if (typeCache.current.has(cacheKey)) {
+      return typeCache.current.get(cacheKey);
+    }
+    
+    // Check if already loading
+    if (loadingTypes.current.has(cacheKey)) {
+      return null;
+    }
+    
+    loadingTypes.current.add(cacheKey);
+    
+    try {
+      // Construct the esm.sh URL
+      const esmUrl = `https://esm.sh/${packageName}${version !== 'latest' ? `@${version}` : ''}`;
+      
+      // First, make a HEAD request to get the X-TypeScript-Types header
+      const headResponse = await fetch(esmUrl, { method: 'HEAD' });
+      const typesHeader = headResponse.headers.get('X-TypeScript-Types');
+      
+      if (!typesHeader) {
+        console.log(`No type definitions found for ${cacheKey}`);
+        return null;
+      }
+      
+      // Fetch the actual .d.ts content
+      const typesResponse = await fetch(typesHeader);
+      if (!typesResponse.ok) {
+        throw new Error(`Failed to fetch types from ${typesHeader}`);
+      }
+      
+      const typesContent = await typesResponse.text();
+      
+      // Cache the result
+      typeCache.current.set(cacheKey, typesContent);
+      
+      return typesContent;
+    } catch (error) {
+      console.error(`Error fetching types for ${cacheKey}:`, error);
+      return null;
+    } finally {
+      loadingTypes.current.delete(cacheKey);
+    }
+  }, []);
+  
+  // Load types for imports found in code
+  const loadTypesForImports = useCallback(async (code: string) => {
+    if (!monaco) return;
+    
+    // Create import map for current context
+    const currentImportMap = {
+      imports: {
+        'react': 'https://esm.sh/react@18.2.0?dev',
+        'react-dom': 'https://esm.sh/react-dom@18.2.0?dev',
+        'react-dom/client': 'https://esm.sh/react-dom@18.2.0/client?dev',
+        'react/jsx-runtime': 'https://esm.sh/react@18.2.0/jsx-runtime?dev',
+        'react/jsx-dev-runtime': 'https://esm.sh/react@18.2.0/jsx-dev-runtime?dev',
+        'axios': 'https://esm.sh/axios@1.6.2',
+        'lodash': 'https://esm.sh/lodash@4.17.21',
+        'date-fns': 'https://esm.sh/date-fns@3.0.0',
+        'uuid': 'https://esm.sh/uuid@9.0.1',
+        'classnames': 'https://esm.sh/classnames@2.5.1',
+        'framer-motion': 'https://esm.sh/framer-motion@10.16.16',
+        '@emotion/react': 'https://esm.sh/@emotion/react@11.11.3',
+        '@emotion/styled': 'https://esm.sh/@emotion/styled@11.11.0',
+        'styled-components': 'https://esm.sh/styled-components@6.1.8',
+        'zustand': 'https://esm.sh/zustand@4.4.7',
+        'react-hook-form': 'https://esm.sh/react-hook-form@7.48.2',
+        'react-query': 'https://esm.sh/react-query@3.39.3',
+        '@tanstack/react-query': 'https://esm.sh/@tanstack/react-query@5.17.0',
+        'swr': 'https://esm.sh/swr@2.2.4',
+        'react-router-dom': 'https://esm.sh/react-router-dom@6.21.1',
+        '@mui/material': 'https://esm.sh/@mui/material@5.15.2',
+        'antd': 'https://esm.sh/antd@5.12.8',
+        'recharts': 'https://esm.sh/recharts@2.10.4',
+        'chart.js': 'https://esm.sh/chart.js@4.4.1',
+        'd3': 'https://esm.sh/d3@7.8.5'
+      }
+    };
+    
+    // Extract imports using regex
+    const importRegex = /import\s+(?:(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)\s+from\s+)?['"]([^'"]+)['"]/g;
+    const imports = new Set<string>();
+    let match;
+    
+    while ((match = importRegex.exec(code)) !== null) {
+      const importPath = match[1];
+      // Skip relative imports and URLs
+      if (!importPath.startsWith('.') && !importPath.startsWith('/') && !importPath.includes('://')) {
+        imports.add(importPath);
+      }
+    }
+    
+    // Load types for each import
+    for (const importPath of imports) {
+      // Check if we've already loaded types for this import
+      const cacheKey = `loaded_${importPath}`;
+      if (typeCache.current.has(cacheKey)) continue;
+      
+      // Extract package name and version from our import map
+      const importMapEntry = (currentImportMap.imports as any)[importPath];
+      if (!importMapEntry) {
+        // Try to load from esm.sh without specific version
+        const packageName = importPath.split('/')[0];
+        const typesContent = await fetchTypeDefinitions(packageName);
+        if (typesContent) {
+          try {
+            monaco.languages.typescript.typescriptDefaults.addExtraLib(
+              typesContent,
+              `file:///node_modules/${packageName}/index.d.ts`
+            );
+            monaco.languages.typescript.javascriptDefaults.addExtraLib(
+              typesContent,
+              `file:///node_modules/${packageName}/index.d.ts`
+            );
+            typeCache.current.set(cacheKey, 'loaded');
+            console.log(`Loaded types for ${packageName} (no version)`);
+          } catch (error) {
+            console.error(`Error adding types for ${packageName}:`, error);
+          }
+        }
+        continue;
+      }
+      
+      // Parse package and version from esm.sh URL
+      const urlMatch = importMapEntry.match(/esm\.sh\/(.+?)@([^/?]+)/);
+      if (!urlMatch) continue;
+      
+      const [, packageNameWithPath, version] = urlMatch;
+      // Handle subpaths like react-dom/client
+      const packageName = packageNameWithPath.split('/')[0];
+      
+      const typesContent = await fetchTypeDefinitions(packageName, version);
+      
+      if (typesContent) {
+        // Add types to Monaco
+        try {
+          monaco.languages.typescript.typescriptDefaults.addExtraLib(
+            typesContent,
+            `file:///node_modules/${packageName}/index.d.ts`
+          );
+          monaco.languages.typescript.javascriptDefaults.addExtraLib(
+            typesContent,
+            `file:///node_modules/${packageName}/index.d.ts`
+          );
+          
+          typeCache.current.set(cacheKey, 'loaded');
+          console.log(`Loaded types for ${packageName}@${version}`);
+        } catch (error) {
+          console.error(`Error adding types for ${packageName}:`, error);
+        }
+      }
+    }
+  }, [monaco, fetchTypeDefinitions]);
   
   // Track slide state
   const { isSlideActive, slideId } = slideContext;
@@ -458,6 +430,14 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
   // Initialize file contents when files change
   useEffect(() => {
     if (files.length > 0) {
+      // Load types for all initial files
+      files.forEach(file => {
+        const content = file.content || '';
+        if ((file.fileName.endsWith('.ts') || file.fileName.endsWith('.tsx') || 
+             file.fileName.endsWith('.js') || file.fileName.endsWith('.jsx')) && content) {
+          loadTypesForImports(content);
+        }
+      });
       const contents = files.reduce((acc, file) => ({ ...acc, [file.fileName]: file.content }), {});
       
       setFileContents(contents);
@@ -483,7 +463,7 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
       });
       setScratchPadContents(savedScratchPads);
     }
-  }, [files, currentFileIndex, slideId]);
+  }, [files, currentFileIndex, slideId, loadTypesForImports]);
   
   // Get current file safely
   const currentFile = files.length > 0 ? files[Math.min(currentFileIndex, files.length - 1)] : null;
@@ -492,8 +472,14 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
     console.error('[MultiFileCodeDisplay] currentFile is null but files exist:', { currentFileIndex, filesLength: files.length });
   }
   
-  // Check if we have HTML files for preview
+  // Check if we have HTML files or React files for preview
   const hasHtmlFiles = files.some(f => f.fileName.endsWith('.html'));
+  const hasReactFiles = files.some(f => 
+    f.fileName.endsWith('.tsx') || 
+    f.fileName.endsWith('.jsx') ||
+    (f.content && (f.content.includes('ReactDOM.render') || f.content.includes('ReactDOM.createRoot') || f.content.includes('root.render')))
+  );
+  const shouldShowPreview = hasHtmlFiles || hasReactFiles;
   
   // Always use scratch pad content for the main editor
   const currentContent = currentFile ? (scratchPadContents[currentFile.fileName] || '') : '';
@@ -519,6 +505,11 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
     // Persist to localStorage
     localStorage.setItem(getStorageKey(fileName), value || '');
     
+    // Load types for any new imports
+    if (value && (fileName.endsWith('.ts') || fileName.endsWith('.tsx') || fileName.endsWith('.js') || fileName.endsWith('.jsx'))) {
+      loadTypesForImports(value);
+    }
+    
     onChange?.(fileName, value);
   };
 
@@ -529,8 +520,8 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
       case 'css': return 'css';
       case 'js': return 'javascript';
       case 'ts': return 'typescript';
-      case 'tsx': return 'typescriptreact';
-      case 'jsx': return 'javascriptreact';
+      case 'tsx': return 'typescript';  // Use typescript mode with JSX enabled
+      case 'jsx': return 'javascript';  // Use javascript mode with JSX enabled
       default: return 'javascript';
     }
   };
@@ -546,7 +537,9 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
           jsx: isTsx ? ts.JsxEmit.React : ts.JsxEmit.None,
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
-          moduleResolution: ts.ModuleResolutionKind.NodeJs
+          moduleResolution: ts.ModuleResolutionKind.NodeJs,
+          strict: false,
+          skipLibCheck: true
         },
         fileName: fileName
       });
@@ -566,6 +559,40 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
     // Ensure message is a string
     const safeMessage = typeof message === 'string' ? message : JSON.stringify(message);
     setConsoleOutput(prev => [...prev, { type, message: safeMessage, timestamp: new Date() }]);
+    
+    // If it's an error, try to add Monaco annotations
+    if (type === 'error' && editorRef.current) {
+      const errorMatch = safeMessage.match(/at\s+.*?[(:](.*?):(\d+):(\d+)/);
+      if (errorMatch) {
+        const [, fileName, line, column] = errorMatch;
+        const lineNumber = parseInt(line, 10);
+        const columnNumber = parseInt(column, 10);
+        
+        // Find the file that matches
+        const matchingFile = files.find(f => 
+          f.fileName === fileName || 
+          safeMessage.includes(f.fileName)
+        );
+        
+        if (matchingFile && matchingFile.fileName === currentFile?.fileName) {
+          // Add error decoration to current file
+          const monaco = editorRef.current.getMonaco();
+          const model = editorRef.current.getModel();
+          
+          if (monaco && model) {
+            // Create error marker
+            monaco.editor.setModelMarkers(model, 'runtime-errors', [{
+              severity: monaco.MarkerSeverity.Error,
+              startLineNumber: lineNumber,
+              startColumn: columnNumber || 1,
+              endLineNumber: lineNumber,
+              endColumn: columnNumber || model.getLineMaxColumn(lineNumber),
+              message: safeMessage.split('\n')[0] // First line of error
+            }]);
+          }
+        }
+      }
+    }
   };
 
   const addTestResult = (result: TestResult) => {
@@ -604,6 +631,122 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
     };
   }, [isResizing]);
 
+  // Calculate device scale based on fixed viewport assumptions
+  const calculateDeviceScale = useCallback((device: 'desktop' | 'tablet' | 'mobile' | 'custom') => {
+    // Use fixed viewport size to prevent scaling on resize
+    // Assume a reasonable preview area size
+    const availableWidth = 800; // Fixed width assumption
+    const availableHeight = 600; // Fixed height assumption
+    
+    let deviceWidth = 0;
+    let deviceHeight = 0;
+    
+    if (device === 'desktop') {
+      // For desktop, check if it needs scaling
+      const desktopWidth = 1024;
+      const desktopHeight = desktopWidth * (9 / 16); // 16:9 aspect ratio
+      
+      // Add extra space for the desktop stand/base (60px)
+      const totalHeight = desktopHeight + 60;
+      
+      const scaleX = availableWidth / desktopWidth;
+      const scaleY = availableHeight / totalHeight;
+      return Math.min(scaleX, scaleY); // Scale to fit, no maximum limit
+    } else if (device === 'mobile') {
+      // For rotation, we need to consider the rotated dimensions
+      if (isRotated) {
+        deviceWidth = 812;
+        deviceHeight = 375;
+      } else {
+        deviceWidth = 375;
+        deviceHeight = 812;
+      }
+    } else if (device === 'tablet') {
+      // For rotation, we need to consider the rotated dimensions
+      if (isRotated) {
+        deviceWidth = 1024;
+        deviceHeight = 768;
+      } else {
+        deviceWidth = 768;
+        deviceHeight = 1024;
+      }
+    } else {
+      // Custom device, no scaling
+      return 1;
+    }
+    
+    // Add extra space for device frame decorations and padding
+    const framePadding = device === 'mobile' ? 8 : device === 'tablet' ? 16 : 0;
+    const frameWidth = framePadding * 2;
+    const frameHeight = framePadding * 2;
+    
+    const totalWidth = deviceWidth + frameWidth;
+    const totalHeight = deviceHeight + frameHeight;
+    
+    // Calculate scale to fit within container
+    const scaleX = availableWidth / totalWidth;
+    const scaleY = availableHeight / totalHeight;
+    // Scale to fit without any maximum limit
+    const scale = Math.min(scaleX, scaleY);
+    
+    return scale;
+  }, [isRotated]);
+
+  // Track if we've set the initial zoom
+  const hasSetInitialZoom = useRef(false);
+
+  // Set initial zoom using useLayoutEffect to run before paint
+  useLayoutEffect(() => {
+    if (!previewContainerRef.current || hasSetInitialZoom.current) return;
+    
+    const scale = calculateDeviceScale(previewDevice);
+    if (scale > 0) {
+      setDeviceScale(scale);
+      
+      // All devices start at actual size
+      const actualSizeZoom = Math.min(800, Math.round(100 / scale));
+      setZoomLevel(actualSizeZoom);
+      hasSetInitialZoom.current = true;
+    }
+  });
+
+  // Track previous values to maintain scale on rotation
+  const prevDeviceScale = useRef(deviceScale);
+  const prevIsRotated = useRef(isRotated);
+
+  // Update device scale when preview device or rotation changes
+  useEffect(() => {
+    const scale = calculateDeviceScale(previewDevice);
+    
+    // If only rotating (not changing device), maintain the visual scale
+    if (prevIsRotated.current !== isRotated && prevDeviceScale.current > 0) {
+      // Calculate what the current visual scale is
+      const currentVisualScale = prevDeviceScale.current * (zoomLevel / 100);
+      
+      // Update device scale
+      setDeviceScale(scale);
+      
+      // Calculate new zoom level to maintain the same visual scale
+      const newZoomLevel = Math.round((currentVisualScale / scale) * 100);
+      setZoomLevel(Math.max(100, Math.min(800, newZoomLevel)));
+    } else {
+      setDeviceScale(scale);
+    }
+    
+    // Update refs
+    prevDeviceScale.current = scale;
+    prevIsRotated.current = isRotated;
+    
+    // Debug logging
+    if (previewDevice !== 'desktop' && previewDevice !== 'custom') {
+      const dims = previewDevice === 'mobile' 
+        ? { w: isRotated ? 812 : 375, h: isRotated ? 375 : 812 }
+        : { w: isRotated ? 1024 : 768, h: isRotated ? 768 : 1024 };
+      const aspectRatio = (dims.w / dims.h).toFixed(2);
+      console.log(`Device: ${previewDevice}, Rotated: ${isRotated}, Dimensions: ${dims.w}x${dims.h}, Aspect: ${aspectRatio}, Scale: ${scale.toFixed(2)}`);
+    }
+  }, [previewDevice, isRotated, calculateDeviceScale, zoomLevel]);
+
   const runCode = useCallback(async () => {
     setIsRunning(true);
     clearConsole();
@@ -620,7 +763,70 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
       );
       
       // Build HTML content - use scratch pad content if available
-      let htmlContent = scratchPadContents['index.html'] || fileContents['index.html'] || '<!DOCTYPE html><html><head></head><body></body></html>';
+      let htmlContent = scratchPadContents['index.html'] || fileContents['index.html'];
+      
+      // Process HTML to replace script src tags early
+      if (htmlContent) {
+        const tempParser = new DOMParser();
+        const tempDoc = tempParser.parseFromString(htmlContent, 'text/html');
+        
+        // Replace script src tags with import syntax
+        const scriptTags = tempDoc.querySelectorAll('script[src]');
+        scriptTags.forEach((scriptElement) => {
+          const script = scriptElement as HTMLScriptElement;
+          const src = script.getAttribute('src');
+          if (src && (src.startsWith('./') || src.startsWith('/') || !src.includes('://'))) {
+            const newScript = tempDoc.createElement('script');
+            newScript.type = 'module';
+            newScript.textContent = `import '${src}';`;
+            
+            // Copy other attributes
+            Array.from(script.attributes).forEach((attr: Attr) => {
+              if (attr.name !== 'src' && attr.name !== 'type') {
+                newScript.setAttribute(attr.name, attr.value);
+              }
+            });
+            
+            script.parentNode?.replaceChild(newScript, script);
+          }
+        });
+        
+        htmlContent = tempDoc.documentElement.outerHTML;
+      }
+      
+      // If no HTML file but we have React files, create a default HTML
+      if (!htmlContent && hasReactFiles) {
+        htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React App</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      #root {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>`;
+      } else if (!htmlContent) {
+        htmlContent = '<!DOCTYPE html><html><head></head><body></body></html>';
+      }
+      
+      // Import map injection is now handled automatically for all imports
       
       // Inject CSS if exists
       if (cssFile) {
@@ -629,13 +835,15 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
         htmlContent = htmlContent.replace('</head>', `${styleTag}</head>`);
       }
       
-      // Create blob URLs for each module to preserve line numbers
-      const moduleUrls: Record<string, string> = {};
+      // First pass: compile all modules
+      const compiledModules: Array<{file: typeof jsFiles[0], compiled: string}> = [];
       
-      // Compile and create blob URLs for each file
       for (const jsFile of jsFiles) {
         // Skip test files for module creation
-        if (jsFile.fileName.startsWith('tests.')) continue;
+        if (jsFile.fileName.startsWith('tests.')) {
+          console.log('Skipping test file:', jsFile.fileName);
+          continue;
+        }
         
         // Use scratch pad content for all files
         const content = scratchPadContents[jsFile.fileName] || fileContents[jsFile.fileName] || '';
@@ -643,10 +851,20 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
         // Transform the code to export all top-level declarations
         let moduleContent = content;
         
-        // Add exports for all top-level const/let/var declarations
+        // Don't auto-export React imports
+        const hasReactImport = /import\s+(?:\*\s+as\s+)?React|import\s+.*from\s+['"]react['"]/.test(moduleContent);
+        const hasReactDOMImport = /import\s+(?:\*\s+as\s+)?ReactDOM|import\s+.*from\s+['"]react-dom/.test(moduleContent);
+        
+        // Add exports for all top-level const/let/var declarations (except React imports)
         moduleContent = moduleContent.replace(
           /^(const|let|var)\s+(\w+)\s*=/gm,
-          'export $1 $2 ='
+          (match, declType, varName) => {
+            // Don't export if it's a React import result
+            if ((varName === 'React' && hasReactImport) || (varName === 'ReactDOM' && hasReactDOMImport)) {
+              return match;
+            }
+            return `export ${declType} ${varName} =`;
+          }
         );
         
         // Add exports for all top-level function declarations
@@ -661,22 +879,158 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
           compiled = compileTypeScript(moduleContent, jsFile.fileName);
         }
         
-        // Create blob URL for this module
-        const moduleBlob = new Blob([compiled], { type: 'application/javascript' });
-        const moduleUrl = URL.createObjectURL(moduleBlob);
-        
-        // Store URL with both full filename and without extension for imports
-        const moduleName = jsFile.fileName.replace(/\.(js|ts|jsx|tsx)$/, '');
-        moduleUrls[jsFile.fileName] = moduleUrl;
-        moduleUrls[moduleName] = moduleUrl;
-        moduleUrls['./' + jsFile.fileName] = moduleUrl;
-        moduleUrls['./' + moduleName] = moduleUrl;
+        compiledModules.push({file: jsFile, compiled});
       }
       
-      // Create import map for module resolution
+      // Note: Object URLs will be created inside the iframe instead
+      
+      // Process compiled modules for debugging
+      for (const {file: jsFile, compiled} of compiledModules) {
+        
+        // For debugging: log the compiled output for React files
+        if (jsFile.language === 'tsx' || jsFile.language === 'jsx') {
+          console.log(`[Compiled ${jsFile.fileName}]:`, compiled.substring(0, 500) + '...');
+          
+          // Check if the compiled code has the necessary imports
+          if (!compiled.includes('import') && compiled.includes('React.createElement')) {
+            console.warn(`[${jsFile.fileName}] Compiled code uses React.createElement but has no React import!`);
+          }
+        }
+        
+        // Add inline source map for better debugging and accurate line numbers
+        const content = scratchPadContents[jsFile.fileName] || fileContents[jsFile.fileName] || '';
+        const lines = content.split('\n');
+        const sourceMap = {
+          version: 3,
+          sources: [jsFile.fileName],
+          sourcesContent: [content],
+          names: [],
+          mappings: 'AAAA' + ';AACA'.repeat(lines.length - 1) // Simple 1:1 line mapping
+        };
+        
+        const sourceMapComment = `\n//# sourceMappingURL=data:application/json;base64,${safeBase64Encode(JSON.stringify(sourceMap))}\n//# sourceURL=${jsFile.fileName}`;
+        const compiledWithSourceMap = compiled + sourceMapComment;
+        
+        // Update the compiled module with source map
+        const moduleIndex = compiledModules.findIndex(m => m.file.fileName === jsFile.fileName);
+        if (moduleIndex !== -1) {
+          compiledModules[moduleIndex].compiled = compiledWithSourceMap;
+        }
+      }
+      
+      // Extract all imports from the code to add to import map
+      const externalImports: Record<string, string> = {};
+      
+      // Create import map for ES modules
       const importMap = {
-        imports: moduleUrls
+        imports: {
+          'react': 'https://esm.sh/react@18.2.0?dev',
+          'react-dom': 'https://esm.sh/react-dom@18.2.0?dev',
+          'react-dom/client': 'https://esm.sh/react-dom@18.2.0/client?dev',
+          'react/jsx-runtime': 'https://esm.sh/react@18.2.0/jsx-runtime?dev',
+          'react/jsx-dev-runtime': 'https://esm.sh/react@18.2.0/jsx-dev-runtime?dev',
+          'axios': 'https://esm.sh/axios@1.6.2',
+          'lodash': 'https://esm.sh/lodash@4.17.21',
+          'date-fns': 'https://esm.sh/date-fns@3.0.0',
+          'uuid': 'https://esm.sh/uuid@9.0.1',
+          'classnames': 'https://esm.sh/classnames@2.5.1',
+          'framer-motion': 'https://esm.sh/framer-motion@10.16.16',
+          '@emotion/react': 'https://esm.sh/@emotion/react@11.11.3',
+          '@emotion/styled': 'https://esm.sh/@emotion/styled@11.11.0',
+          'styled-components': 'https://esm.sh/styled-components@6.1.8',
+          'zustand': 'https://esm.sh/zustand@4.4.7',
+          'react-hook-form': 'https://esm.sh/react-hook-form@7.48.2',
+          'react-query': 'https://esm.sh/react-query@3.39.3',
+          '@tanstack/react-query': 'https://esm.sh/@tanstack/react-query@5.17.0',
+          'swr': 'https://esm.sh/swr@2.2.4',
+          'react-router-dom': 'https://esm.sh/react-router-dom@6.21.1',
+          '@mui/material': 'https://esm.sh/@mui/material@5.15.2',
+          'antd': 'https://esm.sh/antd@5.12.8',
+          'recharts': 'https://esm.sh/recharts@2.10.4',
+          'chart.js': 'https://esm.sh/chart.js@4.4.1',
+          'd3': 'https://esm.sh/d3@7.8.5'
+        }
       };
+      
+      // Find all imports in all files
+      for (const jsFile of jsFiles) {
+        const content = scratchPadContents[jsFile.fileName] || fileContents[jsFile.fileName] || '';
+        
+        // Match import statements
+        const importRegex = /import\s+(?:(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)\s+from\s+)?['"]([^'"]+)['"]/g;
+        let match;
+        
+        while ((match = importRegex.exec(content)) !== null) {
+          const importPath = match[1];
+          
+          // Skip relative imports (already handled by moduleUrls)
+          if (importPath.startsWith('.') || importPath.startsWith('/')) {
+            continue;
+          }
+          
+          // Check if we have a CDN mapping for this import
+          if ((importMap.imports as any)[importPath]) {
+            externalImports[importPath] = (importMap.imports as any)[importPath];
+          } else if (!importPath.includes('://')) {
+            // For unmapped packages, try to resolve via esm.sh
+            const packageName = importPath.split('/')[0];
+            if (packageName.startsWith('@')) {
+              // Scoped package
+              const cdnUrl = `https://esm.sh/${importPath}`;
+              externalImports[importPath] = cdnUrl;
+            } else {
+              // Regular package
+              const cdnUrl = `https://esm.sh/${importPath}`;
+              externalImports[importPath] = cdnUrl;
+            }
+          }
+        }
+      }
+      
+      // Create data URLs for local modules
+      const localModuleUrls: Record<string, string> = {};
+      for (const {file, compiled} of compiledModules) {
+        const moduleContent = compiled;
+        const dataUrl = `data:application/javascript;charset=utf-8,${encodeURIComponent(moduleContent)}`;
+        const moduleName = file.fileName.replace(/\.(js|ts|jsx|tsx)$/, '');
+        
+        // Add all possible import paths
+        localModuleUrls[moduleName] = dataUrl;
+        localModuleUrls[`./${moduleName}`] = dataUrl;
+        localModuleUrls[file.fileName] = dataUrl;
+        localModuleUrls[`./${file.fileName}`] = dataUrl;
+      }
+      
+      // Create import map for module resolution with predefined, external, and local modules
+      const finalImportMap = {
+        imports: {
+          ...importMap.imports,  // Include all predefined imports (React, etc.)
+          ...externalImports,    // Include imports found in the code
+          ...localModuleUrls     // Include local module mappings
+        }
+      };
+      
+      // Inject es-module-shims and import map in the head
+      const importMapScript = `<script type="importmap">
+${JSON.stringify(finalImportMap, null, 2)}
+</script>`;
+      
+      // Add es-module-shims for import map support in all contexts
+      if (htmlContent.includes('</head>')) {
+        htmlContent = htmlContent.replace('</head>', `
+        <!-- ES Module Shims for import map support in all contexts -->
+        <script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+        ${importMapScript}
+        </head>`);
+      } else {
+        // Try to inject before first script tag as fallback
+        const firstScriptIndex = htmlContent.indexOf('<script');
+        if (firstScriptIndex !== -1) {
+          htmlContent = htmlContent.slice(0, firstScriptIndex) + 
+            `<script async src="https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js"></script>\n${importMapScript}\n` + 
+            htmlContent.slice(firstScriptIndex);
+        }
+      }
       
       // Create test runner script
       const testRunner = `
@@ -772,29 +1126,263 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
           return window.getComputedStyle(element);
         };
         
-        // Error handling
+        // Error handling with file name mapping
         window.addEventListener('error', (event) => {
-          console.error(event.error?.stack || event.message);
+          let errorMsg = event.error?.stack || event.message || 'Unknown error';
+          
+          // Data URLs are already readable in stack traces
+          
+          console.error(errorMsg);
           event.preventDefault();
         });
         
         window.addEventListener('unhandledrejection', (event) => {
-          console.error('Unhandled Promise Rejection:', event.reason);
+          let reason = event.reason;
+          if (reason && reason.stack) {
+            // Data URLs are already readable in stack traces
+          }
+          console.error('Unhandled Promise Rejection:', reason);
           event.preventDefault();
         });
+        
+        // Mock Service Worker setup for API mocking
+        const mockServiceWorker = \`
+          // Simple MSW-like implementation for the iframe context
+          class MockServiceWorker {
+            constructor() {
+              this.handlers = [];
+              this.setupInterceptor();
+            }
+            
+            setupInterceptor() {
+              // Override fetch to intercept API calls
+              const originalFetch = window.fetch;
+              window.fetch = async (input, init) => {
+                let url = typeof input === 'string' ? input : input.url;
+                const method = (init?.method || 'GET').toUpperCase();
+                
+                // Normalize the URL to handle relative paths
+                try {
+                  const urlObj = new URL(url, window.location.origin);
+                  url = urlObj.pathname + urlObj.search;
+                } catch (e) {
+                  // If URL parsing fails, use as-is
+                }
+                
+                // Check if this is an API request
+                if (url.startsWith('/api') || url.includes('/api/')) {
+                  console.log(\\\`[MSW] Intercepting \\\${method} \\\${url}\\\`);
+                  
+                  // Find matching handler
+                  for (const handler of this.handlers) {
+                    if (handler.matches(method, url)) {
+                      try {
+                        console.log(\\\`[MSW] Found handler for \\\${method} \\\${url}\\\`);
+                        const request = new Request(input, init);
+                        const response = await handler.resolver(request);
+                        return response;
+                      } catch (error) {
+                        console.error('[MSW] Handler error:', error);
+                        return new Response(JSON.stringify({ error: error.message }), {
+                          status: 500,
+                          headers: { 'Content-Type': 'application/json' }
+                        });
+                      }
+                    }
+                  }
+                  
+                  // No handler found - return 404
+                  console.warn(\\\`[MSW] No handler found for \\\${method} \\\${url}\\\`);
+                  return new Response(JSON.stringify({ error: 'Not found' }), {
+                    status: 404,
+                    headers: { 'Content-Type': 'application/json' }
+                  });
+                }
+                
+                // Not an API request, use original fetch
+                return originalFetch(input, init);
+              };
+            }
+            
+            rest = {
+              get: (path, resolver) => {
+                this.handlers.push({
+                  method: 'GET',
+                  path,
+                  matches: (method, url) => method === 'GET' && this.matchPath(path, url),
+                  resolver
+                });
+              },
+              post: (path, resolver) => {
+                this.handlers.push({
+                  method: 'POST',
+                  path,
+                  matches: (method, url) => method === 'POST' && this.matchPath(path, url),
+                  resolver
+                });
+              },
+              put: (path, resolver) => {
+                this.handlers.push({
+                  method: 'PUT',
+                  path,
+                  matches: (method, url) => method === 'PUT' && this.matchPath(path, url),
+                  resolver
+                });
+              },
+              patch: (path, resolver) => {
+                this.handlers.push({
+                  method: 'PATCH',
+                  path,
+                  matches: (method, url) => method === 'PATCH' && this.matchPath(path, url),
+                  resolver
+                });
+              },
+              delete: (path, resolver) => {
+                this.handlers.push({
+                  method: 'DELETE',
+                  path,
+                  matches: (method, url) => method === 'DELETE' && this.matchPath(path, url),
+                  resolver
+                });
+              }
+            };
+            
+            matchPath(pattern, url) {
+              // Simple path matching with parameters
+              const patternParts = pattern.split('/').filter(Boolean);
+              
+              // Parse URL and get pathname only (strip query params)
+              let pathname = url;
+              try {
+                const urlObj = new URL(url, window.location.origin);
+                pathname = urlObj.pathname;
+              } catch (e) {
+                // If URL parsing fails, try to extract pathname manually
+                const queryIndex = url.indexOf('?');
+                if (queryIndex !== -1) {
+                  pathname = url.substring(0, queryIndex);
+                }
+              }
+              
+              const urlParts = pathname.split('/').filter(Boolean);
+              
+              if (patternParts.length !== urlParts.length) return false;
+              
+              for (let i = 0; i < patternParts.length; i++) {
+                if (patternParts[i].startsWith(':')) continue; // Parameter
+                if (patternParts[i] !== urlParts[i]) return false;
+              }
+              
+              return true;
+            }
+            
+            use(...handlers) {
+              // For compatibility with MSW API
+              console.log('Mock handlers registered:', handlers.length);
+            }
+          }
+          
+          // Create global MSW instance
+          window.msw = new MockServiceWorker();
+          
+          // Helper to create responses
+          window.HttpResponse = {
+            json: (data, options = {}) => {
+              return new Response(JSON.stringify(data), {
+                status: options.status || 200,
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...options.headers
+                }
+              });
+            },
+            text: (text, options = {}) => {
+              return new Response(text, {
+                status: options.status || 200,
+                headers: {
+                  'Content-Type': 'text/plain',
+                  ...options.headers
+                }
+              });
+            },
+            error: (message = 'Internal Server Error', status = 500) => {
+              return new Response(JSON.stringify({ error: message }), {
+                status,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+          };
+          
+          // Example handlers - users can override these
+          window.msw.rest.get('/api/data', async () => {
+            return HttpResponse.json({
+              users: [
+                { id: 1, name: 'John Doe', email: 'john@example.com' },
+                { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+                { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
+              ],
+              posts: [
+                { id: 1, title: 'Hello World', content: 'This is my first post' },
+                { id: 2, title: 'React Patterns', content: 'Learning about render props' }
+              ]
+            });
+          });
+          
+          window.msw.rest.get('/api/users', async () => {
+            return HttpResponse.json([
+              { id: 1, name: 'John Doe', email: 'john@example.com' },
+              { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+            ]);
+          });
+          
+          window.msw.rest.get('/api/users/:id', async (req) => {
+            const url = new URL(req.url);
+            const id = url.pathname.split('/').pop();
+            return HttpResponse.json({
+              id: parseInt(id),
+              name: 'John Doe',
+              email: 'john@example.com'
+            });
+          });
+          
+          window.msw.rest.post('/api/users', async (req) => {
+            const body = await req.json();
+            return HttpResponse.json({
+              id: Date.now(),
+              ...body
+            }, { status: 201 });
+          });
+          
+          console.log('Mock Service Worker initialized for /api routes');
+        \`;
+        
+        // Execute MSW setup
+        eval(mockServiceWorker);
       `;
+      
+      // Pass compiled modules to iframe for object URL creation
+      const compiledModulesData = compiledModules.map(({file, compiled}) => ({
+        fileName: file.fileName,
+        compiled: compiled
+      }));
       
       // Build final HTML with all scripts
       const scriptTags = `
-        <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-        <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
         <script src="https://unpkg.com/mocha@10.2.0/mocha.js"></script>
         <script src="https://unpkg.com/chai@4.3.7/chai.js"></script>
         <script src="https://unpkg.com/sinon@15.2.0/pkg/sinon.js"></script>
         <link rel="stylesheet" href="https://unpkg.com/mocha@10.2.0/mocha.css">
         <script>
-          window.React = React;
-          window.ReactDOM = ReactDOM;
+          // Early error catching
+          window.addEventListener('error', function(e) {
+            console.log('[Error Details]', {
+              message: e.message,
+              source: e.filename,
+              line: e.lineno,
+              col: e.colno,
+              error: e.error
+            });
+          }, true);
           window.expect = chai.expect;
           window.assert = chai.assert;
           window.sinon = sinon;
@@ -803,33 +1391,79 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
           mocha.setup({ ui: 'bdd' });
           
           // Pass files data to iframe context
-          window.files = ${JSON.stringify(files)};
-          window.fileContents = ${JSON.stringify(fileContents)};
-          window.scratchPadContents = ${JSON.stringify(scratchPadContents)};
-          console.log('Scratch pad contents passed to iframe:', Object.keys(window.scratchPadContents));
+          window.files = ${JSON.stringify(files).replace(/</g, '\\x3C').replace(/>/g, '\\x3E')};
+          window.fileContents = ${JSON.stringify(fileContents).replace(/</g, '\\x3C').replace(/>/g, '\\x3E')};
+          window.scratchPadContents = ${JSON.stringify(scratchPadContents).replace(/</g, '\\x3C').replace(/>/g, '\\x3E')};
+          window.compiledModules = ${JSON.stringify(compiledModulesData).replace(/</g, '\\x3C').replace(/>/g, '\\x3E')};
+          window.importMapData = ${JSON.stringify(finalImportMap).replace(/</g, '\\x3C').replace(/>/g, '\\x3E')};
+          
+          // Import map is already injected in the HTML, just log it for debugging
+          console.log('Import map already injected in HTML');
+          
+          // Hide debug output if this is a preview iframe
+          if (window.frameElement && window.frameElement.title === 'HTML Preview') {
+            // Clear the document to prevent showing the script content
+            document.addEventListener('DOMContentLoaded', function() {
+              // Remove any text nodes that contain debug content
+              const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+              );
+              
+              const nodesToRemove = [];
+              while (walker.nextNode()) {
+                const node = walker.currentNode;
+                if (node.textContent && node.textContent.includes('window.files =')) {
+                  nodesToRemove.push(node);
+                }
+              }
+              
+              nodesToRemove.forEach(node => node.remove());
+            });
+          }
           
           ${testRunner}
         </script>
-        ${Object.keys(moduleUrls).length > 0 ? `
-          <script type="importmap">
-            ${JSON.stringify(importMap, null, 2)}
-          </script>
-        ` : ''}
         <script type="module">
-          // Import and execute all non-test modules
-          ${jsFiles.filter(f => !f.fileName.startsWith('tests.')).map(jsFile => {
-            const moduleName = jsFile.fileName.replace(/\.(js|ts|jsx|tsx)$/, '');
-            return `
-          console.log('Importing ${jsFile.fileName}...');
-          import * as ${moduleName.replace(/[^a-zA-Z0-9]/g, '_')} from './${moduleName}';
+          // Wait for import map to be processed
+          await new Promise(resolve => setTimeout(resolve, 10));
           
-          // Make all exports available globally for tests
-          Object.entries(${moduleName.replace(/[^a-zA-Z0-9]/g, '_')}).forEach(([key, value]) => {
-            window[key] = value;
-            console.log(\`Exported \${key} to window\`);
-          });
-            `;
-          }).join('\n')}
+          // Import and execute all non-test modules
+          (async () => {
+            try {
+              ${jsFiles.filter(f => !f.fileName.startsWith('tests.')).map(jsFile => {
+                const moduleName = jsFile.fileName.replace(/\.(js|ts|jsx|tsx)$/, '');
+                const safeModuleName = moduleName.replace(/[^a-zA-Z0-9]/g, '_');
+                return `
+              console.log('Importing ${jsFile.fileName}...');
+              try {
+                console.log('Attempting to import ${jsFile.fileName} from ./${moduleName}');
+                const ${safeModuleName} = await import('./${moduleName}');
+                console.log('Successfully imported ${jsFile.fileName}');
+                
+                // Make all exports available globally for tests
+                Object.entries(${safeModuleName}).forEach(([key, value]) => {
+                  window[key] = value;
+                  console.log(\`Exported \${key} to window\`);
+                });
+              } catch (importError) {
+                console.error('Error importing ${jsFile.fileName}:', importError);
+                console.error('Stack:', importError.stack);
+                console.error('Import map data:', window.importMapData);
+              }
+                `;
+              }).join('\n')}
+              
+              // After all modules are loaded, signal readiness
+              console.log('All modules imported successfully');
+              window.modulesLoaded = true;
+              
+            } catch (mainError) {
+              console.error('Error in main module loading:', mainError);
+            }
+          })();
           
           // After all modules are loaded, run tests
           window.addEventListener('load', () => {
@@ -837,6 +1471,11 @@ export const MultiFileCodeDisplay: React.FC<MultiFileCodeDisplayProps> = React.m
             window.modulesLoaded = true;
             console.log('All modules loaded, ready for tests');
           });
+          
+          // Also check if the waitForModules function exists and call it
+          if (typeof window.waitForModules === 'function') {
+            window.waitForModules();
+          }
         </script>
         
         <script>
@@ -972,7 +1611,23 @@ const { \${availableWindowVars.join(', ')} } = window;
         </script>
       `;
       
-      htmlContent = htmlContent.replace('</body>', `${scriptTags}</body>`);
+      // Update any existing script src references to use blob URLs
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+      
+      // Note: Import map is already injected in the head section
+      
+      // Script URLs will be resolved inside the iframe using the import map
+      
+      // Add our script tags at the end
+      const bodyElement = doc.body;
+      const tempDiv = doc.createElement('div');
+      tempDiv.innerHTML = scriptTags;
+      while (tempDiv.firstChild) {
+        bodyElement.appendChild(tempDiv.firstChild);
+      }
+      
+      htmlContent = doc.documentElement.outerHTML;
       
       // Message handler
       const messageHandler = (event: MessageEvent) => {
@@ -1006,12 +1661,103 @@ const { \${availableWindowVars.join(', ')} } = window;
         }, 10);
       }
       
-      // Update preview iframe
-      if (previewIframeRef.current && hasHtmlFiles) {
+      // Update preview iframe with clean HTML
+      if (previewIframeRef.current && (hasHtmlFiles || hasReactFiles)) {
         previewIframeRef.current.srcdoc = '';
+        
+        // Build a clean HTML for preview
+        const htmlFile = files.find(f => f.fileName.endsWith('.html'));
+        let baseHtml = '';
+        
+        if (htmlFile) {
+          baseHtml = scratchPadContents[htmlFile.fileName] || fileContents[htmlFile.fileName] || '';
+        } else if (hasReactFiles) {
+          baseHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React App</title>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>`;
+        }
+        
+        // Create a document to manipulate
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(baseHtml, 'text/html');
+        
+        // Add CSS
+        const cssFile = files.find(f => f.fileName.endsWith('.css'));
+        if (cssFile) {
+          const cssContent = scratchPadContents[cssFile.fileName] || fileContents[cssFile.fileName] || '';
+          if (cssContent) {
+            const style = doc.createElement('style');
+            style.textContent = cssContent;
+            doc.head.appendChild(style);
+          }
+        }
+        
+        // Add es-module-shims for import map support
+        const esmShimsScript = doc.createElement('script');
+        esmShimsScript.src = 'https://ga.jspm.io/npm:es-module-shims@1.6.3/dist/es-module-shims.js';
+        esmShimsScript.async = true;
+        doc.head.insertBefore(esmShimsScript, doc.head.firstChild);
+        
+        // Add the import map
+        const importMapScript = doc.createElement('script');
+        importMapScript.type = 'importmap';
+        importMapScript.textContent = JSON.stringify(finalImportMap, null, 2);
+        doc.head.insertBefore(importMapScript, esmShimsScript.nextSibling);
+        
+        // Update any existing script src to use module imports
+        const existingScripts = doc.querySelectorAll('script[src]');
+        existingScripts.forEach(scriptElement => {
+          const script = scriptElement as HTMLScriptElement;
+          const src = script.getAttribute('src');
+          if (src && (src.startsWith('./') || src.startsWith('/') || !src.includes('://'))) {
+            // Create a new script with import syntax
+            const newScript = doc.createElement('script');
+            newScript.type = 'module';
+            newScript.textContent = `import '${src}';`;
+            
+            // Copy any other attributes
+            for (const attr of script.attributes) {
+              if (attr.name !== 'src' && attr.name !== 'type') {
+                newScript.setAttribute(attr.name, attr.value);
+              }
+            }
+            
+            // Replace the old script with the new one
+            script.parentNode?.replaceChild(newScript, script);
+          }
+        });
+        
+        // If no script tags exist and we have React files, add the main entry
+        if (existingScripts.length === 0 && hasReactFiles) {
+          const mainFile = jsFiles.find(f => 
+            f.fileName === 'App.tsx' || 
+            f.fileName === 'index.tsx' || 
+            f.fileName === 'index.js' ||
+            f.fileName === 'main.js'
+          );
+          if (mainFile) {
+            const script = doc.createElement('script');
+            script.type = 'module';
+            const moduleName = mainFile.fileName.replace(/\.(jsx?|tsx?)$/, '');
+            script.textContent = `import './${moduleName}';`;
+            doc.body.appendChild(script);
+          }
+        }
+        
+        // Get the clean HTML
+        const previewHtml = doc.documentElement.outerHTML;
+        
         setTimeout(() => {
           if (previewIframeRef.current) {
-            previewIframeRef.current.srcdoc = htmlContent;
+            previewIframeRef.current.srcdoc = previewHtml;
           }
         }, 10);
       }
@@ -1020,12 +1766,7 @@ const { \${availableWindowVars.join(', ')} } = window;
       setTimeout(() => {
         window.removeEventListener('message', messageHandler);
         setIsRunning(false);
-        // Clean up blob URLs
-        Object.values(moduleUrls).forEach(url => {
-          if (typeof url === 'string' && url.startsWith('blob:')) {
-            URL.revokeObjectURL(url);
-          }
-        });
+        // Note: Blob URLs are created and managed inside the iframe
       }, 2000);
       
     } catch (error: any) {
@@ -1038,46 +1779,9 @@ const { \${availableWindowVars.join(', ')} } = window;
 
   // Remove the complex model management - let the Editor component handle it
 
-  // Configure TypeScript compiler options and themes
+  // Configure TypeScript compiler options
   useEffect(() => {
     if (monaco) {
-      // Intercept Monaco's context menu styling
-      const originalCreateContextView = (window as any).monaco?.contextview?.createContextView;
-      if (originalCreateContextView) {
-        (window as any).monaco.contextview.createContextView = function(...args: any[]) {
-          const result = originalCreateContextView.apply(this, args);
-          
-          // Force background on context menus after creation
-          setTimeout(() => {
-            document.querySelectorAll('.context-view, .monaco-menu-container, .monaco-menu').forEach((el: Element) => {
-              if (el instanceof HTMLElement) {
-                el.style.backgroundColor = currentTheme === 'solarized-dark' ? '#073642' : '#eee8d5';
-                el.style.opacity = '1';
-                
-                // Apply to all children
-                el.querySelectorAll('*').forEach((child: Element) => {
-                  if (child instanceof HTMLElement) {
-                    child.style.backgroundColor = 'inherit';
-                  }
-                });
-              }
-            });
-          }, 0);
-          
-          return result;
-        };
-      }
-      // Load themes from monaco-themes package
-      Promise.all([
-        import('monaco-themes/themes/Solarized-dark.json'),
-        import('monaco-themes/themes/Solarized-light.json')
-      ]).then(([darkTheme, lightTheme]) => {
-        // Define themes with proper typing
-        monaco.editor.defineTheme('solarized-dark', darkTheme as any);
-        monaco.editor.defineTheme('solarized-light', lightTheme as any);
-        // Set the current theme
-        monaco.editor.setTheme(currentTheme);
-      });
       
       // Configure both TypeScript and TypeScript React
       const tsConfig = {
@@ -1089,7 +1793,10 @@ const { \${availableWindowVars.join(', ')} } = window;
         esModuleInterop: true,
         jsx: monaco.languages.typescript.JsxEmit.React,
         allowJs: true,
-        typeRoots: ['node_modules/@types']
+        typeRoots: ['node_modules/@types'],
+        jsxFactory: 'React.createElement',
+        jsxFragmentFactory: 'React.Fragment',
+        reactNamespace: 'React'
       };
       
       monaco.languages.typescript.typescriptDefaults.setCompilerOptions(tsConfig);
@@ -1119,22 +1826,12 @@ const { \${availableWindowVars.join(', ')} } = window;
       monaco.languages.typescript.typescriptDefaults.addExtraLib(reactTypes, 'global.d.ts');
       monaco.languages.typescript.javascriptDefaults.addExtraLib(reactTypes, 'global.d.ts');
     }
-  }, [monaco, currentTheme]);
+  }, [monaco]);
 
   // Update theme when currentTheme changes
   useEffect(() => {
     if (monaco && currentTheme) {
-      // Ensure themes are defined before setting
-      Promise.all([
-        import('monaco-themes/themes/Solarized-dark.json'),
-        import('monaco-themes/themes/Solarized-light.json')
-      ]).then(([darkTheme, lightTheme]) => {
-        // Re-define themes to ensure they're available
-        monaco.editor.defineTheme('solarized-dark', darkTheme as any);
-        monaco.editor.defineTheme('solarized-light', lightTheme as any);
-        // Set the current theme
-        monaco.editor.setTheme(currentTheme);
-      });
+      monaco.editor.setTheme(currentTheme);
     }
   }, [monaco, currentTheme]);
 
@@ -1167,112 +1864,32 @@ const { \${availableWindowVars.join(', ')} } = window;
         position: 'relative'
       }}>
       <div className="editor-container" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, backgroundColor: themeColors.background }}>
-        {/* File tabs */}
-        <div className="file-tabs" style={{ 
-          display: 'flex', 
-          backgroundColor: themeColors.background, 
-          borderBottom: `1px solid ${themeColors.border}`,
-          minHeight: '35px'
-        }}>
-          {files.map((file, index) => {
-            // Debug file object
-            if (!file || typeof file !== 'object') {
-              console.error('[MultiFileCodeDisplay] Invalid file object:', file);
-              return null;
-            }
-            return (
-            <button
-              key={file.fileName || `file-${index}`}
-              className={`file-tab ${index === currentFileIndex ? 'active' : ''}`}
-              onClick={() => setCurrentFileIndex(index)}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: index === currentFileIndex ? themeColors.backgroundSecondary : 'transparent',
-                color: index === currentFileIndex ? themeColors.foreground : themeColors.muted,
-                border: 'none',
-                borderRight: '1px solid #333',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontFamily: 'monospace'
-              }}
-            >
-              {file.fileName || 'Untitled'}
-            </button>
-            );
-          })}
-          <div style={{ flex: 1 }} />
-          
-          {/* Reset button */}
-          <button
-            onClick={() => {
-              if (currentFile && confirm('Reset to original exercise content? This will clear your current work.')) {
-                const originalContent = currentFile.versions?.[0] || currentFile.content || '';
-                setScratchPadContents(prev => ({
-                  ...prev,
-                  [currentFile.fileName]: originalContent
-                }));
-                // Clear from localStorage
-                localStorage.removeItem(getStorageKey(currentFile.fileName));
-                // Update the editor
-                if (editorRef.current) {
-                  editorRef.current.setValue(originalContent);
-                }
+        <FileManager
+          files={files}
+          currentFileIndex={currentFileIndex}
+          onFileSelect={setCurrentFileIndex}
+          onReset={() => {
+            if (currentFile && confirm('Reset to original exercise content? This will clear your current work.')) {
+              const originalContent = currentFile.versions?.[0] || currentFile.content || '';
+              setScratchPadContents(prev => ({
+                ...prev,
+                [currentFile.fileName]: originalContent
+              }));
+              // Clear from localStorage
+              localStorage.removeItem(getStorageKey(currentFile.fileName));
+              // Update the editor
+              if (editorRef.current) {
+                editorRef.current.setValue(originalContent);
               }
-            }}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: themeColors.error,
-              color: 'white',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '12px',
-              marginRight: '10px',
-              borderRadius: '4px',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c82333'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
-          >
-            Reset
-          </button>
-          
-          <button
-            className="run-button"
-            onClick={runCode}
-            disabled={isRunning}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: themeColors.success,
-              color: 'white',
-              border: 'none',
-              cursor: isRunning ? 'not-allowed' : 'pointer',
-              fontSize: '12px',
-              fontWeight: 'bold'
-            }}
-          >
-            {isRunning ? 'Running...' : 'Run'}
-          </button>
-          
-          <button
-            onClick={() => {
-              const newTheme = currentTheme === 'solarized-dark' ? 'solarized-light' : 'solarized-dark';
-              setCurrentTheme(newTheme);
-              localStorage.setItem('ctp-editor-theme', newTheme);
-            }}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: currentTheme === 'solarized-dark' ? '#fdf6e3' : '#002b36',
-              color: currentTheme === 'solarized-dark' ? '#657b83' : '#839496',
-              border: '1px solid ' + (currentTheme === 'solarized-dark' ? '#93a1a1' : '#586e75'),
-              cursor: 'pointer',
-              fontSize: '12px',
-              borderRadius: '4px',
-              marginLeft: 'auto'
-            }}
-          >
-            {currentTheme === 'solarized-dark' ? '☀️ Light' : '🌙 Dark'}
-          </button>
-        </div>
+            }
+          }}
+          onToggleExecution={runCode}
+          isExecuting={isRunning}
+          themeColors={themeColors}
+          scratchPadVersion={currentFile && currentFile.versions ? currentFile.versions.length : 0}
+          currentTheme={currentTheme}
+          onToggleTheme={toggleTheme}
+        />
         
         {/* Editor and output area */}
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
@@ -1292,7 +1909,12 @@ const { \${availableWindowVars.join(', ')} } = window;
                 language={currentFile ? getLanguageForFile(currentFile.fileName) : 'javascript'}
                 value={currentContent}
                 theme={currentTheme}
+                path={currentFile?.fileName || 'main.tsx'}
                 onChange={handleEditorChange}
+                beforeMount={(monaco) => {
+                  // Ensure TypeScript/JavaScript defaults are configured before mounting
+                  configureMonaco(monaco);
+                }}
                 options={{
                   ...options,
                   readOnly,
@@ -1300,8 +1922,6 @@ const { \${availableWindowVars.join(', ')} } = window;
                   fontSize: 14,
                   lineNumbers: 'on',
                   automaticLayout: true,
-                  fixedOverflowWidgets: true,
-                  overflowWidgetsDomNode: document.body,
                   hover: {
                     enabled: true,
                     delay: 300,
@@ -1313,165 +1933,49 @@ const { \${availableWindowVars.join(', ')} } = window;
                     enabled: true
                   }
                 }}
-                onMount={(editor) => {
+                onMount={(editor, monaco) => {
                   // Only set the editor reference if the slide is still active
                   if (isSlideActive) {
                     editorRef.current = editor;
                     
-                    // Add custom CSS for Solarized themes
-                    const existingStyle = document.getElementById('monaco-theme-overrides');
-                    if (existingStyle) {
-                      existingStyle.remove();
+                    // Configure Monaco (this already sets up TypeScript/JSX properly)
+                    configureMonaco(monaco);
+                    
+                    // Debug: Log current language configuration
+                    const model = editor.getModel();
+                    if (model) {
+                      console.log('Model language:', model.getLanguageId());
+                      console.log('Expected language:', currentFile ? getLanguageForFile(currentFile.fileName) : 'javascript');
+                      console.log('Available languages:', monaco.languages.getLanguages().map(l => l.id).sort());
                     }
                     
-                    const style = document.createElement('style');
-                    style.id = 'monaco-theme-overrides';
-                    style.innerHTML = `
-                      /* Solarized Dark hover widget styles */
-                      .monaco-editor[data-theme="solarized-dark"] .monaco-hover,
-                      .monaco-editor[data-theme="solarized-dark"] .monaco-editor-hover,
-                      .monaco-editor[data-theme="solarized-dark"] .monaco-hover-content {
-                        background-color: #073642 !important;
-                        border: 1px solid #586e75 !important;
-                        color: #839496 !important;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
-                      }
-                      
-                      /* Solarized Light hover widget styles */
-                      .monaco-editor[data-theme="solarized-light"] .monaco-hover,
-                      .monaco-editor[data-theme="solarized-light"] .monaco-editor-hover,
-                      .monaco-editor[data-theme="solarized-light"] .monaco-hover-content {
-                        background-color: #eee8d5 !important;
-                        border: 1px solid #93a1a1 !important;
-                        color: #657b83 !important;
-                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-                      }
-                      
-                      .monaco-editor .monaco-hover .hover-contents,
-                      .monaco-editor .monaco-hover .hover-row,
-                      .monaco-editor .monaco-hover .hover-row.status-bar,
-                      .monaco-editor-hover .hover-contents {
-                        background-color: #252526 !important;
-                        color: #cccccc !important;
-                      }
-                      
-                      /* Suggest widget styles */
-                      .monaco-editor .suggest-widget,
-                      .monaco-editor .suggest-details {
-                        background-color: #252526 !important;
-                        border: 1px solid #454545 !important;
-                        color: #cccccc !important;
-                      }
-                      
-                      .monaco-editor .suggest-widget .monaco-list-row,
-                      .monaco-editor .suggest-details .monaco-list-row {
-                        background-color: transparent !important;
-                        color: #cccccc !important;
-                      }
-                      
-                      .monaco-editor .suggest-widget .monaco-list-row.focused,
-                      .monaco-editor .suggest-widget .monaco-list-row:hover {
-                        background-color: #094771 !important;
-                      }
-                      
-                      /* Parameter hints */
-                      .monaco-editor .parameter-hints-widget {
-                        background-color: #252526 !important;
-                        border: 1px solid #454545 !important;
-                        color: #cccccc !important;
-                      }
-                      
-                      .monaco-editor .parameter-hints-widget .signature {
-                        background-color: #252526 !important;
-                      }
-                      
-                      /* Ensure all editor widgets have proper backgrounds */
-                      .monaco-editor .monaco-editor-overlaymessage,
-                      .monaco-editor-background,
-                      .monaco-editor .inputarea.ime-input {
-                        background-color: #252526 !important;
-                      }
-                      .monaco-editor .suggest-widget {
-                        background-color: #252526 !important;
-                        border: 1px solid #454545 !important;
-                        color: #cccccc !important;
-                      }
-                      .monaco-editor .monaco-list-row {
-                        color: #cccccc !important;
-                      }
-                      .monaco-editor .monaco-list-row.focused {
-                        background-color: #094771 !important;
-                        color: #ffffff !important;
-                      }
-                      .monaco-editor-overlaymessage {
-                        background-color: #252526 !important;
-                        border: 1px solid #454545 !important;
-                      }
-                      .monaco-tooltip {
-                        background-color: #252526 !important;
-                        border: 1px solid #454545 !important;
-                        color: #cccccc !important;
-                      }
-                      
-                      /* Global Monaco styles for current theme */
-                      ${currentTheme === 'solarized-dark' ? `
-                        .monaco-hover,
-                        .monaco-editor-hover,
-                        .monaco-hover-content {
-                          background-color: #073642 !important;
-                          border: 1px solid #586e75 !important;
-                          color: #839496 !important;
+                    // Ensure correct language is set
+                    setTimeout(() => {
+                      const model = editor.getModel();
+                      if (model && currentFile) {
+                        const expectedLang = getLanguageForFile(currentFile.fileName);
+                        const currentLang = model.getLanguageId();
+                        
+                        // Only update if different
+                        if (currentLang !== expectedLang) {
+                          console.log(`Updating language from ${currentLang} to ${expectedLang}`);
+                          monaco.editor.setModelLanguage(model, expectedLang);
                         }
                         
-                        .monaco-menu,
-                        .context-view.monaco-menu-container {
-                          background-color: #073642 !important;
-                          border: 1px solid #586e75 !important;
-                          color: #839496 !important;
+                        // For TSX/JSX files, ensure the model is configured correctly
+                        if (currentFile.fileName.endsWith('.tsx') || currentFile.fileName.endsWith('.jsx')) {
+                          const uri = model.uri.toString();
+                          console.log('Model URI:', uri);
+                          
+                          // Ensure the file is recognized as TypeScript/JavaScript with JSX
+                          if (currentFile.fileName.endsWith('.tsx')) {
+                            monaco.editor.setModelLanguage(model, 'typescript');
+                          } else if (currentFile.fileName.endsWith('.jsx')) {
+                            monaco.editor.setModelLanguage(model, 'javascript');
+                          }
                         }
-                        
-                        .monaco-menu .monaco-action-bar {
-                          background-color: #073642 !important;
-                        }
-                        
-                        .monaco-menu .action-label {
-                          color: #839496 !important;
-                        }
-                        
-                        .monaco-menu .action-item:hover {
-                          background-color: #586e75 !important;
-                        }
-                      ` : `
-                        .monaco-hover,
-                        .monaco-editor-hover,
-                        .monaco-hover-content {
-                          background-color: #eee8d5 !important;
-                          border: 1px solid #93a1a1 !important;
-                          color: #657b83 !important;
-                        }
-                        
-                        .monaco-menu,
-                        .context-view.monaco-menu-container {
-                          background-color: #eee8d5 !important;
-                          border: 1px solid #93a1a1 !important;
-                          color: #657b83 !important;
-                        }
-                        
-                        .monaco-menu .monaco-action-bar {
-                          background-color: #eee8d5 !important;
-                        }
-                        
-                        .monaco-menu .action-label {
-                          color: #657b83 !important;
-                        }
-                        
-                        .monaco-menu .action-item:hover {
-                          background-color: #93a1a1 !important;
-                          color: #002b36 !important;
-                        }
-                      `}
-                    `;
-                    document.head.appendChild(style);
+                      }
+                    }, 100);
                   }
                 }}
               />
@@ -1528,7 +2032,7 @@ const { \${availableWindowVars.join(', ')} } = window;
               borderBottom: '1px solid #333',
               position: 'relative'
             }}>
-              {hasHtmlFiles && (
+              {shouldShowPreview && (
                 <button
                   onClick={() => setActiveTab('preview')}
                   style={{
@@ -1649,7 +2153,7 @@ const { \${availableWindowVars.join(', ')} } = window;
               fontSize: '12px'
             }}>
               {/* Preview pane - always mounted but hidden when not active */}
-              {hasHtmlFiles && (
+              {shouldShowPreview && (
                 <div style={{ 
                   display: activeTab === 'preview' ? 'flex' : 'none',
                   flexDirection: 'column',
@@ -1671,6 +2175,9 @@ const { \${availableWindowVars.join(', ')} } = window;
                         onClick={() => {
                           setPreviewDevice(key as typeof previewDevice);
                           setPreviewWidth(preset.width);
+                          // Zoom level is maintained across device switches
+                          // This ensures that when going to fullscreen (desktop), 
+                          // the user's zoom preference is preserved
                         }}
                         style={{
                           padding: '4px 12px',
@@ -1732,82 +2239,184 @@ const { \${availableWindowVars.join(', ')} } = window;
                       >
                         🔄
                       </button>
+                      
+                      {/* Zoom controls */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '16px' }}>
+                        <button
+                          onClick={() => setZoomLevel(Math.max(100, zoomLevel - 25))}
+                          style={{
+                            padding: '4px 8px',
+                            background: themeColors.background,
+                            color: themeColors.foreground,
+                            border: `1px solid ${themeColors.border}`,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            transition: 'all 0.2s',
+                            ':hover': {
+                              background: themeColors.backgroundSecondary
+                            }
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.background = themeColors.backgroundSecondary}
+                          onMouseOut={(e) => e.currentTarget.style.background = themeColors.background}
+                          title="Zoom out"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="text"
+                          value={`${zoomLevel}%`}
+                          onChange={(e) => {
+                            const value = e.target.value.replace('%', '');
+                            const num = parseInt(value, 10);
+                            if (!isNaN(num)) {
+                              const maxZoom = Math.round(100 / Math.abs(deviceScale));
+                              setZoomLevel(Math.max(100, Math.min(maxZoom, num)));
+                            }
+                          }}
+                          onBlur={(e) => {
+                            // Ensure valid value on blur
+                            const value = e.target.value.replace('%', '');
+                            const num = parseInt(value, 10);
+                            if (isNaN(num)) {
+                              setZoomLevel(100);
+                            }
+                          }}
+                          style={{
+                            width: '60px',
+                            padding: '4px 8px',
+                            backgroundColor: themeColors.background,
+                            color: themeColors.foreground,
+                            border: `1px solid ${themeColors.border}`,
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            textAlign: 'center'
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            // Max zoom is actual size (100% scale)
+                            const maxZoom = Math.min(800, Math.round(100 / Math.abs(deviceScale)));
+                            setZoomLevel(Math.min(maxZoom, zoomLevel + 10));
+                          }}
+                          style={{
+                            padding: '4px 8px',
+                            background: themeColors.background,
+                            color: themeColors.foreground,
+                            border: `1px solid ${themeColors.border}`,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.background = themeColors.backgroundSecondary}
+                          onMouseOut={(e) => e.currentTarget.style.background = themeColors.background}
+                          title={`Zoom in (max: ${Math.min(800, Math.round(100 / deviceScale))}%)`}
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={() => setZoomLevel(100)}
+                          style={{
+                            padding: '4px 8px',
+                            background: themeColors.background,
+                            color: themeColors.foreground,
+                            border: `1px solid ${themeColors.border}`,
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            marginLeft: '4px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.background = themeColors.backgroundSecondary}
+                          onMouseOut={(e) => e.currentTarget.style.background = themeColors.background}
+                          title="Reset zoom"
+                        >
+                          Reset
+                        </button>
+                      </div>
                     </div>
                   </div>
                   
                   {/* Preview iframe container */}
-                  <div style={{
-                    flex: 1,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'flex-start',
-                    padding: '40px',
-                    backgroundColor: '#e0e0e0',
-                    overflow: 'auto'
-                  }}>
-                    <div style={{
-                      width: previewDevice === 'desktop' ? '768px' : 
-                            previewDevice === 'tablet' ? (isRotated ? '716.8px' : '537.6px') :
-                            previewDevice === 'mobile' ? (isRotated ? '649.6px' : '300px') : '100%',
-                      height: previewDevice === 'desktop' ? '432px' : 
-                             previewDevice === 'tablet' ? (isRotated ? '537.6px' : '716.8px') :
-                             previewDevice === 'mobile' ? (isRotated ? '300px' : '649.6px') : 'auto',
+                  <div 
+                    ref={previewContainerRef}
+                    style={{
+                      flex: 1,
                       display: 'flex',
                       justifyContent: 'center',
-                      alignItems: 'flex-start',
-                      position: 'relative'
+                      alignItems: 'center',
+                      padding: '40px',
+                      backgroundColor:  themeColors.background,
+                      overflow: 'auto'
+                    }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: '100%',
+                      minHeight: '100%'
                     }}>
                       <div style={{
+                        boxSizing: 'border-box',
                         width: previewDevice === 'custom' ? previewWidth : 
-                              previewDevice === 'desktop' ? '1280px' : 
-                              previewDevice === 'mobile' ? (isRotated ? '812px' : '375px') :
-                              previewDevice === 'tablet' ? (isRotated ? '1024px' : '768px') : 
+                              previewDevice === 'desktop' ? '1024px' : 
+                              previewDevice === 'mobile' ? '375px' :
+                              previewDevice === 'tablet' ? '768px' : 
                               devicePresets[previewDevice].width,
-                        height: previewDevice === 'mobile' ? (isRotated ? '375px' : '812px') : 
-                               previewDevice === 'tablet' ? (isRotated ? '768px' : '1024px') : 
-                               previewDevice === 'desktop' ? '720px' : '100%',
+                        height: previewDevice === 'mobile' ? '812px' : 
+                               previewDevice === 'tablet' ? '1024px' : 
+                               previewDevice === 'desktop' ? 'auto' : '100%',
+                        aspectRatio: previewDevice === 'desktop' ? '16 / 9' : 'auto',
                         maxHeight: 'none',
-                        backgroundColor: currentTheme === 'solarized-dark' ? '#1a1a1a' : '#2d2d2d',
+                        backgroundColor: currentTheme === 'vs-dark' ? '#1a1a1a' : '#2d2d2d',
                         boxShadow: '0 0 40px rgba(0, 0, 0, 0.3)',
                         position: 'relative',
                         borderRadius: previewDevice === 'mobile' ? '36px' : 
                                      previewDevice === 'tablet' ? '18px' : 
                                      previewDevice === 'desktop' ? '8px' : '0',
-                        padding: previewDevice === 'mobile' ? '12px' : 
-                                previewDevice === 'tablet' ? '24px' : 
+                        padding: previewDevice === 'mobile' ? '8px' : 
+                                previewDevice === 'tablet' ? '16px' : 
                                 previewDevice === 'desktop' ? '3px' : '0',
                         display: 'flex',
                         flexDirection: 'column',
                         marginBottom: previewDevice === 'desktop' ? '60px' : '0',
-                        transform: previewDevice === 'desktop' ? 'scale(0.6)' : 
-                                  previewDevice === 'tablet' ? 'scale(0.7)' :
-                                  previewDevice === 'mobile' ? 'scale(0.8)' : 'none',
-                        transformOrigin: 'top center'
+                        transform: (() => {
+                          const scale = previewDevice === 'custom' ? zoomLevel / 100 : deviceScale * (zoomLevel / 100);
+                          
+                          // Calculate vertical offset to keep devices visible when scaled
+                          let translateY = 0;
+                          
+                          if (previewDevice === 'desktop') {
+                            // Desktop needs less vertical adjustment
+                            translateY = scale * 50;
+                          } else if (previewDevice === 'mobile' || previewDevice === 'tablet') {
+                            // Move up by a percentage of the scaled height
+                            translateY = scale * 50;
+                            
+                            if (isRotated) {
+                              return `rotate(90deg) translateY(calc(${translateY}% - 25px)) scale(${Math.abs(scale)})`;
+                            }
+                          }
+                          
+                          return `translateY(${translateY}%) scale(${Math.abs(scale)})`;
+                        })(),
+                        transformOrigin: 'center',
+                        transition: 'all 0.3s ease-in-out'
                       }}>
                       {/* Device frame decorations */}
                       {previewDevice === 'mobile' && (
                         <>
-                          {/* Notch */}
+                          {/* Home indicator only */}
                           <div style={{
                             position: 'absolute',
-                            top: '12px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '120px',
-                            height: '24px',
-                            backgroundColor: currentTheme === 'solarized-dark' ? '#1a1a1a' : '#2d2d2d',
-                            borderRadius: '0 0 20px 20px',
-                            zIndex: 2
-                          }} />
-                          {/* Home indicator */}
-                          <div style={{
-                            position: 'absolute',
-                            bottom: '8px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: '100px',
-                            height: '4px',
-                            backgroundColor: currentTheme === 'solarized-dark' ? '#4a4a4a' : '#666',
+                            bottom: isRotated ? '50%' : '8px',
+                            right: isRotated ? '8px' : 'auto',
+                            left: isRotated ? 'auto' : '50%',
+                            transform: isRotated ? 'translateY(50%)' : 'translateX(-50%)',
+                            width: isRotated ? '4px' : '100px',
+                            height: isRotated ? '100px' : '4px',
+                            backgroundColor: currentTheme === 'vs-dark' ? '#4a4a4a' : '#666',
                             borderRadius: '2px',
                             zIndex: 2
                           }} />
@@ -1819,12 +2428,12 @@ const { \${availableWindowVars.join(', ')} } = window;
                           {/* Camera */}
                           <div style={{
                             position: 'absolute',
-                            top: '8px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
+                            top: isRotated ? '50%' : '8px',
+                            left: isRotated ? '8px' : '50%',
+                            transform: isRotated ? 'translateY(-50%)' : 'translateX(-50%)',
                             width: '8px',
                             height: '8px',
-                            backgroundColor: currentTheme === 'solarized-dark' ? '#4a4a4a' : '#666',
+                            backgroundColor: currentTheme === 'vs-dark' ? '#4a4a4a' : '#666',
                             borderRadius: '50%',
                             zIndex: 2
                           }} />
@@ -1841,7 +2450,7 @@ const { \${availableWindowVars.join(', ')} } = window;
                             transform: 'translateX(-50%)',
                             width: '200px',
                             height: '40px',
-                            backgroundColor: currentTheme === 'solarized-dark' ? '#4a4a4a' : '#666',
+                            backgroundColor: currentTheme === 'vs-dark' ? '#4a4a4a' : '#666',
                             clipPath: 'polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%)'
                           }} />
                           <div style={{
@@ -1851,7 +2460,7 @@ const { \${availableWindowVars.join(', ')} } = window;
                             transform: 'translateX(-50%)',
                             width: '300px',
                             height: '10px',
-                            backgroundColor: currentTheme === 'solarized-dark' ? '#4a4a4a' : '#666',
+                            backgroundColor: currentTheme === 'vs-dark' ? '#4a4a4a' : '#666',
                             borderRadius: '5px'
                           }} />
                         </>
@@ -1876,6 +2485,7 @@ const { \${availableWindowVars.join(', ')} } = window;
                           }}
                           sandbox="allow-scripts allow-same-origin"
                           title="HTML Preview"
+                          srcDoc="<!DOCTYPE html><html><head><style>body{margin:0;padding:0;background:white;}</style></head><body></body></html>"
                         />
                       </div>
                     </div>
@@ -1886,79 +2496,12 @@ const { \${availableWindowVars.join(', ')} } = window;
               
               {/* Console pane - always mounted but hidden when not active */}
               <div style={{ display: activeTab === 'console' ? 'block' : 'none', height: '100%' }}>
-                <div className="console-output" style={{ 
-                  flex: 1, 
-                  overflowY: 'auto',
-                  overflowX: 'hidden'
-                }}>
-                  {consoleOutput.length === 0 ? (
-                    <div style={{ color: '#666', fontStyle: 'italic' }}>
-                      Click Run to execute code
-                    </div>
-                  ) : (
-                    consoleOutput.map((output, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          color: output.type === 'error' ? '#ff6b6b' : 
-                                 output.type === 'warn' ? '#ffd93d' : 
-                                 output.type === 'info' ? '#6bcfff' : '#ccc',
-                          marginBottom: '4px',
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word'
-                        }}
-                      >
-                        {String(output.message || '')}
-                      </div>
-                    ))
-                  )}
-                </div>
+                <ConsoleOutput outputs={consoleOutput} themeColors={themeColors} />
               </div>
               
               {/* Tests pane - always mounted but hidden when not active */}
-              <div style={{ display: activeTab === 'tests' ? 'block' : 'none', height: '100%' }}>
-                <div className="test-results" style={{ 
-                  flex: 1, 
-                  overflowY: 'auto',
-                  overflowX: 'hidden'
-                }}>
-                  {testResults.length === 0 ? (
-                    <div style={{ color: '#666', fontStyle: 'italic' }}>
-                      No tests to run
-                    </div>
-                  ) : (
-                    testResults.map((result, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          marginBottom: '8px',
-                          padding: '8px',
-                          backgroundColor: result.passed ? '#1e3a1e' : '#3a1e1e',
-                          borderRadius: '4px',
-                          border: `1px solid ${result.passed ? '#4caf50' : '#f44336'}`
-                        }}
-                      >
-                        <div style={{ 
-                          color: result.passed ? '#4caf50' : '#f44336',
-                          fontWeight: 'bold',
-                          marginBottom: result.error ? '4px' : '0'
-                        }}>
-                          {result.passed ? '✓' : '✗'} {String(result.description)}
-                        </div>
-                        {result.error && (
-                          <div style={{ 
-                            color: '#ff9999', 
-                            fontSize: '11px',
-                            whiteSpace: 'pre-wrap',
-                            wordBreak: 'break-word'
-                          }}>
-                            {String(result.error)}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
+              <div style={{ display: activeTab === 'tests' ? 'flex' : 'none', flexDirection: 'column', height: '100%' }}>
+                <TestResults results={testResults} themeColors={themeColors} />
               </div>
               
               {/* Diff pane - conditionally rendered since it depends on current file */}
@@ -2067,6 +2610,7 @@ const { \${availableWindowVars.join(', ')} } = window;
         }}
         sandbox="allow-scripts allow-same-origin"
         title="Code execution sandbox"
+        srcDoc="<!DOCTYPE html><html><head></head><body></body></html>"
       />
     </div>
   );

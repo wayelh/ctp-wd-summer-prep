@@ -1,0 +1,42 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Best Practices
+
+### Do:
+- **Use refs sparingly** - Prefer declarative React patterns
+- **Check ref.current** - It might be null
+- **Clean up** in useEffect return functions
+- **Use useLayoutEffect** for DOM measurements
+- **Forward refs** when building reusable components
+
+### Don't:
+- Overuse refs for state management
+- Modify DOM directly (except when necessary)
+- Store components in refs
+- Use refs in render logic
+- Forget cleanup for observers/listeners
+
+### Common Patterns:
+```tsx
+// ✅ Good: Focus management
+const inputRef = useRef<HTMLInputElement>(null);
+useEffect(() => {
+  inputRef.current?.focus();
+}, []);
+
+// ❌ Bad: Using ref for state
+const countRef = useRef(0);
+countRef.current++; // Won't trigger re-render
+
+// ✅ Good: Previous value tracking
+const prevValue = usePrevious(value);
+
+// ✅ Good: Imperative handle
+useImperativeHandle(ref, () => ({
+  focus: () => input.current?.focus()
+}));
+```
+
+</SlideLayout.Full>

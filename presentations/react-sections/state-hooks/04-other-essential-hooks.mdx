@@ -1,0 +1,383 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Other Essential Hooks
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Hooks Examples</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { 
+  useState, 
+  useEffect, 
+  useRef, 
+  useMemo, 
+  useCallback,
+  useReducer 
+} from 'react';
+import ReactDOM from 'react-dom/client';
+
+// useRef - track habit completion without re-renders
+function HabitStreakTracker(): JSX.Element {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const streakRef = useRef(0); // Track streak without re-render
+  const lastCompletedRef = useRef<Date | null>(null);
+
+  const focusHabitInput = () => {
+    inputRef.current?.focus();
+  };
+
+  const completeHabitSilently = () => {
+    const now = new Date();
+    const lastCompleted = lastCompletedRef.current;
+    
+    // Check if it's a new day
+    if (!lastCompleted || 
+        now.toDateString() !== lastCompleted.toDateString()) {
+      streakRef.current += 1;
+      lastCompletedRef.current = now;
+      console.log('Streak updated:', streakRef.current);
+    } else {
+      console.log('Already completed today!');
+    }
+  };
+
+  return (
+    <div>
+      <h3>useRef for Habit Tracking</h3>
+      <input 
+        ref={inputRef} 
+        placeholder="Enter habit name" 
+      />
+      <button onClick={focusHabitInput}>Focus Habit Input</button>
+      <button onClick={completeHabitSilently}>
+        Complete Habit (no re-render)
+      </button>
+      <p>Check console for streak updates</p>
+    </div>
+  );
+}
+
+// useMemo - calculate habit statistics efficiently
+function HabitAnalytics(): JSX.Element {
+  const [habits, setHabits] = useState([
+    { name: 'Exercise', completions: [true, false, true, true, false, true, true] },
+    { name: 'Meditation', completions: [true, true, true, false, true, true, true] },
+    { name: 'Reading', completions: [false, true, true, true, false, false, true] }
+  ]);
+  const [filter, setFilter] = useState('all');
+
+  // Only recalculates when habits change
+  const statistics = useMemo(() => {
+    console.log('Calculating habit statistics...');
+    
+    const totalDays = habits[0]?.completions.length || 0;
+    const habitStats = habits.map(habit => {
+      const completed = habit.completions.filter(c => c).length;
+      const rate = (completed / totalDays * 100).toFixed(1);
+      const currentStreak = habit.completions
+        .slice()
+        .reverse()
+        .findIndex(c => !c);
+      
+      return {
+        name: habit.name,
+        completionRate: rate,
+        currentStreak: currentStreak === -1 ? totalDays : currentStreak,
+        totalCompleted: completed
+      };
+    });
+
+    const overallRate = (
+      habits.reduce((sum, h) => 
+        sum + h.completions.filter(c => c).length, 0
+      ) / (habits.length * totalDays) * 100
+    ).toFixed(1);
+
+    return { habitStats, overallRate };
+  }, [habits]);
+
+  return (
+    <div>
+      <h3>Habit Analytics (useMemo)</h3>
+      <p>Overall Completion Rate: {statistics.overallRate}%</p>
+      {statistics.habitStats.map(stat => (
+        <div key={stat.name}>
+          <strong>{stat.name}</strong>: 
+          {stat.completionRate}% | 
+          Streak: {stat.currentStreak} days
+        </div>
+      ))}
+      <button onClick={() => setFilter(filter === 'all' ? 'active' : 'all')}>
+        Toggle Filter (no recalculation)
+      </button>
+    </div>
+  );
+}
+
+// useCallback - optimize habit completion handlers
+function HabitDashboard(): JSX.Element {
+  const [habits, setHabits] = useState([
+    { id: 1, name: 'Exercise', completed: false },
+    { id: 2, name: 'Meditate', completed: false },
+    { id: 3, name: 'Read', completed: false }
+  ]);
+  const [motivationalQuote, setMotivationalQuote] = useState('');
+
+  // Memoize the completion handler
+  const handleHabitComplete = useCallback((habitId: number) => {
+    console.log('Completing habit:', habitId);
+    setHabits(prevHabits => 
+      prevHabits.map(habit => 
+        habit.id === habitId 
+          ? { ...habit, completed: !habit.completed }
+          : habit
+      )
+    );
+  }, []); // No dependencies - habitId comes from closure
+
+  // This function doesn't depend on any state
+  const resetAllHabits = useCallback(() => {
+    setHabits(prevHabits => 
+      prevHabits.map(habit => ({ ...habit, completed: false }))
+    );
+    setMotivationalQuote('New day, new opportunities!');
+  }, []);
+
+  const completedCount = habits.filter(h => h.completed).length;
+
+  return (
+    <div>
+      <h3>Habit Dashboard (useCallback)</h3>
+      <p>Completed: {completedCount}/{habits.length}</p>
+      {habits.map(habit => (
+        <HabitCard 
+          key={habit.id}
+          habit={habit} 
+          onComplete={handleHabitComplete}
+          onReset={resetAllHabits}
+        />
+      ))}
+      <input 
+        value={motivationalQuote} 
+        onChange={(e) => setMotivationalQuote(e.target.value)}
+        placeholder="Add a motivational quote"
+      />
+    </div>
+  );
+}
+
+const HabitCard = React.memo(({ 
+  habit,
+  onComplete, 
+  onReset 
+}: { 
+  habit: { id: number; name: string; completed: boolean };
+  onComplete: (id: number) => void;
+  onReset: () => void;
+}) => {
+  console.log('HabitCard rendered:', habit.name);
+  return (
+    <div style={{ 
+      padding: '10px', 
+      margin: '5px', 
+      backgroundColor: habit.completed ? '#e8f5e9' : '#f5f5f5' 
+    }}>
+      <span>{habit.name}</span>
+      <button onClick={() => onComplete(habit.id)}>
+        {habit.completed ? '✅' : '⭕'}
+      </button>
+      {habit.completed && <span> Great job! 🎆</span>}
+    </div>
+  );
+});
+
+// useReducer - complex habit state management
+type HabitAction = 
+  | { type: 'complete'; payload: { id: number } }
+  | { type: 'reset_day' }
+  | { type: 'add_habit'; payload: { name: string; category: string } }
+  | { type: 'update_streak'; payload: { id: number; streak: number } }
+  | { type: 'delete_habit'; payload: { id: number } };
+
+interface HabitState {
+  habits: {
+    id: number;
+    name: string;
+    category: string;
+    completedToday: boolean;
+    streak: number;
+  }[];
+  lastReset: string;
+  totalCompleted: number;
+}
+
+function habitReducer(state: HabitState, action: HabitAction): HabitState {
+  switch (action.type) {
+    case 'complete':
+      return {
+        ...state,
+        habits: state.habits.map(habit =>
+          habit.id === action.payload.id
+            ? { 
+                ...habit, 
+                completedToday: !habit.completedToday,
+                streak: !habit.completedToday 
+                  ? habit.streak + 1 
+                  : Math.max(0, habit.streak - 1)
+              }
+            : habit
+        ),
+        totalCompleted: state.totalCompleted + 
+          (state.habits.find(h => h.id === action.payload.id)?.completedToday ? -1 : 1)
+      };
+      
+    case 'reset_day':
+      return {
+        ...state,
+        habits: state.habits.map(habit => ({
+          ...habit,
+          completedToday: false
+        })),
+        lastReset: new Date().toISOString(),
+        totalCompleted: 0
+      };
+      
+    case 'add_habit':
+      return {
+        ...state,
+        habits: [...state.habits, {
+          id: Date.now(),
+          name: action.payload.name,
+          category: action.payload.category,
+          completedToday: false,
+          streak: 0
+        }]
+      };
+      
+    case 'update_streak':
+      return {
+        ...state,
+        habits: state.habits.map(habit =>
+          habit.id === action.payload.id
+            ? { ...habit, streak: action.payload.streak }
+            : habit
+        )
+      };
+      
+    case 'delete_habit':
+      return {
+        ...state,
+        habits: state.habits.filter(h => h.id !== action.payload.id)
+      };
+      
+    default:
+      return state;
+  }
+}
+
+function HabitTrackerWithReducer(): JSX.Element {
+  const [state, dispatch] = useReducer(habitReducer, { 
+    habits: [
+      { id: 1, name: 'Morning Yoga', category: 'health', completedToday: false, streak: 5 },
+      { id: 2, name: 'Read 20 pages', category: 'learning', completedToday: false, streak: 12 }
+    ],
+    lastReset: new Date().toISOString(),
+    totalCompleted: 0
+  });
+
+  const [newHabitName, setNewHabitName] = useState('');
+
+  return (
+    <div>
+      <h3>Habit Tracker (useReducer)</h3>
+      <p>Habits completed today: {state.totalCompleted}/{state.habits.length}</p>
+      
+      <div>
+        {state.habits.map(habit => (
+          <div key={habit.id} style={{ 
+            margin: '10px 0',
+            padding: '10px',
+            backgroundColor: habit.completedToday ? '#e8f5e9' : '#f5f5f5',
+            borderRadius: '5px'
+          }}>
+            <span>{habit.name} - {habit.category} - Streak: {habit.streak} 🔥</span>
+            <button onClick={() => dispatch({ 
+              type: 'complete', 
+              payload: { id: habit.id } 
+            })}>
+              {habit.completedToday ? '✅ Done' : '⭕ Complete'}
+            </button>
+            <button onClick={() => dispatch({ 
+              type: 'delete_habit', 
+              payload: { id: habit.id } 
+            })}>
+              Delete
+            </button>
+          </div>
+        ))}
+      </div>
+      
+      <div>
+        <input
+          value={newHabitName}
+          onChange={(e) => setNewHabitName(e.target.value)}
+          placeholder="New habit name"
+        />
+        <button onClick={() => {
+          if (newHabitName.trim()) {
+            dispatch({ 
+              type: 'add_habit', 
+              payload: { name: newHabitName, category: 'general' } 
+            });
+            setNewHabitName('');
+          }
+        }}>
+          Add Habit
+        </button>
+      </div>
+      
+      <button onClick={() => dispatch({ type: 'reset_day' })}>
+        Start New Day
+      </button>
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  return (
+    <div>
+      <HabitStreakTracker />
+      <hr />
+      <HabitAnalytics />
+      <hr />
+      <HabitDashboard />
+      <hr />
+      <HabitTrackerWithReducer />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

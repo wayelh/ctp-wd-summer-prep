@@ -1,0 +1,99 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Multiple Lazy Components
+
+<CodeDisplay>
+  <File name="LazyComponents.tsx">
+```tsx
+import React, { lazy, Suspense } from 'react';
+
+// Simulate multiple async components
+const Header = lazy(() => 
+  import('./components/Header').catch(() => ({
+    default: () => <div>Error loading Header</div>
+  }))
+);
+
+const MainContent = lazy(() => 
+  new Promise(resolve => {
+    setTimeout(() => {
+      resolve({
+        default: () => (
+          <main style={{ padding: '20px', background: '#f5f5f5' }}>
+            <h2>Main Content</h2>
+            <p>This is the main content area.</p>
+          </main>
+        )
+      });
+    }, 1500);
+  })
+);
+
+const Sidebar = lazy(() => 
+  new Promise(resolve => {
+    setTimeout(() => {
+      resolve({
+        default: () => (
+          <aside style={{ padding: '20px', background: '#e8eaf6' }}>
+            <h3>Sidebar</h3>
+            <ul>
+              <li>Link 1</li>
+              <li>Link 2</li>
+              <li>Link 3</li>
+            </ul>
+          </aside>
+        )
+      });
+    }, 1000);
+  })
+);
+
+function Layout() {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px' }}>
+      <Suspense fallback={<div>Loading header...</div>}>
+        <div style={{ gridColumn: '1 / -1' }}>
+          <Header />
+        </div>
+      </Suspense>
+      
+      <Suspense fallback={<div>Loading content...</div>}>
+        <MainContent />
+      </Suspense>
+      
+      <Suspense fallback={<div>Loading sidebar...</div>}>
+        <Sidebar />
+      </Suspense>
+    </div>
+  );
+}
+
+// Nested Suspense boundaries
+function App() {
+  return (
+    <div>
+      <h1>Multiple Suspense Boundaries</h1>
+      <Suspense fallback={<div>Loading entire layout...</div>}>
+        <Layout />
+      </Suspense>
+    </div>
+  );
+}
+
+// Mock Header component
+const components = {
+  Header: () => (
+    <header style={{ padding: '20px', background: '#3f51b5', color: 'white' }}>
+      <h1>Application Header</h1>
+    </header>
+  )
+};
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

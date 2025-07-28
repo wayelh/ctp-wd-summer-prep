@@ -1,0 +1,213 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## SWR (Stale-While-Revalidate)
+
+<CodeDisplay>
+  <File name="SWRExample.tsx">
+```tsx
+import React from 'react';
+import useSWR, { SWRConfig, mutate } from 'swr';
+
+// Global fetcher function
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+// Basic SWR usage
+function Profile() {
+  const { data, error, isLoading } = useSWR(
+    '/api/user', 
+    fetcher
+  );
+
+  if (error) return <div>Failed to load</div>;
+  if (isLoading) return <div>Loading...</div>;
+  
+  return <div>Hello {data.name}!</div>;
+}
+
+// Advanced SWR features
+function TodoList() {
+  const { 
+    data: todos, 
+    error, 
+    isLoading,
+    isValidating,
+    mutate: mutateTodos
+  } = useSWR<Todo[]>('/api/todos', fetcher, {
+    // SWR options
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    refreshInterval: 30000, // Refresh every 30 seconds
+    dedupingInterval: 2000,
+    fallbackData: [], // Initial data while loading
+    onSuccess: (data) => {
+      console.log('Todos loaded:', data.length);
+    },
+    onError: (err) => {
+      console.error('Failed to load todos:', err);
+    }
+  });
+
+  // Optimistic update
+  const addTodo = async (text: string) => {
+    const newTodo = { 
+      id: Date.now(), 
+      text, 
+      completed: false 
+    };
+
+    // Optimistically update the UI
+    mutateTodos(
+      async (todos = []) => {
+        // Call API
+        const response = await fetch('/api/todos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to add todo');
+        }
+        
+        const createdTodo = await response.json();
+        return [...todos, createdTodo];
+      },
+      {
+        // Optimistic data
+        optimisticData: todos ? [...todos, newTodo] : [newTodo],
+        // Rollback on error
+        rollbackOnError: true,
+        // Don't revalidate immediately
+        revalidate: false
+      }
+    );
+  };
+
+  const toggleTodo = async (id: number) => {
+    mutateTodos(
+      todos?.map(todo =>
+        todo.id === id 
+          ? { ...todo, completed: !todo.completed }
+          : todo
+      ),
+      false // Don't revalidate, just update local data
+    );
+
+    // Update on server
+    await fetch(`/api/todos/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        completed: !todos?.find(t => t.id === id)?.completed 
+      })
+    });
+  };
+
+  if (error) return <div>Error loading todos</div>;
+  if (isLoading) return <div>Loading todos...</div>;
+
+  return (
+    <div>
+      <h3>
+        Todo List 
+        {isValidating && <span> (Updating...)</span>}
+      </h3>
+      
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const input = e.currentTarget.elements.namedItem('todo') as HTMLInputElement;
+        if (input.value) {
+          addTodo(input.value);
+          input.value = '';
+        }
+      }}>
+        <input name="todo" placeholder="Add todo..." />
+        <button type="submit">Add</button>
+      </form>
+
+      <ul>
+        {todos?.map(todo => (
+          <li key={todo.id}>
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() => toggleTodo(todo.id)}
+            />
+            <span style={{ 
+              textDecoration: todo.completed ? 'line-through' : 'none' 
+            }}>
+              {todo.text}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// Dependent fetching
+function UserWithPosts({ userId }: { userId: number }) {
+  const { data: user } = useSWR(
+    userId ? `/api/users/${userId}` : null,
+    fetcher
+  );
+
+  const { data: posts } = useSWR(
+    user ? `/api/users/${userId}/posts` : null,
+    fetcher
+  );
+
+  if (!user) return <div>Loading user...</div>;
+
+  return (
+    <div>
+      <h3>{user.name}'s Posts</h3>
+      {!posts && <div>Loading posts...</div>}
+      {posts?.map((post: any) => (
+        <article key={post.id}>
+          <h4>{post.title}</h4>
+          <p>{post.body}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+// Global configuration
+function App() {
+  return (
+    <SWRConfig
+      value={{
+        fetcher,
+        onError: (error) => {
+          console.error('SWR Error:', error);
+        },
+        shouldRetryOnError: true,
+        errorRetryCount: 3,
+        errorRetryInterval: 1000
+      }}
+    >
+      <div>
+        <h2>SWR Examples</h2>
+        <Profile />
+        <TodoList />
+        <UserWithPosts userId={1} />
+      </div>
+    </SWRConfig>
+  );
+}
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

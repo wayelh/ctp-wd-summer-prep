@@ -1,0 +1,375 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Fix Accessibility Issues
+
+<CodeDisplay >
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fix Accessibility Issues</title>
+</head>
+<body>
+    <!-- This page has multiple accessibility issues. Fix them! -->
+    <div style="background: #333; color: #555; padding: 20px;">
+        <div style="font-size: 24px;">Habit Tracker</div>
+    </div>
+    
+    <div class="habits-container">
+        <!-- Issue: No semantic HTML -->
+        <div class="habit-card" onclick="completeHabit()">
+            <div style="font-size: 20px; color: #666;">Morning Exercise</div>
+            <img src="exercise.jpg">
+            <div style="color: red;">⚠️ Overdue!</div>
+            <div class="button">Complete</div>
+        </div>
+        
+        <!-- Issue: Form without labels -->
+        <div class="add-habit">
+            <div style="font-size: 18px;">Add New Habit</div>
+            <input type="text" placeholder="Habit name">
+            <select>
+                <option>Select category</option>
+                <option>Health</option>
+                <option>Productivity</option>
+            </select>
+            <div class="button" style="background: #0066cc;">Add</div>
+        </div>
+        
+        <!-- Issue: Auto-playing content -->
+        <div class="motivation">
+            <marquee>You can do it! Keep up your streaks!</marquee>
+            <img src="spinner.gif" style="animation: spin 1s infinite;">
+        </div>
+    </div>
+    
+    <!-- Issue: No skip navigation -->
+    <div class="footer" style="margin-top: 100px;">
+        <a href="#" style="color: #999;">Terms</a>
+        <a href="#" style="color: #999;">Privacy</a>
+        <a href="#" style="color: #999;">Help</a>
+    </div>
+</body>
+</html>
+```
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible Habit Tracker</title>
+</head>
+<body>
+    <!-- Skip navigation link -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Semantic header with proper contrast -->
+    <header class="site-header">
+        <h1>Habit Tracker</h1>
+    </header>
+    
+    <main id="main-content" class="habits-container">
+        <!-- Semantic article with keyboard support -->
+        <article class="habit-card" tabindex="0" role="button" 
+                 aria-label="Morning Exercise habit, overdue"
+                 onclick="completeHabit()" 
+                 onkeypress="if(event.key === 'Enter') completeHabit()">
+            <h2 class="habit-title">Morning Exercise</h2>
+            <img src="exercise.jpg" alt="Person exercising outdoors">
+            <p class="status-warning">
+                <span aria-hidden="true">⚠️</span>
+                <span>Status: Overdue!</span>
+            </p>
+            <button class="btn-complete" aria-label="Mark Morning Exercise as complete">
+                Complete
+            </button>
+        </article>
+        
+        <!-- Accessible form -->
+        <form class="add-habit" aria-label="Add new habit form">
+            <h2>Add New Habit</h2>
+            
+            <label for="habit-name">Habit name</label>
+            <input type="text" id="habit-name" required>
+            
+            <label for="habit-category">Category</label>
+            <select id="habit-category" required>
+                <option value="">Select category</option>
+                <option value="health">Health</option>
+                <option value="productivity">Productivity</option>
+            </select>
+            
+            <button type="submit" class="btn-primary">Add Habit</button>
+        </form>
+        
+        <!-- Accessible motivation section -->
+        <section class="motivation" aria-label="Motivation">
+            <p class="motivation-text">You can do it! Keep up your streaks!</p>
+            <img src="spinner.gif" alt="Loading animation" class="spinner">
+        </section>
+    </main>
+    
+    <!-- Accessible footer -->
+    <footer class="site-footer">
+        <nav aria-label="Footer navigation">
+            <a href="/terms">Terms of Service</a>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/help">Help &amp; Support</a>
+        </nav>
+    </footer>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Existing problematic styles */
+.habit-card {
+    background: white;
+    padding: 20px;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.button {
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.button:hover {
+    opacity: 0.8;
+}
+
+/* No focus styles defined */
+/* No reduced motion support */
+/* Poor color contrast in multiple places */
+```
+```css
+/* Skip link for keyboard navigation */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    text-decoration: none;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Header with proper contrast */
+.site-header {
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 20px;
+}
+
+.site-header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+/* Main content */
+.habits-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+/* Accessible habit card */
+.habit-card {
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Visible focus indicator */
+.habit-card:focus,
+.habit-card:hover {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.3);
+    outline: none;
+}
+
+.habit-title {
+    color: #1a1a1a;
+    font-size: 20px;
+    margin: 0 0 10px 0;
+}
+
+/* Status with proper contrast */
+.status-warning {
+    color: #d32f2f;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+/* Accessible buttons */
+.btn-complete,
+.btn-primary {
+    background: #0066cc;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-complete:hover,
+.btn-primary:hover {
+    background: #0052a3;
+}
+
+.btn-complete:focus,
+.btn-primary:focus {
+    outline: 3px solid #4d94ff;
+    outline-offset: 2px;
+}
+
+/* Form styling with labels */
+.add-habit {
+    background: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.add-habit h2 {
+    margin: 0 0 15px 0;
+    color: #1a1a1a;
+}
+
+.add-habit label {
+    display: block;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.add-habit input,
+.add-habit select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.add-habit input:focus,
+.add-habit select:focus {
+    border-color: #0066cc;
+    outline: 3px solid rgba(0, 102, 204, 0.3);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .spinner {
+        display: none;
+    }
+}
+
+/* Spinner with pause control */
+.spinner {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Footer with proper contrast */
+.site-footer {
+    background: #f5f5f5;
+    padding: 20px;
+    margin-top: 40px;
+    text-align: center;
+}
+
+.site-footer a {
+    color: #0066cc;
+    text-decoration: none;
+    margin: 0 10px;
+    font-weight: 500;
+}
+
+.site-footer a:hover {
+    text-decoration: underline;
+}
+
+.site-footer a:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+}
+```
+  </File>
+  <Tests>
+```javascript
+describe('Accessibility Fixes', () => {
+    it('should have proper heading hierarchy', () => {
+        const h1 = document.querySelector('h1');
+        const h2s = document.querySelectorAll('h2');
+        expect(h1).to.exist;
+        expect(h2s.length).to.be.at.least(2);
+    });
+    
+    it('should have alt text for images', () => {
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            expect(img.getAttribute('alt')).to.not.be.empty;
+        });
+    });
+    
+    it('should have labels for form inputs', () => {
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            const label = document.querySelector(`label[for="${input.id}"]`);
+            expect(label).to.exist;
+        });
+    });
+    
+    it('should have sufficient color contrast', () => {
+        const header = document.querySelector('.site-header');
+        const styles = window.getComputedStyle(header);
+        // Check that dark background has light text
+        expect(styles.color).to.equal('rgb(255, 255, 255)');
+    });
+    
+    it('should have keyboard support for interactive elements', () => {
+        const card = document.querySelector('.habit-card');
+        expect(card.getAttribute('tabindex')).to.equal('0');
+        expect(card.getAttribute('onkeypress')).to.exist;
+    });
+    
+    it('should have skip navigation link', () => {
+        const skipLink = document.querySelector('.skip-link');
+        expect(skipLink).to.exist;
+        expect(skipLink.getAttribute('href')).to.equal('#main-content');
+    });
+});
+```
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>

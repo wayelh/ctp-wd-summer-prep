@@ -1,0 +1,54 @@
+import { SlideLayout, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## DOM Tree Structure
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// HTML:
+// <div id="app">
+//   <h1>My Habits</h1>
+//   <ul class="habit-list">
+//     <li>Exercise</li>
+//     <li>Read</li>
+//   </ul>
+// </div>
+
+// DOM representation:
+document
+  └── html
+      └── body
+          └── div#app
+              ├── h1
+              │   └── "My Habits"
+              └── ul.habit-list
+                  ├── li
+                  │   └── "Exercise"
+                  └── li
+                      └── "Read"
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Core DOM Operations
+    <Box width="80%">
+      <Text fontSize="24px" fontWeight="bold" marginBottom="20px">1. Selection</Text>
+      - querySelector() - select by CSS selector
+      - getElementById() - select by ID
+      - getElementsByClassName() - select by class
+      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">2. Manipulation</Text>
+      - textContent - change text
+      - innerHTML - change HTML
+      - style - change CSS properties
+      <Text fontSize="24px" fontWeight="bold" marginTop="30px" marginBottom="20px">3. Creation</Text>
+      - createElement() - create new elements
+      - appendChild() - add to page
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>

@@ -1,0 +1,46 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Comparison & Best Practices
+
+### Performance Comparison:
+| Approach | Bundle Size | Runtime Cost | Caching | SSR Support |
+|----------|------------|--------------|---------|-------------|
+| Plain CSS | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| CSS Modules | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Styled Components | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Emotion | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| Tailwind | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Inline Styles | ⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
+
+### When to Use Each:
+- **Plain CSS**: Simple projects, maximum performance
+- **CSS Modules**: Component isolation, CSS features
+- **CSS-in-JS**: Dynamic theming, component libraries
+- **Tailwind**: Rapid prototyping, consistent design
+- **Inline Styles**: Quick prototypes, highly dynamic
+
+### Best Practices:
+```tsx
+// ✅ Good: Consistent naming convention
+const Button = styled.button`...`;
+const ButtonText = styled.span`...`;
+
+// ❌ Bad: Inline all styles
+<div style={{ padding: 20, margin: 10, ... }}>
+
+// ✅ Good: Extract reusable styles
+const theme = {
+  colors: { primary: '#2196f3' },
+  spacing: { small: 8, medium: 16 }
+};
+
+// ✅ Good: Use CSS variables for theming
+:root {
+  --primary-color: #2196f3;
+  --spacing-unit: 8px;
+}
+```
+
+</SlideLayout.Full>

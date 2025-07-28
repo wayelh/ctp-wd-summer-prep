@@ -1,0 +1,148 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Performance Benefits
+
+<CodeDisplay>
+  <File name="app/shop/client-side.tsx">
+```tsx
+// Traditional client-side data fetching approach
+'use client';
+
+import { useEffect, useState } from 'react';
+import { ProductList } from '@/components/ProductList';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+}
+
+export default function ClientSideShop() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // This runs on every client
+    fetch('/api/products')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch');
+        return res.json();
+      })
+      .then(data => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
+  return <ProductList products={products} />;
+}
+```
+  </File>
+  <File name="app/shop/server-side.tsx">
+```tsx
+// Server Component approach - no client JS needed
+import { ProductList } from '@/components/ProductList';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+}
+
+export default async function ServerSideShop() {
+  // This runs once on the server
+  const products: Product[] = await fetch('https://api.example.com/products', {
+    next: { 
+      revalidate: 3600, // Cache for 1 hour
+      tags: ['products'] // Cache tags for granular invalidation
+    }
+  }).then(res => {
+    if (!res.ok) throw new Error('Failed to fetch products');
+    return res.json();
+  });
+
+  // Data is already loaded when component renders
+  return <ProductList products={products} />;
+}
+```
+  </File>
+  <File name="components/PerformanceComparison.tsx">
+```tsx
+export function PerformanceComparison() {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
+      <div>
+        <h3>Traditional Client-Side</h3>
+        <ul>
+          <li>❌ JavaScript bundle includes data fetching logic</li>
+          <li>❌ Waterfall: Load JS → Execute → Fetch → Render</li>
+          <li>❌ Loading states on every visit</li>
+          <li>❌ SEO challenges</li>
+        </ul>
+        <code>Bundle size: ~50KB</code>
+      </div>
+      
+      <div>
+        <h3>Server Components</h3>
+        <ul>
+          <li>✅ No data fetching code in bundle</li>
+          <li>✅ Parallel: Fetch & render on server</li>
+          <li>✅ Instant content (cached)</li>
+          <li>✅ Perfect SEO</li>
+        </ul>
+        <code>Bundle size: ~5KB</code>
+      </div>
+    </div>
+  );
+}
+```
+  </File>
+  <File name="app/blog/page.tsx">
+```tsx
+// Zero-bundle library usage with Server Components
+import { format } from 'date-fns';
+import { marked } from 'marked';
+import { prisma } from '@/lib/prisma';
+
+export default async function BlogPage() {
+  // These imports add 0 bytes to client bundle
+  const posts = await prisma.post.findMany({
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return (
+    <div>
+      <h1>Blog Posts</h1>
+      {posts.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <time dateTime={post.createdAt.toISOString()}>
+            {format(post.createdAt, 'PPP')}
+          </time>
+          <div 
+            dangerouslySetInnerHTML={{ 
+              __html: marked(post.content) 
+            }} 
+          />
+        </article>
+      ))}
+    </div>
+  );
+}
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

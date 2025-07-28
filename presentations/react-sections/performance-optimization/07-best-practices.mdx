@@ -1,0 +1,63 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Performance Best Practices
+
+### 1. **Measure Before Optimizing**
+- Use React DevTools Profiler
+- Chrome DevTools Performance tab
+- Don't optimize prematurely
+
+### 2. **Optimize Rendering**
+```tsx
+// Use React.memo for expensive components
+const ExpensiveComponent = React.memo(Component);
+
+// Use useMemo for expensive calculations
+const result = useMemo(() => expensiveCalc(data), [data]);
+
+// Use useCallback for stable function references
+const handleClick = useCallback(() => {}, [deps]);
+```
+
+### 3. **Bundle Optimization**
+- Code splitting with lazy()
+- Tree shaking unused code
+- Minimize bundle size
+- Use production builds
+
+### 4. **State Management**
+- Keep state as local as possible
+- Split contexts to minimize re-renders
+- Use state normalization for complex data
+
+### 5. **List Performance**
+- Use proper keys
+- Virtualize long lists
+- Paginate when appropriate
+- Avoid index as key in dynamic lists
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Performance Tools
+
+### React DevTools Profiler:
+- **Flame Graph** - Visualize component render times
+- **Ranked Chart** - See which components take longest
+- **Component Commits** - Track why components re-rendered
+- **Interactions** - Trace user interactions
+
+### Chrome DevTools:
+- **Performance Tab** - Record and analyze runtime
+- **Memory Tab** - Find memory leaks
+- **Network Tab** - Analyze bundle sizes
+- **Coverage Tab** - Find unused code
+
+### Third-Party Tools:
+- **Lighthouse** - Overall performance audit
+- **Bundle Analyzer** - Visualize bundle composition
+- **why-did-you-render** - Debug unnecessary renders
+- **React DevTools Profiler API** - Custom performance marks
+
+</SlideLayout.Full>

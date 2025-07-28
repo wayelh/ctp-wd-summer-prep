@@ -1,0 +1,33 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Understanding Generic Programming
+
+Generics allow you to write code that works with multiple types safely:
+
+**The Problem Without Generics:**
+```typescript
+// Need separate classes for each type
+class NumberBox { 
+  constructor(private value: number) {}
+  getValue(): number { return this.value; }
+}
+
+class StringBox {
+  constructor(private value: string) {}
+  getValue(): string { return this.value; }
+}
+```
+
+**The Solution With Generics:**
+```typescript
+// One class works with any type
+class Box<T> {
+  constructor(private value: T) {}
+  getValue(): T { return this.value; }
+}
+```
+
+**Benefits**: Less code duplication, type safety, flexibility
+</SlideLayout.Full>

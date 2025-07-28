@@ -1,0 +1,33 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Summary
+
+### Key Concepts:
+- **Server Components** run only on server
+- **Zero JavaScript** for server-only code
+- **Direct backend access** from components
+- **Streaming HTML** with Suspense
+- **Server Actions** for mutations
+
+### Benefits:
+- Smaller bundles
+- Faster initial loads
+- Better SEO
+- Simpler data fetching
+- Improved security
+
+### When to Use:
+- **Server Components**: Data fetching, static content
+- **Client Components**: Interactivity, browser APIs
+- **Server Actions**: Forms, mutations
+- **Streaming**: Progressive loading
+
+### Remember:
+- Start with **Server Components by default**
+- Add **'use client' only when needed**
+- **Compose** Server and Client thoughtfully
+- Leverage **caching and streaming**
+
+</SlideLayout.Full>

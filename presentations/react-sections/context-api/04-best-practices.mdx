@@ -1,0 +1,457 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Context Best Practices
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Best Practices</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { 
+  createContext, 
+  useContext, 
+  useState, 
+  useMemo, 
+  useCallback,
+  useEffect 
+} from 'react';
+import ReactDOM from 'react-dom/client';
+
+// 1. Split contexts for performance
+// Bad: One large context
+interface BadAppState {
+  user: User | null;
+  theme: string;
+  notifications: Notification[];
+  settings: Settings;
+  // ... many more properties
+}
+
+// Good: Multiple focused contexts
+interface User {
+  id: number;
+  name: string;
+}
+
+interface Notification {
+  id: number;
+  message: string;
+}
+
+interface Settings {
+  sound: boolean;
+  animations: boolean;
+}
+
+// 2. Optimize Context Value with useMemo
+const AuthContext = createContext<{
+  user: User | null;
+  login: (user: User) => void;
+  logout: () => void;
+} | undefined>(undefined);
+
+function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+
+  // Memoize functions to prevent unnecessary re-renders
+  const login = useCallback((user: User) => {
+    setUser(user);
+    // Save to localStorage
+    localStorage.setItem('user', JSON.stringify(user));
+  }, []);
+
+  const logout = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem('user');
+  }, []);
+
+  // Memoize the context value
+  const value = useMemo(
+    () => ({ user, login, logout }),
+    [user, login, logout]
+  );
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// 3. Create type-safe custom hooks
+function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
+
+// 4. Context composition for complex state
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+const CartStateContext = createContext<CartItem[]>([]);
+const CartDispatchContext = createContext<{
+  addItem: (item: Omit<CartItem, 'quantity'>) => void;
+  removeItem: (id: number) => void;
+  updateQuantity: (id: number, quantity: number) => void;
+  clearCart: () => void;
+} | undefined>(undefined);
+
+function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  // Separate state and dispatch contexts for performance
+  const addItem = useCallback((item: Omit<CartItem, 'quantity'>) => {
+    setItems(prev => {
+      const existing = prev.find(i => i.id === item.id);
+      if (existing) {
+        return prev.map(i =>
+          i.id === item.id
+            ? { ...i, quantity: i.quantity + 1 }
+            : i
+        );
+      }
+      return [...prev, { ...item, quantity: 1 }];
+    });
+  }, []);
+
+  const removeItem = useCallback((id: number) => {
+    setItems(prev => prev.filter(item => item.id !== id));
+  }, []);
+
+  const updateQuantity = useCallback((id: number, quantity: number) => {
+    if (quantity <= 0) {
+      removeItem(id);
+      return;
+    }
+    setItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, quantity } : item
+      )
+    );
+  }, [removeItem]);
+
+  const clearCart = useCallback(() => {
+    setItems([]);
+  }, []);
+
+  const dispatch = useMemo(
+    () => ({ addItem, removeItem, updateQuantity, clearCart }),
+    [addItem, removeItem, updateQuantity, clearCart]
+  );
+
+  return (
+    <CartStateContext.Provider value={items}>
+      <CartDispatchContext.Provider value={dispatch}>
+        {children}
+      </CartDispatchContext.Provider>
+    </CartStateContext.Provider>
+  );
+}
+
+function useCartState() {
+  return useContext(CartStateContext);
+}
+
+function useCartDispatch() {
+  const context = useContext(CartDispatchContext);
+  if (!context) {
+    throw new Error('useCartDispatch must be used within CartProvider');
+  }
+  return context;
+}
+
+// 5. Context with reducer for complex logic
+type AppState = {
+  count: number;
+  user: User | null;
+  isLoading: boolean;
+};
+
+type AppAction =
+  | { type: 'INCREMENT' }
+  | { type: 'DECREMENT' }
+  | { type: 'SET_USER'; payload: User | null }
+  | { type: 'SET_LOADING'; payload: boolean };
+
+const initialState: AppState = {
+  count: 0,
+  user: null,
+  isLoading: false
+};
+
+function appReducer(state: AppState, action: AppAction): AppState {
+  switch (action.type) {
+    case 'INCREMENT':
+      return { ...state, count: state.count + 1 };
+    case 'DECREMENT':
+      return { ...state, count: state.count - 1 };
+    case 'SET_USER':
+      return { ...state, user: action.payload };
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+    default:
+      return state;
+  }
+}
+
+// Component examples
+function UserInfo() {
+  const { user } = useAuth();
+  
+  // This component only re-renders when user changes
+  console.log('UserInfo rendered');
+  
+  return user ? <p>Welcome, {user.name}!</p> : <p>Please log in</p>;
+}
+
+function CartSummary() {
+  const items = useCartState();
+  
+  // This component only re-renders when cart items change
+  console.log('CartSummary rendered');
+  
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  
+  return (
+    <div className="cart-summary">
+      <h3>Cart ({items.length} items)</h3>
+      <p>Total: ${total.toFixed(2)}</p>
+    </div>
+  );
+}
+
+function ProductList() {
+  const { addItem } = useCartDispatch();
+  
+  // This component doesn't re-render when cart state changes!
+  console.log('ProductList rendered');
+  
+  const products = [
+    { id: 1, name: 'T-Shirt', price: 19.99 },
+    { id: 2, name: 'Jeans', price: 49.99 },
+    { id: 3, name: 'Sneakers', price: 79.99 }
+  ];
+  
+  return (
+    <div className="product-list">
+      <h3>Products</h3>
+      {products.map(product => (
+        <div key={product.id} className="product">
+          <span>{product.name} - ${product.price}</span>
+          <button onClick={() => addItem(product)}>Add to Cart</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [showRerenders, setShowRerenders] = useState(true);
+
+  return (
+    <AuthProvider>
+      <CartProvider>
+        <div className="app">
+          <h1>Context Best Practices</h1>
+          
+          <label>
+            <input
+              type="checkbox"
+              checked={showRerenders}
+              onChange={(e) => setShowRerenders(e.target.checked)}
+            />
+            Show re-render logs in console
+          </label>
+          
+          <div className="demo-sections">
+            <section>
+              <h2>Auth Context</h2>
+              <UserInfo />
+              <LoginDemo />
+            </section>
+            
+            <section>
+              <h2>Cart Context (Split State/Dispatch)</h2>
+              <ProductList />
+              <CartSummary />
+              <CartItems />
+            </section>
+          </div>
+        </div>
+      </CartProvider>
+    </AuthProvider>
+  );
+}
+
+function LoginDemo() {
+  const { login, logout, user } = useAuth();
+  
+  return (
+    <div>
+      {user ? (
+        <button onClick={logout}>Logout</button>
+      ) : (
+        <button onClick={() => login({ id: 1, name: 'Jane Doe' })}>
+          Login as Jane
+        </button>
+      )}
+    </div>
+  );
+}
+
+function CartItems() {
+  const items = useCartState();
+  const { updateQuantity, removeItem } = useCartDispatch();
+  
+  if (items.length === 0) {
+    return <p>Cart is empty</p>;
+  }
+  
+  return (
+    <div className="cart-items">
+      {items.map(item => (
+        <div key={item.id} className="cart-item">
+          <span>{item.name}</span>
+          <input
+            type="number"
+            value={item.quantity}
+            onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 0)}
+            min="0"
+          />
+          <span>${(item.price * item.quantity).toFixed(2)}</span>
+          <button onClick={() => removeItem(item.id)}>Remove</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.demo-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+section {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.product-list {
+  margin-bottom: 20px;
+}
+
+.product {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin: 5px 0;
+  background-color: white;
+  border-radius: 4px;
+}
+
+.cart-summary {
+  background-color: #e3f2fd;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.cart-items {
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 2fr 80px 80px auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item input {
+  width: 60px;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

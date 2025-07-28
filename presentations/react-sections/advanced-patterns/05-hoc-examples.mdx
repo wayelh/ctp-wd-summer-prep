@@ -1,0 +1,143 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## HOC Example Implementation
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOC Example</title>
+    <style>
+        .spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            font-size: 24px;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { ComponentType, useEffect, useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// HOC: Adds loading state to any component
+function withLoading<P extends object>(
+  Component: ComponentType<P>,
+  loadingMessage = 'Loading...'
+) {
+  return function WithLoadingComponent(props: P & { isLoading: boolean }) {
+    const { isLoading, ...componentProps } = props;
+    
+    if (isLoading) {
+      return (
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <div className="spinner">⟳</div>
+          <p>{loadingMessage}</p>
+        </div>
+      );
+    }
+    
+    return <Component {...(componentProps as P)} />;
+  };
+}
+
+// HOC: Adds authentication check
+function withAuth<P extends object>(Component: ComponentType<P>) {
+  return function WithAuthComponent(props: P) {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [checking, setChecking] = useState(true);
+
+    useEffect(() => {
+      // Simulate auth check
+      setTimeout(() => {
+        setIsAuthenticated(Math.random() > 0.5);
+        setChecking(false);
+      }, 1000);
+    }, []);
+
+    if (checking) {
+      return <div>Checking authentication...</div>;
+    }
+
+    if (!isAuthenticated) {
+      return (
+        <div style={{ padding: '20px', background: '#fee', borderRadius: '8px' }}>
+          <h3>Access Denied</h3>
+          <p>Please log in to view this content.</p>
+        </div>
+      );
+    }
+
+    return <Component {...props} />;
+  };
+}
+
+// Original component
+interface UserData {
+  name: string;
+  email: string;
+}
+
+function UserProfile({ user }: { user: UserData }) {
+  return (
+    <div style={{ padding: '20px', background: '#e3f2fd', borderRadius: '8px' }}>
+      <h2>{user.name}</h2>
+      <p>{user.email}</p>
+    </div>
+  );
+}
+
+// Enhanced components
+const UserProfileWithLoading = withLoading(UserProfile);
+const SecureUserProfile = withAuth(UserProfile);
+const SecureUserProfileWithLoading = withAuth(withLoading(UserProfile));
+
+// App demonstrating HOCs
+function App() {
+  const [loading, setLoading] = useState(true);
+  const user = { name: 'John Doe', email: 'john@example.com' };
+
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 2000);
+  }, []);
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>HOC Examples</h1>
+      
+      <h3>With Loading:</h3>
+      <UserProfileWithLoading user={user} isLoading={loading} />
+      
+      <h3>With Auth:</h3>
+      <SecureUserProfile user={user} />
+      
+      <h3>With Both:</h3>
+      <SecureUserProfileWithLoading user={user} isLoading={loading} />
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

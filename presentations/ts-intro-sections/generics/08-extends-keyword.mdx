@@ -1,0 +1,27 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Generic Constraints: extends keyword
+
+**1. extends keyword**
+- Limit generic to types with certain properties
+- Ensure type safety while maintaining flexibility
+- Access properties of the constrained type
+
+```typescript
+// Constraint: T must have an id property
+function updateRecord<T extends { id: number }>(record: T, updates: Partial<T>): T {
+  return { ...record, ...updates };
+}
+
+interface User { id: number; name: string; email: string; }
+interface Product { id: number; title: string; price: number; }
+
+const user = updateRecord({ id: 1, name: "Alice", email: "alice@example.com" }, { name: "Alice Smith" });
+const product = updateRecord({ id: 2, title: "Laptop", price: 999 }, { price: 899 });
+
+// Error: string doesn't have id property
+// updateRecord("hello", {});
+```
+</SlideLayout.Full>

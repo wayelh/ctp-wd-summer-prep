@@ -1,0 +1,29 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Understanding Closure Patterns for State Management
+
+Closures enable powerful patterns for managing private state:
+
+**Factory Function Pattern:**
+```javascript
+function createCounter(start = 0) {
+  let count = start; // Private variable
+  
+  return {
+    increment: () => ++count,
+    decrement: () => --count,
+    getValue: () => count
+  };
+}
+```
+
+- Benefits of Closure-Based Objects:
+- Data privacy (no external access to internal variables)
+  - Multiple instances with independent state
+  - Clean, controlled interfaces
+  - No need for classes or `this` keyword complications
+
+**For the exercise**: Create a goal tracker factory that manages progress privately while providing public methods for interaction.
+</SlideLayout.Full>

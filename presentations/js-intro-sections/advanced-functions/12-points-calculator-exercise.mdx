@@ -1,0 +1,33 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Habit Points Calculator
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Exercise: Build a points calculation system using higher-order functions
+// TODO: Create functions that:
+// 1. Apply bonuses based on streaks
+// 2. Add multipliers for different habit categories
+// 3. Compose multiple calculations together
+
+// Base point calculator
+function calculateBasePoints(completions) {
+  return completions * 10;
+}
+
+// TODO: Create these higher-order functions:
+// 1. withStreakBonus(calculator) - adds 50% for 7+ day streaks
+// 2. withCategoryMultiplier(calculator, category) - multiplies by category factor
+// 3. withDailyLimit(calculator, maxPoints) - caps daily points
+
+// Test it:
+const enhancedCalculator = withStreakBonus(calculateBasePoints);
+console.log(enhancedCalculator(5, 7)); // Should include streak bonus
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

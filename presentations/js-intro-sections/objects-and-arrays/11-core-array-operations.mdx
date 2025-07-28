@@ -1,0 +1,38 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Core Array Operations
+
+Arrays are essential for managing collections of data
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Four Main Array Operations
+
+- **Access**: Get elements by index
+- **Modify**: Change elements or add/remove items  
+- **Search**: Find elements that match criteria
+- **Transform**: Convert data from one format to another
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Array Operations Examples
+
+```javascript
+const habits = ['Exercise', 'Reading', 'Meditation'];
+
+// Access
+console.log(habits[0]); // 'Exercise'
+
+// Modify  
+habits.push('Journaling'); // Add item
+habits[1] = 'Study'; // Change item
+
+// Search
+const found = habits.find(h => h.startsWith('E')); // 'Exercise'
+
+// Transform
+const upper = habits.map(h => h.toUpperCase()); // ['EXERCISE', ...]
+```
+</SlideLayout.Full>

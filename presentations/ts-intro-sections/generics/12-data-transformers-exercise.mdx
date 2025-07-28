@@ -1,0 +1,38 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Generic Data Transformers
+<CodeDisplay >
+  <File name="example.typescript">
+    
+```typescript
+// Exercise: Build generic data transformation utilities
+// TODO: Create type-safe transform functions
+
+// TODO: Make this function generic
+function mapArray(items: any[], transform: (item: any) => any): any[] {
+  // Your code here
+}
+
+// TODO: Create a generic groupBy function
+function groupBy(items: any[], key: string): any {
+  // Your code here
+}
+
+// Test with habits
+const habits = [
+  { id: "1", name: "Exercise", category: "health", points: 50 },
+  { id: "2", name: "Meditate", category: "wellness", points: 30 },
+  { id: "3", name: "Read", category: "learning", points: 40 },
+  { id: "4", name: "Water", category: "health", points: 20 }
+];
+
+// Should work with type safety
+const names = mapArray(habits, h => h.name);
+const grouped = groupBy(habits, "category");
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

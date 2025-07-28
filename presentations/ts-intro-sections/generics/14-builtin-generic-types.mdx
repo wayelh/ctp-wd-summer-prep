@@ -1,0 +1,32 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Built-in Generic Types
+<CodeDisplay >
+  <File name="example.typescript">
+    
+```typescript
+// Promise<T> - Async values
+const promise: Promise<string> = fetch('/api').then(r => r.text());
+
+// Array<T> - Lists of values
+const numbers: Array<number> = [1, 2, 3];
+
+// Map<K, V> - Key-value pairs
+const userMap: Map<number, string> = new Map();
+userMap.set(1, "Alice");
+
+// Set<T> - Unique values
+const uniqueNumbers: Set<number> = new Set([1, 2, 2, 3]);
+
+// Record<K, V> - Object with specific key/value types
+const scores: Record<string, number> = {
+  alice: 100,
+  bob: 95
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

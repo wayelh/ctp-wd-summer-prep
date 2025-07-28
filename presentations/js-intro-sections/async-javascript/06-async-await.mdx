@@ -1,0 +1,36 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Async/Await: The Modern Way
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Async/await - makes async code look synchronous
+async function processHabit(habitId) {
+  try {
+    // await pauses execution until Promise resolves
+    const habitData = await loadHabitData(habitId);
+    console.log("Got habit:", habitData.name);
+    
+    const result = await updateHabitStreak(habitData.id);
+    const saved = await saveToDatabase(result);
+    
+    console.log("All done!");
+    return saved;
+  } catch (error) {
+    console.error("Something failed:", error);
+    throw error; // Re-throw if needed
+  }
+}
+
+// Usage - async functions return Promises
+processHabit(123)
+  .then(result => console.log("Success:", result))
+  .catch(error => console.log("Failed:", error));
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

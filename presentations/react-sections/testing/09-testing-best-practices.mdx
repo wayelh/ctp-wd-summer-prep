@@ -1,0 +1,34 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Testing Best Practices
+
+### Do:
+- **Test user behavior**, not implementation details
+- **Use accessible queries** (getByRole, getByLabelText)
+- **Wait for async operations** with waitFor/findBy
+- **Test error states** and edge cases
+- **Keep tests isolated** and independent
+
+### Don't:
+- Test internal state directly
+- Test implementation details
+- Use snapshot tests for everything
+- Mock everything
+- Write brittle selectors
+
+### Good Test Structure:
+```tsx
+// Arrange: Set up the test
+const user = userEvent.setup();
+render(<Component prop="value" />);
+
+// Act: Perform user actions
+await user.click(screen.getByText('Button'));
+
+// Assert: Check the results
+expect(screen.getByRole('alert')).toHaveTextContent('Success');
+```
+
+</SlideLayout.Full>

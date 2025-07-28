@@ -1,0 +1,282 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Form Handling Basics
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Forms</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, FormEvent, ChangeEvent } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Controlled Components - React controls form data
+function ControlledForm(): JSX.Element {
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    age: '',
+    country: 'us',
+    newsletter: false,
+    comments: ''
+  });
+
+  // Generic change handler for all inputs
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+    
+    // Special handling for checkboxes
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({
+        ...prev,
+        [name]: checked
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
+  // Form submission
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log('Form submitted:', formData);
+    alert('Check console for form data!');
+  };
+
+  // Reset form
+  const handleReset = () => {
+    setFormData({
+      username: '',
+      email: '',
+      password: '',
+      age: '',
+      country: 'us',
+      newsletter: false,
+      comments: ''
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="form">
+      <h2>Controlled Form Example</h2>
+      
+      {/* Text Input */}
+      <div className="form-group">
+        <label htmlFor="username">Username:</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          value={formData.username}
+          onChange={handleChange}
+          required
+        />
+      </div>
+
+      {/* Email Input */}
+      <div className="form-group">
+        <label htmlFor="email">Email:</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
+      </div>
+
+      {/* Password Input */}
+      <div className="form-group">
+        <label htmlFor="password">Password:</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          minLength={6}
+          required
+        />
+      </div>
+
+      {/* Number Input */}
+      <div className="form-group">
+        <label htmlFor="age">Age:</label>
+        <input
+          type="number"
+          id="age"
+          name="age"
+          value={formData.age}
+          onChange={handleChange}
+          min="18"
+          max="100"
+        />
+      </div>
+
+      {/* Select Dropdown */}
+      <div className="form-group">
+        <label htmlFor="country">Country:</label>
+        <select
+          id="country"
+          name="country"
+          value={formData.country}
+          onChange={handleChange}
+        >
+          <option value="us">United States</option>
+          <option value="uk">United Kingdom</option>
+          <option value="ca">Canada</option>
+          <option value="au">Australia</option>
+        </select>
+      </div>
+
+      {/* Checkbox */}
+      <div className="form-group checkbox">
+        <label>
+          <input
+            type="checkbox"
+            name="newsletter"
+            checked={formData.newsletter}
+            onChange={handleChange}
+          />
+          Subscribe to newsletter
+        </label>
+      </div>
+
+      {/* Textarea */}
+      <div className="form-group">
+        <label htmlFor="comments">Comments:</label>
+        <textarea
+          id="comments"
+          name="comments"
+          value={formData.comments}
+          onChange={handleChange}
+          rows={4}
+        />
+      </div>
+
+      {/* Form Actions */}
+      <div className="form-actions">
+        <button type="submit">Submit</button>
+        <button type="button" onClick={handleReset}>Reset</button>
+      </div>
+
+      {/* Display current form state */}
+      <div className="form-state">
+        <h3>Current Form State:</h3>
+        <pre>{JSON.stringify(formData, null, 2)}</pre>
+      </div>
+    </form>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<ControlledForm />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.form {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group.checkbox label {
+  display: flex;
+  align-items: center;
+  font-weight: normal;
+}
+
+.form-group.checkbox input {
+  width: auto;
+  margin-right: 8px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-actions button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #28a745;
+  color: white;
+}
+
+.form-actions button[type="button"] {
+  background-color: #6c757d;
+  color: white;
+}
+
+.form-actions button:hover {
+  opacity: 0.9;
+}
+
+.form-state {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.form-state pre {
+  margin: 0;
+  font-size: 12px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

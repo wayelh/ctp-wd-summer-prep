@@ -1,0 +1,231 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## React.memo - Component Memoization
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React.memo</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, memo } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Without React.memo - re-renders on every parent update
+function ExpensiveComponent({ data, label }: { data: number; label: string }) {
+  console.log(`ExpensiveComponent rendered: ${label}`);
+  
+  // Simulate expensive computation
+  let result = 0;
+  for (let i = 0; i < 1000000; i++) {
+    result += data * i;
+  }
+  
+  return (
+    <div className="expensive-component">
+      <h3>{label}</h3>
+      <p>Data: {data}</p>
+      <p>Result: {result}</p>
+    </div>
+  );
+}
+
+// With React.memo - only re-renders when props change
+const MemoizedComponent = memo(ExpensiveComponent);
+
+// Custom comparison function
+const MemoizedWithComparison = memo(
+  ExpensiveComponent,
+  (prevProps, nextProps) => {
+    // Return true if props are equal (skip re-render)
+    // Return false if props are different (re-render)
+    return prevProps.data === nextProps.data;
+    // Ignoring label changes for this example
+  }
+);
+
+// Component with objects/arrays as props
+interface ListProps {
+  items: string[];
+  config: { showIndex: boolean; highlight: boolean };
+}
+
+const ListComponent = memo<ListProps>(({ items, config }) => {
+  console.log('ListComponent rendered');
+  
+  return (
+    <ul>
+      {items.map((item, index) => (
+        <li key={index} className={config.highlight ? 'highlight' : ''}>
+          {config.showIndex && `${index + 1}. `}{item}
+        </li>
+      ))}
+    </ul>
+  );
+});
+
+// Parent component
+function App() {
+  const [count, setCount] = useState(0);
+  const [data, setData] = useState(10);
+  const [items] = useState(['Apple', 'Banana', 'Orange']);
+  
+  // ❌ Bad: Creating new object on every render
+  const badConfig = { showIndex: true, highlight: count % 2 === 0 };
+  
+  // ✅ Good: Stable reference
+  const [goodConfig] = useState({ showIndex: true, highlight: false });
+
+  return (
+    <div className="app">
+      <h1>React.memo Demo</h1>
+      
+      <div className="controls">
+        <button onClick={() => setCount(count + 1)}>
+          Parent Count: {count}
+        </button>
+        <button onClick={() => setData(data + 1)}>
+          Update Data: {data}
+        </button>
+      </div>
+
+      <div className="components">
+        <div>
+          <h2>Without Memo (Always Re-renders)</h2>
+          <ExpensiveComponent data={data} label="No Memo" />
+        </div>
+
+        <div>
+          <h2>With Memo (Re-renders on prop change)</h2>
+          <MemoizedComponent data={data} label="Memoized" />
+        </div>
+
+        <div>
+          <h2>Custom Comparison (Ignores label)</h2>
+          <MemoizedWithComparison data={data} label={`Label ${count}`} />
+        </div>
+      </div>
+
+      <div className="list-demo">
+        <h2>Object Props Issue</h2>
+        <div className="bad-example">
+          <h3>❌ Bad: New object every render</h3>
+          <ListComponent items={items} config={badConfig} />
+        </div>
+        
+        <div className="good-example">
+          <h3>✅ Good: Stable reference</h3>
+          <ListComponent items={items} config={goodConfig} />
+        </div>
+      </div>
+
+      <p className="note">Open console to see render logs</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.components {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.components > div {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.expensive-component {
+  background-color: white;
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.list-demo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.bad-example,
+.good-example {
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+ul {
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+  list-style: none;
+}
+
+li {
+  padding: 5px;
+}
+
+li.highlight {
+  background-color: #fffacd;
+}
+
+.note {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin-top: 20px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -32,79 +32,133 @@ import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 5. **Improve types** - Refine and add more specific types
 6. **Enable strict mode** - Gradually enable strict checks
 
-```typescript
+<CodeDisplay>
+  <File name="calculateTotal.js">
+```javascript
 // Before (JavaScript)
 function calculateTotal(items) {
   return items.reduce((sum, item) => sum + item.price, 0);
 }
 
+module.exports = { calculateTotal };
+```
+  </File>
+  <File name="calculateTotal.ts">
+```typescript
 // After (TypeScript)
 interface Item {
   name: string;
   price: number;
+  quantity?: number;
 }
 
 function calculateTotal(items: Item[]): number {
   return items.reduce((sum, item) => sum + item.price, 0);
 }
+
+export { calculateTotal, Item };
 ```
+  </File>
+</CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Dealing with Third-Party Libraries
-<CodeDisplay >
-  <File name="example.typescript">
-    
+<CodeDisplay>
+  <File name="types/some-untyped-library.d.ts">
 ```typescript
-// 1. Check if types exist
-npm install --save-dev @types/lodash
-
-// 2. If no types exist, declare module
+// Create type declarations for untyped libraries
 declare module 'some-untyped-library' {
   export function doSomething(value: string): void;
   export const config: {
     timeout: number;
     retries: number;
   };
+  
+  export interface Config {
+    apiKey: string;
+    endpoint: string;
+  }
+  
+  export interface Result {
+    success: boolean;
+    data: any;
+  }
 }
+```
+  </File>
+  <File name="using-untyped-lib.ts">
+```typescript
+// 1. Check if types exist
+// npm install --save-dev @types/lodash
 
-// 3. Use any as escape hatch (temporarily)
+// 2. If no types exist, use any temporarily
 const untypedLib: any = require('untyped-lib');
 
-// 4. Create your own types
+// 3. Create your own interface
 interface UntypedLibAPI {
-  init(config: Config): void;
-  process(data: unknown): Promise<Result>;
+  init(config: { apiKey: string }): void;
+  process(data: unknown): Promise<{ success: boolean }>;
 }
+
+// 4. Cast to your interface
 const lib = untypedLib as UntypedLibAPI;
+
+// 5. Now you have type safety
+lib.init({ apiKey: 'secret' });
+lib.process({ data: 'test' }).then(result => {
+  console.log(result.success);
+});
 ```
-    
   </File>
 </CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Common Migration Patterns
-<CodeDisplay >
-  <File name="example.typescript">
-    
-```typescript
-// Pattern 1: Start with JSDoc
+<CodeDisplay>
+  <File name="step1-jsdoc.js">
+```javascript
+// Pattern 1: Start with JSDoc comments
 /**
- * @param {string} name
- * @param {number} age
- * @returns {string}
+ * Greets a person with their name and age
+ * @param {string} name - The person's name
+ * @param {number} age - The person's age
+ * @returns {string} A greeting message
  */
 function greet(name, age) {
   return `Hello ${name}, you are ${age} years old`;
 }
 
-// Pattern 2: Gradual typing
-function processData(data: any): any { // Start with any
-  // Implementation
+/**
+ * @typedef {Object} User
+ * @property {string} id
+ * @property {string} name
+ * @property {number} age
+ */
+
+/** @type {User[]} */
+const users = [];
+```
+  </File>
+  <File name="step2-basic-types.ts">
+```typescript
+// Pattern 2: Add basic types with 'any' escape hatch
+function processData(data: any): any {
+  // Start with 'any' to get code compiling
+  return {
+    id: data.id,
+    result: data.values.reduce((a: any, b: any) => a + b, 0)
+  };
 }
 
-// Later, refine the types
+// Still works, but no type safety yet
+const result = processData({ id: '123', values: [1, 2, 3] });
+```
+  </File>
+  <File name="step3-refined-types.ts">
+```typescript
+// Pattern 3: Define and use proper interfaces
 interface InputData {
   id: string;
   values: number[];
@@ -116,49 +170,103 @@ interface OutputData {
 }
 
 function processData(data: InputData): OutputData {
-  // Implementation with proper types
+  // Now with full type safety
+  return {
+    id: data.id,
+    result: data.values.reduce((sum, val) => sum + val, 0)
+  };
 }
+
+// TypeScript catches errors
+const result = processData({ id: '123', values: [1, 2, 3] });
+console.log(result.result); // Type-safe access
 ```
-    
   </File>
 </CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## TypeScript Strict Mode
-<CodeDisplay >
-  <File name="example.typescript">
-    
-```typescript
-// Start with loose config
+<CodeDisplay>
+  <File name="tsconfig-phase1.json">
+```json
 {
   "compilerOptions": {
-    "strict": false
+    "target": "ES2020",
+    "module": "commonjs",
+    "allowJs": true,
+    "checkJs": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   }
-}
-
-// Gradually enable strict checks
-{
-  "compilerOptions": {
-    "noImplicitAny": true,      // Phase 1
-    "strictNullChecks": true,   // Phase 2
-    "strictFunctionTypes": true, // Phase 3
-    "strict": true              // Final: All strict checks
-  }
-}
-
-// Fix issues as you enable each option
-// Before: function might return undefined
-function findUser(id) {
-  return users.find(u => u.id === id);
-}
-
-// After: Explicit about possible undefined
-function findUser(id: string): User | undefined {
-  return users.find(u => u.id === id);
 }
 ```
-    
+  </File>
+  <File name="tsconfig-phase2.json">
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "allowJs": true,
+    "strict": false,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+```
+  </File>
+  <File name="tsconfig-final.json">
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}
+```
+  </File>
+  <File name="strict-mode-example.ts">
+```typescript
+// Before: loose typing
+function findUser(id) {
+  const users = getUsersFromDB();
+  return users.find(u => u.id === id);
+}
+
+// After: strict null checks
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+function findUser(id: string): User | undefined {
+  const users = getUsersFromDB();
+  return users.find(u => u.id === id);
+}
+
+// Usage must handle undefined
+const user = findUser('123');
+if (user) {
+  console.log(user.name); // Safe access
+} else {
+  console.log('User not found');
+}
+```
   </File>
 </CodeDisplay>
 </SlideLayout.Full>

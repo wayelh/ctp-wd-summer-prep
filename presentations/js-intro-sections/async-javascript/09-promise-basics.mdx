@@ -1,0 +1,50 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Promise Basics
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Creating a Promise
+const myPromise = new Promise((resolve, reject) => {
+  // Async operation here
+  setTimeout(() => {
+    if (Math.random() > 0.5) {
+      resolve("Success!");
+    } else {
+      reject("Failed!");
+    }
+  }, 1000);
+});
+
+// Using a Promise
+myPromise
+  .then(result => console.log(result))
+  .catch(error => console.error(error))
+  .finally(() => console.log("Done either way"));
+
+// Promise states:
+// - Pending: initial state
+// - Fulfilled: operation completed successfully
+// - Rejected: operation failed
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  ## Common Async Patterns
+  - Real-world scenarios in habit tracking:
+  - Fetching user habits from API
+    - Saving completion to database
+    - Syncing data across devices
+    - Loading user preferences
+    - Uploading progress photos
+  - Remember:
+    - Network requests are always async
+    - File operations are async in Node.js
+    - setTimeout/setInterval are async
+</SlideLayout.Full>

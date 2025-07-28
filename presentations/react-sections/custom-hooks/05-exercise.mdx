@@ -1,0 +1,795 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests, Version } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Build a Data Table Hook
+
+<CodeDisplay height="70vh">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Table Hook Exercise</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useEffect, useMemo } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// TODO: Create a useDataTable hook that:
+// 1. Handles sorting by columns
+// 2. Handles filtering/searching
+// 3. Handles pagination
+// 4. Handles row selection
+// 5. Supports column visibility toggle
+// 6. Calculates summary statistics
+// 7. Exports data (to JSON/CSV)
+
+interface Employee {
+  id: number;
+  name: string;
+  department: string;
+  salary: number;
+  startDate: string;
+  email: string;
+}
+
+// TODO: Define the hook interface
+interface UseDataTableOptions<T> {
+  data: T[];
+  columns: Column<T>[];
+  itemsPerPage?: number;
+  searchableFields?: (keyof T)[];
+}
+
+interface Column<T> {
+  key: keyof T;
+  label: string;
+  sortable?: boolean;
+  visible?: boolean;
+}
+
+// TODO: Implement useDataTable hook
+function useDataTable<T>(options: UseDataTableOptions<T>) {
+  // Implement your hook logic here
+  
+  return {
+    // Return necessary values and functions
+  };
+}
+
+function DataTableDemo() {
+  // Sample data
+  const employees: Employee[] = [
+    { id: 1, name: 'Alice Johnson', department: 'Engineering', salary: 95000, startDate: '2020-01-15', email: 'alice@company.com' },
+    { id: 2, name: 'Bob Smith', department: 'Sales', salary: 75000, startDate: '2019-06-01', email: 'bob@company.com' },
+    // Add more sample data...
+  ];
+
+  // TODO: Use your useDataTable hook
+  
+  return (
+    <div className="data-table-demo">
+      <h1>Data Table Hook Exercise</h1>
+      {/* TODO: Build your data table UI using the hook */}
+      <p>Implement the data table</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<DataTableDemo />);
+```
+  </File>
+  <Version>
+```tsx
+// SOLUTION
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface Employee {
+  id: number;
+  name: string;
+  department: string;
+  salary: number;
+  startDate: string;
+  email: string;
+}
+
+interface Column<T> {
+  key: keyof T;
+  label: string;
+  sortable?: boolean;
+  visible?: boolean;
+  format?: (value: any) => string;
+}
+
+interface UseDataTableOptions<T> {
+  data: T[];
+  columns: Column<T>[];
+  itemsPerPage?: number;
+  searchableFields?: (keyof T)[];
+}
+
+type SortDirection = 'asc' | 'desc' | null;
+
+interface SortConfig<T> {
+  key: keyof T | null;
+  direction: SortDirection;
+}
+
+function useDataTable<T extends Record<string, any>>({
+  data,
+  columns: initialColumns,
+  itemsPerPage = 10,
+  searchableFields = [],
+}: UseDataTableOptions<T>) {
+  // State
+  const [columns, setColumns] = useState(initialColumns);
+  const [sortConfig, setSortConfig] = useState<SortConfig<T>>({
+    key: null,
+    direction: null,
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+
+  // Filtering
+  const filteredData = useMemo(() => {
+    if (!searchTerm) return data;
+
+    return data.filter(item => {
+      const fieldsToSearch = searchableFields.length > 0 
+        ? searchableFields 
+        : Object.keys(item) as (keyof T)[];
+
+      return fieldsToSearch.some(field => {
+        const value = item[field];
+        if (value == null) return false;
+        return value.toString().toLowerCase().includes(searchTerm.toLowerCase());
+      });
+    });
+  }, [data, searchTerm, searchableFields]);
+
+  // Sorting
+  const sortedData = useMemo(() => {
+    if (!sortConfig.key || !sortConfig.direction) return filteredData;
+
+    return [...filteredData].sort((a, b) => {
+      const aValue = a[sortConfig.key!];
+      const bValue = b[sortConfig.key!];
+
+      if (aValue === bValue) return 0;
+
+      const comparison = aValue < bValue ? -1 : 1;
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    });
+  }, [filteredData, sortConfig]);
+
+  // Pagination
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return sortedData.slice(start, end);
+  }, [sortedData, currentPage, itemsPerPage]);
+
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+
+  // Handlers
+  const handleSort = useCallback((key: keyof T) => {
+    setSortConfig(prev => {
+      if (prev.key !== key) {
+        return { key, direction: 'asc' };
+      }
+      if (prev.direction === 'asc') {
+        return { key, direction: 'desc' };
+      }
+      if (prev.direction === 'desc') {
+        return { key: null, direction: null };
+      }
+      return prev;
+    });
+  }, []);
+
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+  }, []);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  }, [totalPages]);
+
+  const handleSelectRow = useCallback((id: number) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    if (selectedRows.size === paginatedData.length) {
+      setSelectedRows(new Set());
+    } else {
+      const ids = paginatedData.map(item => (item as any).id);
+      setSelectedRows(new Set(ids));
+    }
+  }, [paginatedData, selectedRows.size]);
+
+  const toggleColumnVisibility = useCallback((key: keyof T) => {
+    setColumns(prev =>
+      prev.map(col =>
+        col.key === key ? { ...col, visible: !col.visible } : col
+      )
+    );
+  }, []);
+
+  // Summary statistics
+  const summary = useMemo(() => {
+    const visibleColumns = columns.filter(col => col.visible !== false);
+    const numericColumns = visibleColumns.filter(col => {
+      const firstValue = data[0]?.[col.key];
+      return typeof firstValue === 'number';
+    });
+
+    return numericColumns.reduce((acc, col) => {
+      const values = filteredData.map(item => item[col.key] as number);
+      acc[col.key as string] = {
+        sum: values.reduce((sum, val) => sum + val, 0),
+        avg: values.reduce((sum, val) => sum + val, 0) / values.length,
+        min: Math.min(...values),
+        max: Math.max(...values),
+      };
+      return acc;
+    }, {} as Record<string, { sum: number; avg: number; min: number; max: number }>);
+  }, [columns, data, filteredData]);
+
+  // Export functions
+  const exportToJSON = useCallback(() => {
+    const dataToExport = selectedRows.size > 0
+      ? filteredData.filter((item: any) => selectedRows.has(item.id))
+      : filteredData;
+
+    const json = JSON.stringify(dataToExport, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [filteredData, selectedRows]);
+
+  const exportToCSV = useCallback(() => {
+    const dataToExport = selectedRows.size > 0
+      ? filteredData.filter((item: any) => selectedRows.has(item.id))
+      : filteredData;
+
+    const visibleColumns = columns.filter(col => col.visible !== false);
+    const headers = visibleColumns.map(col => col.label).join(',');
+    const rows = dataToExport.map(item =>
+      visibleColumns.map(col => {
+        const value = item[col.key];
+        return typeof value === 'string' && value.includes(',')
+          ? `"${value}"`
+          : value;
+      }).join(',')
+    );
+
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [columns, filteredData, selectedRows]);
+
+  return {
+    // Data
+    data: paginatedData,
+    columns: columns.filter(col => col.visible !== false),
+    allColumns: columns,
+    
+    // Pagination
+    currentPage,
+    totalPages,
+    totalItems: sortedData.length,
+    
+    // Selection
+    selectedRows,
+    
+    // Sort & Search
+    sortConfig,
+    searchTerm,
+    
+    // Summary
+    summary,
+    
+    // Handlers
+    handleSort,
+    handleSearch,
+    handlePageChange,
+    handleSelectRow,
+    handleSelectAll,
+    toggleColumnVisibility,
+    
+    // Export
+    exportToJSON,
+    exportToCSV,
+    
+    // Navigation
+    nextPage: () => handlePageChange(currentPage + 1),
+    prevPage: () => handlePageChange(currentPage - 1),
+    hasNextPage: currentPage < totalPages,
+    hasPrevPage: currentPage > 1,
+  };
+}
+
+function DataTableDemo() {
+  const employees: Employee[] = [
+    { id: 1, name: 'Alice Johnson', department: 'Engineering', salary: 95000, startDate: '2020-01-15', email: 'alice@company.com' },
+    { id: 2, name: 'Bob Smith', department: 'Sales', salary: 75000, startDate: '2019-06-01', email: 'bob@company.com' },
+    { id: 3, name: 'Carol Williams', department: 'Marketing', salary: 82000, startDate: '2021-03-10', email: 'carol@company.com' },
+    { id: 4, name: 'David Brown', department: 'Engineering', salary: 105000, startDate: '2018-11-20', email: 'david@company.com' },
+    { id: 5, name: 'Eve Davis', department: 'HR', salary: 70000, startDate: '2020-07-01', email: 'eve@company.com' },
+    { id: 6, name: 'Frank Miller', department: 'Sales', salary: 88000, startDate: '2019-09-15', email: 'frank@company.com' },
+    { id: 7, name: 'Grace Wilson', department: 'Engineering', salary: 110000, startDate: '2017-05-01', email: 'grace@company.com' },
+    { id: 8, name: 'Henry Moore', department: 'Marketing', salary: 77000, startDate: '2021-01-10', email: 'henry@company.com' },
+    { id: 9, name: 'Iris Taylor', department: 'HR', salary: 65000, startDate: '2022-02-01', email: 'iris@company.com' },
+    { id: 10, name: 'Jack Anderson', department: 'Engineering', salary: 98000, startDate: '2019-04-15', email: 'jack@company.com' },
+    { id: 11, name: 'Kate Thomas', department: 'Sales', salary: 79000, startDate: '2020-08-20', email: 'kate@company.com' },
+    { id: 12, name: 'Leo Jackson', department: 'Marketing', salary: 85000, startDate: '2018-12-01', email: 'leo@company.com' },
+  ];
+
+  const table = useDataTable({
+    data: employees,
+    columns: [
+      { key: 'id', label: 'ID', sortable: true },
+      { key: 'name', label: 'Name', sortable: true },
+      { key: 'department', label: 'Department', sortable: true },
+      { 
+        key: 'salary', 
+        label: 'Salary', 
+        sortable: true,
+        format: (value) => `$${value.toLocaleString()}`
+      },
+      { key: 'startDate', label: 'Start Date', sortable: true },
+      { key: 'email', label: 'Email', sortable: true },
+    ],
+    itemsPerPage: 5,
+    searchableFields: ['name', 'email', 'department'],
+  });
+
+  return (
+    <div className="data-table-demo">
+      <h1>Employee Data Table</h1>
+
+      <div className="controls">
+        <input
+          type="text"
+          placeholder="Search..."
+          value={table.searchTerm}
+          onChange={(e) => table.handleSearch(e.target.value)}
+        />
+
+        <div className="export-buttons">
+          <button onClick={table.exportToJSON}>Export JSON</button>
+          <button onClick={table.exportToCSV}>Export CSV</button>
+        </div>
+      </div>
+
+      <div className="column-toggles">
+        <span>Show columns:</span>
+        {table.allColumns.map(col => (
+          <label key={col.key as string}>
+            <input
+              type="checkbox"
+              checked={col.visible !== false}
+              onChange={() => table.toggleColumnVisibility(col.key)}
+            />
+            {col.label}
+          </label>
+        ))}
+      </div>
+
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>
+              <input
+                type="checkbox"
+                checked={table.selectedRows.size === table.data.length && table.data.length > 0}
+                onChange={table.handleSelectAll}
+              />
+            </th>
+            {table.columns.map(col => (
+              <th
+                key={col.key as string}
+                onClick={() => col.sortable && table.handleSort(col.key)}
+                className={col.sortable ? 'sortable' : ''}
+              >
+                {col.label}
+                {table.sortConfig.key === col.key && (
+                  <span className="sort-indicator">
+                    {table.sortConfig.direction === 'asc' ? ' ↑' : ' ↓'}
+                  </span>
+                )}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {table.data.map(employee => (
+            <tr
+              key={employee.id}
+              className={table.selectedRows.has(employee.id) ? 'selected' : ''}
+            >
+              <td>
+                <input
+                  type="checkbox"
+                  checked={table.selectedRows.has(employee.id)}
+                  onChange={() => table.handleSelectRow(employee.id)}
+                />
+              </td>
+              {table.columns.map(col => (
+                <td key={col.key as string}>
+                  {col.format 
+                    ? col.format(employee[col.key])
+                    : employee[col.key]
+                  }
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="pagination">
+        <button onClick={table.prevPage} disabled={!table.hasPrevPage}>
+          Previous
+        </button>
+        <span>
+          Page {table.currentPage} of {table.totalPages} 
+          ({table.totalItems} total items)
+        </span>
+        <button onClick={table.nextPage} disabled={!table.hasNextPage}>
+          Next
+        </button>
+      </div>
+
+      {table.selectedRows.size > 0 && (
+        <p>{table.selectedRows.size} rows selected</p>
+      )}
+
+      <div className="summary">
+        <h3>Summary Statistics</h3>
+        {Object.entries(table.summary).map(([key, stats]) => (
+          <div key={key} className="stat">
+            <strong>{key}:</strong>
+            <span>Sum: ${stats.sum.toLocaleString()}</span>
+            <span>Avg: ${stats.avg.toLocaleString()}</span>
+            <span>Min: ${stats.min.toLocaleString()}</span>
+            <span>Max: ${stats.max.toLocaleString()}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<DataTableDemo />);
+```
+  </Version>
+  <File name="styles.css">
+```css
+.data-table-demo {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.controls input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.column-toggles {
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.column-toggles label {
+  margin-left: 15px;
+  cursor: pointer;
+}
+
+.column-toggles input {
+  margin-right: 5px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #333;
+  position: sticky;
+  top: 0;
+}
+
+.data-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.data-table th.sortable:hover {
+  background-color: #e9ecef;
+}
+
+.sort-indicator {
+  color: #007bff;
+  font-size: 14px;
+}
+
+.data-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.data-table tr.selected {
+  background-color: #e3f2fd;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.summary {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.summary h3 {
+  margin-top: 0;
+}
+
+.stat {
+  margin: 10px 0;
+  display: flex;
+  gap: 20px;
+}
+
+.stat strong {
+  text-transform: capitalize;
+  min-width: 100px;
+}
+
+.stat span {
+  color: #666;
+}
+```
+  </File>
+  <Tests>
+```javascript
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import userEvent from '@testing-library/user-event';
+
+// Import your DataTableDemo component
+import { DataTableDemo } from './App';
+
+describe('Data Table Hook', () => {
+  beforeEach(() => {
+    render(<DataTableDemo />);
+  });
+
+  it('should render table with employee data', () => {
+    expect(screen.getByText('Employee Data Table')).toBeInTheDocument();
+    expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
+  });
+
+  it('should have functioning search', async () => {
+    const searchInput = screen.getByPlaceholderText(/search/i);
+    
+    await userEvent.type(searchInput, 'Alice');
+    
+    expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
+    expect(screen.queryByText('Bob Smith')).not.toBeInTheDocument();
+  });
+
+  it('should sort columns when clicking headers', async () => {
+    const salaryHeader = screen.getByText('Salary');
+    
+    // Get all salary cells
+    const getSalaries = () => {
+      const cells = screen.getAllByRole('cell');
+      return cells
+        .filter(cell => cell.textContent?.startsWith('$'))
+        .map(cell => parseInt(cell.textContent!.replace(/[$,]/g, '')));
+    };
+    
+    // Click to sort ascending
+    await userEvent.click(salaryHeader);
+    const ascSalaries = getSalaries();
+    expect(ascSalaries[0]).toBeLessThan(ascSalaries[ascSalaries.length - 1]);
+    
+    // Click to sort descending
+    await userEvent.click(salaryHeader);
+    const descSalaries = getSalaries();
+    expect(descSalaries[0]).toBeGreaterThan(descSalaries[descSalaries.length - 1]);
+  });
+
+  it('should handle pagination', async () => {
+    const nextButton = screen.getByRole('button', { name: /next/i });
+    const prevButton = screen.getByRole('button', { name: /previous/i });
+    
+    // Initially on page 1
+    expect(screen.getByText(/page 1 of/i)).toBeInTheDocument();
+    expect(prevButton).toBeDisabled();
+    
+    // Go to next page
+    await userEvent.click(nextButton);
+    expect(screen.getByText(/page 2 of/i)).toBeInTheDocument();
+    expect(prevButton).not.toBeDisabled();
+  });
+
+  it('should toggle column visibility', async () => {
+    const emailCheckbox = screen.getByLabelText('Email');
+    const emailHeader = screen.getByText('Email');
+    
+    expect(emailHeader).toBeInTheDocument();
+    
+    // Hide email column
+    await userEvent.click(emailCheckbox);
+    expect(screen.queryByText('Email')).not.toBeInTheDocument();
+    
+    // Show email column again
+    await userEvent.click(emailCheckbox);
+    expect(screen.getByText('Email')).toBeInTheDocument();
+  });
+
+  it('should select rows', async () => {
+    const firstRowCheckbox = screen.getAllByRole('checkbox')[1]; // Skip select all
+    
+    await userEvent.click(firstRowCheckbox);
+    
+    expect(screen.getByText(/1 rows selected/i)).toBeInTheDocument();
+  });
+
+  it('should select all rows on current page', async () => {
+    const selectAllCheckbox = screen.getAllByRole('checkbox')[0];
+    
+    await userEvent.click(selectAllCheckbox);
+    
+    // Should select 5 rows (items per page)
+    expect(screen.getByText(/5 rows selected/i)).toBeInTheDocument();
+  });
+
+  it('should export data', async () => {
+    // Mock URL.createObjectURL and document.createElement
+    const mockCreateObjectURL = jest.fn();
+    const mockClick = jest.fn();
+    const mockRevokeObjectURL = jest.fn();
+    
+    global.URL.createObjectURL = mockCreateObjectURL;
+    global.URL.revokeObjectURL = mockRevokeObjectURL;
+    
+    const originalCreateElement = document.createElement.bind(document);
+    document.createElement = jest.fn((tagName) => {
+      if (tagName === 'a') {
+        return { click: mockClick, href: '', download: '' };
+      }
+      return originalCreateElement(tagName);
+    });
+    
+    const exportJsonButton = screen.getByRole('button', { name: /export json/i });
+    await userEvent.click(exportJsonButton);
+    
+    expect(mockCreateObjectURL).toHaveBeenCalled();
+    expect(mockClick).toHaveBeenCalled();
+    
+    // Restore mocks
+    document.createElement = originalCreateElement;
+  });
+
+  it('should show summary statistics', () => {
+    expect(screen.getByText('Summary Statistics')).toBeInTheDocument();
+    expect(screen.getByText(/salary:/i)).toBeInTheDocument();
+    expect(screen.getByText(/sum:/i)).toBeInTheDocument();
+    expect(screen.getByText(/avg:/i)).toBeInTheDocument();
+  });
+
+  it('should filter by multiple searchable fields', async () => {
+    const searchInput = screen.getByPlaceholderText(/search/i);
+    
+    // Search by department
+    await userEvent.clear(searchInput);
+    await userEvent.type(searchInput, 'Engineering');
+    
+    const engineeringRows = screen.getAllByText('Engineering');
+    expect(engineeringRows.length).toBeGreaterThan(0);
+    
+    // Search by email
+    await userEvent.clear(searchInput);
+    await userEvent.type(searchInput, '@company.com');
+    
+    // Should still show results as all emails contain this
+    expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
+  });
+});
+```
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>

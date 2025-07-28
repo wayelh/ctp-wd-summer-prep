@@ -1,0 +1,299 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Common Patterns in Habit Tracking
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracking Patterns</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./patterns.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="patterns.tsx">
+```tsx
+import React from 'react';
+
+// 1. Spread Props Pattern for Habit Actions
+interface HabitActionProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'complete' | 'skip' | 'reset';
+  habitId: number;
+}
+
+function HabitAction({ variant = 'complete', habitId, children, ...props }: HabitActionProps) {
+  const getClassName = () => {
+    switch (variant) {
+      case 'complete': return 'btn-complete';
+      case 'skip': return 'btn-skip';
+      case 'reset': return 'btn-reset';
+    }
+  };
+
+  return (
+    <button className={`habit-action ${getClassName()}`} {...props}>
+      {children}
+    </button>
+  );
+}
+
+// 2. Render Props Pattern for Habit Data
+interface HabitDataProviderProps {
+  habitId: number;
+  render: (habit: Habit | null, loading: boolean) => JSX.Element;
+}
+
+interface Habit {
+  id: number;
+  name: string;
+  streak: number;
+  completions: Date[];
+}
+
+function HabitDataProvider({ habitId, render }: HabitDataProviderProps) {
+  const [habit, setHabit] = React.useState<Habit | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Simulate fetching habit data
+    setTimeout(() => {
+      setHabit({
+        id: habitId,
+        name: 'Morning Meditation',
+        streak: 7,
+        completions: [new Date()]
+      });
+      setLoading(false);
+    }, 1000);
+  }, [habitId]);
+
+  return render(habit, loading);
+}
+
+// 3. Compound Components Pattern for Habit Views
+interface HabitViewProps {
+  children: React.ReactNode;
+  habit: Habit;
+}
+
+function HabitView({ children, habit }: HabitViewProps) {
+  return (
+    <div className="habit-view">
+      {React.Children.map(children, child => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, { habit });
+        }
+        return child;
+      })}
+    </div>
+  );
+}
+
+// Sub-components for compound pattern
+function HabitName({ habit }: { habit?: Habit }) {
+  return <h3 className="habit-name">{habit?.name}</h3>;
+}
+
+function HabitStreak({ habit }: { habit?: Habit }) {
+  return (
+    <div className="habit-streak">
+      <span className="streak-icon">🔥</span>
+      <span className="streak-count">{habit?.streak || 0} days</span>
+    </div>
+  );
+}
+
+function HabitCalendar({ habit }: { habit?: Habit }) {
+  const isCompleted = (date: Date) => {
+    return habit?.completions.some(
+      completion => completion.toDateString() === date.toDateString()
+    );
+  };
+
+  // Simple 7-day view
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - i));
+    return date;
+  });
+
+  return (
+    <div className="habit-calendar">
+      {days.map((date, i) => (
+        <div 
+          key={i} 
+          className={`calendar-day ${isCompleted(date) ? 'completed' : ''}`}
+        >
+          {date.getDate()}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Usage examples
+function App() {
+  const mockHabit: Habit = {
+    id: 1,
+    name: 'Exercise',
+    streak: 5,
+    completions: [new Date(), new Date(Date.now() - 86400000)]
+  };
+
+  return (
+    <div className="app">
+      {/* Spread props pattern */}
+      <div className="actions">
+        <HabitAction habitId={1} onClick={() => console.log('Complete!')}>
+          Complete Today
+        </HabitAction>
+        <HabitAction variant="skip" habitId={1} disabled>
+          Skip
+        </HabitAction>
+      </div>
+
+      {/* Render props pattern */}
+      <HabitDataProvider
+        habitId={1}
+        render={(habit, loading) => 
+          loading ? (
+            <p>Loading habit...</p>
+          ) : (
+            <div>
+              <h3>{habit?.name}</h3>
+              <p>Streak: {habit?.streak} days</p>
+            </div>
+          )
+        }
+      />
+
+      {/* Compound components pattern */}
+      <HabitView habit={mockHabit}>
+        <HabitName />
+        <HabitStreak />
+        <HabitCalendar />
+      </HabitView>
+    </div>
+  );
+}
+
+// Render the app
+import ReactDOM from 'react-dom/client';
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.habit-action {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-complete {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-complete:hover {
+  background: #16a34a;
+}
+
+.btn-skip {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-reset {
+  background: #ef4444;
+  color: white;
+}
+
+.habit-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.habit-view {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.habit-name {
+  margin: 0 0 12px;
+  color: #1f2937;
+}
+
+.habit-streak {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.streak-icon {
+  font-size: 20px;
+}
+
+.streak-count {
+  font-size: 18px;
+  font-weight: 500;
+  color: #dc2626;
+}
+
+.habit-calendar {
+  display: flex;
+  gap: 8px;
+}
+
+.calendar-day {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.calendar-day.completed {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+  font-weight: 500;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

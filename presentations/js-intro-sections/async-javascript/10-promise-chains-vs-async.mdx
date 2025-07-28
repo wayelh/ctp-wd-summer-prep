@@ -1,0 +1,35 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Understanding Promise Chains vs Async/Await
+
+**Promise Chains** (older style):
+```javascript
+getData()
+  .then(data => processData(data))
+  .then(processed => saveData(processed))
+  .then(result => console.log('Success:', result))
+  .catch(error => console.error('Failed:', error));
+```
+
+**Async/Await** (modern style):
+```javascript
+async function handleData() {
+  try {
+    const data = await getData();
+    const processed = await processData(data);
+    const result = await saveData(processed);
+    console.log('Success:', result);
+  } catch (error) {
+    console.error('Failed:', error);
+  }
+}
+```
+
+- Why Async/Await is Better:
+- Looks like synchronous code (easier to read)
+  - Better error handling with try/catch
+  - Easier debugging and stack traces
+  - Less nesting and callback complexity
+</SlideLayout.Full>

@@ -1,0 +1,274 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Basic Custom Hooks
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Hooks</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// 1. Simple Counter Hook
+function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+
+  const increment = () => setCount(count + 1);
+  const decrement = () => setCount(count - 1);
+  const reset = () => setCount(initialValue);
+
+  return {
+    count,
+    increment,
+    decrement,
+    reset
+  };
+}
+
+// 2. Local Storage Hook
+function useLocalStorage<T>(key: string, initialValue: T) {
+  // Get from local storage then parse stored json or return initialValue
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.log(error);
+      return initialValue;
+    }
+  });
+
+  // Return a wrapped version of useState's setter function that persists the new value to localStorage
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      // Allow value to be a function so we have the same API as useState
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return [storedValue, setValue] as const;
+}
+
+// 3. Toggle Hook
+function useToggle(initialValue = false) {
+  const [value, setValue] = useState(initialValue);
+
+  const toggle = () => setValue(!value);
+  const setTrue = () => setValue(true);
+  const setFalse = () => setValue(false);
+
+  return {
+    value,
+    toggle,
+    setTrue,
+    setFalse
+  };
+}
+
+// 4. Document Title Hook
+function useDocumentTitle(title: string) {
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = title;
+
+    // Cleanup function to restore previous title
+    return () => {
+      document.title = prevTitle;
+    };
+  }, [title]);
+}
+
+// Components using the custom hooks
+function CounterDemo() {
+  const counter = useCounter(10);
+
+  return (
+    <div className="demo-section">
+      <h2>useCounter Hook</h2>
+      <p>Count: {counter.count}</p>
+      <button onClick={counter.increment}>+</button>
+      <button onClick={counter.decrement}>-</button>
+      <button onClick={counter.reset}>Reset</button>
+    </div>
+  );
+}
+
+function SettingsDemo() {
+  const [name, setName] = useLocalStorage('user-name', '');
+  const [theme, setTheme] = useLocalStorage('app-theme', 'light');
+
+  return (
+    <div className="demo-section">
+      <h2>useLocalStorage Hook</h2>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Enter your name"
+      />
+      <p>Hello, {name || 'Guest'}!</p>
+      
+      <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+        <option value="light">Light Theme</option>
+        <option value="dark">Dark Theme</option>
+      </select>
+      <p>Current theme: {theme}</p>
+      <p className="note">✨ Refresh the page - values persist!</p>
+    </div>
+  );
+}
+
+function ToggleDemo() {
+  const modal = useToggle();
+  const sidebar = useToggle(true);
+
+  return (
+    <div className="demo-section">
+      <h2>useToggle Hook</h2>
+      
+      <div>
+        <button onClick={modal.toggle}>
+          {modal.value ? 'Close' : 'Open'} Modal
+        </button>
+        {modal.value && (
+          <div className="modal">
+            <p>Modal is open!</p>
+            <button onClick={modal.setFalse}>Close</button>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <button onClick={sidebar.toggle}>
+          Toggle Sidebar
+        </button>
+        {sidebar.value && (
+          <div className="sidebar">
+            Sidebar Content
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  useDocumentTitle('Custom Hooks Demo');
+
+  return (
+    <div className="app">
+      <h1>Custom Hooks Examples</h1>
+      <CounterDemo />
+      <SettingsDemo />
+      <ToggleDemo />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.demo-section {
+  background-color: #f5f5f5;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.demo-section h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+button {
+  margin: 0 5px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+input[type="text"] {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+.sidebar {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 200px;
+  height: 100vh;
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+}
+
+.note {
+  color: #666;
+  font-style: italic;
+  font-size: 14px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,191 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Real-time Updates
+
+<CodeDisplay>
+  <File name="RealTimeData.tsx">
+```tsx
+import React, { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
+// WebSocket with React Query
+function useWebSocketQuery<T>(
+  queryKey: string[],
+  initialFetch: () => Promise<T>,
+  wsUrl: string
+) {
+  const queryClient = useQueryClient();
+  
+  const query = useQuery({
+    queryKey,
+    queryFn: initialFetch,
+  });
+
+  useEffect(() => {
+    const ws = new WebSocket(wsUrl);
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      
+      // Update cache with new data
+      queryClient.setQueryData(queryKey, (oldData: any) => {
+        // Handle different update types
+        switch (data.type) {
+          case 'update':
+            return { ...oldData, ...data.payload };
+          case 'append':
+            return [...(oldData || []), data.payload];
+          case 'remove':
+            return oldData?.filter((item: any) => 
+              item.id !== data.payload.id
+            );
+          default:
+            return data.payload;
+        }
+      });
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [queryKey, queryClient, wsUrl]);
+
+  return query;
+}
+
+// Live chat example
+function LiveChat({ roomId }: { roomId: string }) {
+  const queryClient = useQueryClient();
+  
+  const { data: messages = [] } = useWebSocketQuery(
+    ['chat', roomId],
+    () => fetchChatHistory(roomId),
+    `wss://example.com/chat/${roomId}`
+  );
+
+  // Polling fallback for environments without WebSocket
+  useQuery({
+    queryKey: ['chat', roomId, 'poll'],
+    queryFn: () => fetchLatestMessages(roomId),
+    refetchInterval: 5000, // Poll every 5 seconds
+    enabled: !window.WebSocket, // Only poll if no WebSocket
+    onSuccess: (newMessages) => {
+      queryClient.setQueryData(['chat', roomId], newMessages);
+    }
+  });
+
+  return (
+    <div>
+      <h3>Live Chat - Room {roomId}</h3>
+      <div style={{ height: '300px', overflowY: 'auto' }}>
+        {messages.map((msg: any) => (
+          <div key={msg.id} style={{ padding: '5px' }}>
+            <strong>{msg.user}:</strong> {msg.text}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Server-Sent Events (SSE) example
+function useLiveData<T>(
+  queryKey: string[],
+  eventSourceUrl: string
+) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const eventSource = new EventSource(eventSourceUrl);
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      queryClient.setQueryData(queryKey, data);
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('SSE error:', error);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [queryKey, queryClient, eventSourceUrl]);
+
+  return useQuery({
+    queryKey,
+    queryFn: async () => {
+      // Initial fetch
+      const response = await fetch(eventSourceUrl.replace('stream', 'data'));
+      return response.json();
+    }
+  });
+}
+
+// Live dashboard with SSE
+function LiveDashboard() {
+  const { data: metrics } = useLiveData(
+    ['dashboard', 'metrics'],
+    '/api/metrics/stream'
+  );
+
+  const { data: notifications } = useLiveData(
+    ['dashboard', 'notifications'],
+    '/api/notifications/stream'
+  );
+
+  return (
+    <div>
+      <h2>Live Dashboard</h2>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+        <div>
+          <h3>Metrics</h3>
+          {metrics && (
+            <div>
+              <p>Active Users: {metrics.activeUsers}</p>
+              <p>Revenue: ${metrics.revenue}</p>
+              <p>Orders: {metrics.orders}</p>
+            </div>
+          )}
+        </div>
+        
+        <div>
+          <h3>Notifications</h3>
+          {notifications?.map((notif: any) => (
+            <div key={notif.id} style={{ 
+              padding: '10px', 
+              background: '#e3f2fd',
+              marginBottom: '5px',
+              borderRadius: '4px'
+            }}>
+              {notif.message}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Mock functions
+async function fetchChatHistory(roomId: string) {
+  return [];
+}
+async function fetchLatestMessages(roomId: string) {
+  return [];
+}
+
+export { LiveChat, LiveDashboard };
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

@@ -1,0 +1,197 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Interactive CSS Styling
+
+<CodeDisplay >
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive Habit Cards</title>
+</head>
+<body>
+    <h2>Hover over the cards to see the effect</h2>
+    
+    <div class="habit-container">
+        <div class="habit-card">
+            <div class="habit-icon">🎯</div>
+            <h3>Daily Goals</h3>
+            <p class="habit-streak">7 day streak</p>
+            <div class="habit-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 70%"></div>
+                </div>
+                <span class="progress-text">70% complete</span>
+            </div>
+        </div>
+        
+        <div class="habit-card featured">
+            <div class="habit-icon">💪</div>
+            <h3>Exercise</h3>
+            <p class="habit-streak">14 day streak</p>
+            <div class="habit-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%"></div>
+                </div>
+                <span class="progress-text">100% complete</span>
+            </div>
+        </div>
+        
+        <div class="habit-card">
+            <div class="habit-icon">📖</div>
+            <h3>Reading</h3>
+            <p class="habit-streak">3 day streak</p>
+            <div class="habit-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 45%"></div>
+                </div>
+                <span class="progress-text">45% complete</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Base styles for the container */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.habit-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Progressive enhancement - Base card styles */
+.habit-card {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    text-align: center;
+    cursor: pointer;
+    
+    /* Smooth interactions */
+    transition: all 0.3s ease;
+}
+
+/* Enhanced hover state */
+.habit-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Featured card with enhanced styling */
+.habit-card.featured {
+    border: 2px solid #4CAF50;
+    position: relative;
+}
+
+.habit-card.featured::before {
+    content: '⭐';
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    font-size: 20px;
+}
+
+/* Icon styling with hover effect */
+.habit-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    transition: transform 0.3s ease;
+}
+
+.habit-card:hover .habit-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Typography */
+.habit-card h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.habit-streak {
+    color: #666;
+    font-size: 14px;
+    margin: 0 0 16px 0;
+}
+
+/* Progress bar with smooth animation */
+.habit-progress {
+    margin-top: 16px;
+}
+
+.progress-bar {
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.habit-card:hover .progress-fill {
+    background-color: #45a049;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Additional interactive states */
+.habit-card:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Focus state for accessibility */
+.habit-card:focus {
+    outline: 3px solid #2196F3;
+    outline-offset: 2px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .habit-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .habit-card {
+        width: 100%;
+        max-width: 350px;
+    }
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

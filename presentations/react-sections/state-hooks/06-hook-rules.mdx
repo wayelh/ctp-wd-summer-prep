@@ -1,0 +1,35 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Hook Rules
+
+### Rules of Hooks:
+1. **Only call hooks at the top level**
+   - Not inside loops, conditions, or nested functions
+   
+2. **Only call hooks from React functions**
+   - Function components
+   - Custom hooks
+
+### Common Mistakes:
+```tsx
+// ❌ Wrong - conditional hook
+if (condition) {
+  const [state, setState] = useState(0);
+}
+
+// ❌ Wrong - hook in loop
+for (let i = 0; i < count; i++) {
+  useEffect(() => {}, []);
+}
+
+// ✅ Correct - hooks at top level
+const [state, setState] = useState(0);
+useEffect(() => {
+  if (condition) {
+    // Conditional logic inside hook
+  }
+}, [condition]);
+```
+
+</SlideLayout.Full>

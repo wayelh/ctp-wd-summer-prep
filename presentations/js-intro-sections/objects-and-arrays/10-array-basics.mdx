@@ -1,0 +1,45 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Array Basics
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Creating arrays
+const habits = ["Exercise", "Read", "Meditate"];
+const points = [10, 20, 15, 30];
+const mixed = ["Habit", 42, true, { name: "Exercise" }];
+
+// Accessing elements
+console.log(habits[0]);  // "Exercise" (first element)
+console.log(habits[2]);  // "Meditate" (third element)
+
+// Array properties
+console.log(habits.length); // 3
+
+// Modifying arrays
+habits[1] = "Study";     // Change element
+habits.push("Journal");  // Add to end
+habits.pop();           // Remove from end
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Array Methods: The Power Tools
+    **Transformation Methods:**
+    - map() - transform each element
+    - filter() - select elements that match criteria
+    - reduce() - combine all elements into single value
+    
+    **Search Methods:**
+    - find() - get first matching element
+    - some() - check if any element matches
+    - every() - check if all elements match
+  </FlexBox>
+</SlideLayout.Full>

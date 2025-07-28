@@ -1,0 +1,36 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Best Practices
+
+### Do:
+- **Use semantic HTML** and ARIA attributes
+- **Manage focus** for accessibility
+- **Handle keyboard** navigation (Escape, Tab)
+- **Clean up** when unmounting
+- **Consider z-index** management
+
+### Don't:
+- Overuse portals for simple cases
+- Forget about accessibility
+- Ignore event bubbling behavior
+- Create multiple portal roots unnecessarily
+- Forget to handle scroll/resize
+
+### Portal Guidelines:
+```tsx
+// ✅ Good: Accessible modal with focus management
+<Modal isOpen={open} onClose={handleClose} aria-label="Settings">
+
+// ❌ Bad: No accessibility considerations
+<div className="modal">
+
+// ✅ Good: Single portal root
+const portalRoot = document.getElementById('portal-root');
+
+// ❌ Bad: Creating new roots dynamically
+document.body.appendChild(document.createElement('div'));
+```
+
+</SlideLayout.Full>

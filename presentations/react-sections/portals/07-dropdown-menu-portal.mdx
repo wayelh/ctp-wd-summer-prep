@@ -1,0 +1,173 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Dropdown Menu Portal
+
+<CodeDisplay>
+  <File name="Dropdown.tsx">
+```tsx
+import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
+
+interface DropdownProps {
+  trigger: React.ReactElement;
+  children: React.ReactNode;
+  align?: 'left' | 'right' | 'center';
+}
+
+function Dropdown({ trigger, children, align = 'left' }: DropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef<HTMLElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (triggerRef.current && isOpen) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        let left = rect.left;
+        
+        if (align === 'center') {
+          left = rect.left + rect.width / 2;
+        } else if (align === 'right') {
+          left = rect.right;
+        }
+        
+        setPosition({
+          top: rect.bottom + window.scrollY,
+          left: left + window.scrollX
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition);
+    window.addEventListener('resize', updatePosition);
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [isOpen, align]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const triggerWithRef = React.cloneElement(trigger, {
+    ref: triggerRef,
+    onClick: (e: React.MouseEvent) => {
+      trigger.props.onClick?.(e);
+      setIsOpen(!isOpen);
+    }
+  });
+
+  return (
+    <>
+      {triggerWithRef}
+      {isOpen && ReactDOM.createPortal(
+        <div
+          ref={dropdownRef}
+          style={{
+            position: 'absolute',
+            top: position.top,
+            left: position.left,
+            transform: align === 'center' ? 'translateX(-50%)' : 
+                       align === 'right' ? 'translateX(-100%)' : 'none',
+            background: 'white',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+            zIndex: 9999,
+            minWidth: '150px',
+            animation: 'dropIn 0.2s'
+          }}
+        >
+          {children}
+        </div>,
+        document.body
+      )}
+      <style>{`
+        @keyframes dropIn {
+          from {
+            opacity: 0;
+            transform: ${align === 'center' ? 'translateX(-50%)' : 
+                        align === 'right' ? 'translateX(-100%)' : ''} translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: ${align === 'center' ? 'translateX(-50%)' : 
+                        align === 'right' ? 'translateX(-100%)' : ''} translateY(0);
+          }
+        }
+      `}</style>
+    </>
+  );
+}
+
+// Example usage
+function App() {
+  return (
+    <div style={{ padding: '50px' }}>
+      <h3>Dropdown Examples</h3>
+      
+      <div style={{ display: 'flex', gap: '50px', marginTop: '20px' }}>
+        <Dropdown 
+          trigger={<button>Left Aligned</button>}
+          align="left"
+        >
+          <div style={{ padding: '10px' }}>
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Option 1</div>
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Option 2</div>
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Option 3</div>
+          </div>
+        </Dropdown>
+
+        <Dropdown 
+          trigger={<button>Center Aligned</button>}
+          align="center"
+        >
+          <div style={{ padding: '10px' }}>
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Profile</div>
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Settings</div>
+            <hr style={{ margin: '5px 0' }} />
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Logout</div>
+          </div>
+        </Dropdown>
+
+        <Dropdown 
+          trigger={<button>Right Aligned</button>}
+          align="right"
+        >
+          <div style={{ padding: '10px' }}>
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Action A</div>
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Action B</div>
+            <div style={{ padding: '8px', cursor: 'pointer' }}>Action C</div>
+          </div>
+        </Dropdown>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

@@ -1,0 +1,150 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Custom Hook Best Practices - Naming & Purity
+
+### 1. **Naming Convention**
+```tsx
+// Always start with "use"
+useCounter ✅
+useLocalStorage ✅
+getCounter ❌
+counterHook ❌
+```
+
+### 2. **Keep Hooks Pure**
+```tsx
+// Don't perform side effects during render
+function useData(id: string) {
+  // ❌ Side effect during render
+  localStorage.setItem('lastId', id);
+  
+  // ✅ Side effects in useEffect
+  useEffect(() => {
+    localStorage.setItem('lastId', id);
+  }, [id]);
+}
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## API Design & Testing
+
+### 3. **Return Consistent APIs**
+```tsx
+// Array for simple values
+const [value, setValue] = useLocalStorage('key', 'default');
+
+// Object for complex APIs
+const { data, loading, error, refetch } = useFetch('/api');
+```
+
+### 4. **Make Hooks Testable**
+```tsx
+// Extract complex logic
+export const validateEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+function useEmailValidation(email: string) {
+  return useMemo(() => validateEmail(email), [email]);
+}
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Documentation
+
+### 5. **Document Your Hooks**
+```tsx
+/**
+ * Persists a value to localStorage and syncs it across tabs
+ * @param key - The localStorage key
+ * @param initialValue - The initial value if nothing in storage
+ * @returns [value, setValue] tuple like useState
+ */
+function useLocalStorage<T>(key: string, initialValue: T) {
+  // Implementation
+}
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Testing Custom Hooks
+
+### Testing Strategies:
+1. **Test in isolation** using @testing-library/react-hooks
+2. **Test with components** for integration
+3. **Mock external dependencies**
+4. **Test edge cases** and error states
+
+### Example Test:
+```tsx
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useCounter } from './useCounter';
+
+test('should increment counter', () => {
+  const { result } = renderHook(() => useCounter());
+  
+  act(() => {
+    result.current.increment();
+  });
+  
+  expect(result.current.count).toBe(1);
+});
+```
+
+### Tips:
+- Test the hook's behavior, not implementation
+- Use act() for state updates
+- Test cleanup functions
+- Verify re-render behavior
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Summary - Key Takeaways
+
+### Core Principles:
+- **Custom hooks extract component logic** into reusable functions
+- **Start with "use"** and follow React's rules of hooks
+- **Share logic, not state** - each component gets its own instance
+- **Compose hooks** to build complex functionality
+- **Test hooks** in isolation and with components
+- **Document your hooks** for other developers
+
+### Common Patterns:
+- State management (useLocalStorage, useSessionStorage)
+- API calls (useFetch, useAsync)
+- Browser APIs (useWindowSize, useMediaQuery)
+- Timers (useInterval, useTimeout, useDebounce)
+- Previous values (usePrevious)
+- Complex forms (useForm, useValidation)
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Next Steps & Advanced Topics
+
+### Immediate Next Topics:
+1. **Performance Optimization** - When to use custom hooks
+2. **Testing Hooks** - Best practices and tools
+3. **Hook Libraries** - Popular community hooks
+4. **Server State** - React Query and SWR
+
+### Building on Custom Hooks:
+5. **Advanced Patterns** - Factory hooks, hook composition
+6. **TypeScript** - Advanced typing for hooks
+7. **Hook Rules** - ESLint plugin configuration
+8. **Publishing Hooks** - Creating hook libraries
+
+### Integration Topics:
+9. **State Management** - Hooks with Redux/Zustand
+10. **Form Libraries** - React Hook Form
+11. **Animation Hooks** - Framer Motion, React Spring
+12. **Real-time Hooks** - WebSocket, SSE hooks
+
+</SlideLayout.Full>

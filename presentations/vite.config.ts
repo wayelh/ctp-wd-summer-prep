@@ -20,21 +20,8 @@ const tsSections = [
 
 // Create entry points object
 const input = {
-  main: resolve(__dirname, 'index.html'),
-  sections: resolve(__dirname, 'section-index.html'),
-  combined: resolve(__dirname, 'combined.html'),
-  'all-presentations': resolve(__dirname, 'all-presentations.html')
+  main: resolve(__dirname, 'index.html')
 };
-
-// Add JavaScript sections
-jsSections.forEach(section => {
-  input[`js-${section}`] = resolve(__dirname, `js-${section}.html`);
-});
-
-// Add TypeScript sections
-tsSections.forEach(section => {
-  input[`ts-${section}`] = resolve(__dirname, `ts-${section}.html`);
-});
 
 const viteConfig = defineConfig({
   plugins: [

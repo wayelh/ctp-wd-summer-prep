@@ -1,0 +1,52 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Accessibility and Usability
+
+Making the web work for everyone
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Color Contrast
+
+- Text should have at least 4.5:1 contrast ratio with background (AA standard)
+- Large text (18pt+) needs 3:1 contrast ratio
+- Use tools like WebAIM contrast checker to verify
+- Don't rely on color alone to convey information
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Keyboard Navigation
+
+- All interactive elements must be keyboard accessible
+- Visible focus indicators (outline, border, or background change)
+- Logical tab order that follows visual flow
+- Skip links for repetitive navigation
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Screen Reader Support
+
+- Use semantic HTML elements
+- Proper heading hierarchy (h1 → h2 → h3)
+- Alt text for images that convey information
+- ARIA labels for icon-only buttons
+- Hide decorative elements with `aria-hidden="true"`
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Motion and Animation
+
+- Respect `prefers-reduced-motion` for users with vestibular disorders
+- Provide pause/stop controls for auto-playing content
+- Avoid flashing content (can trigger seizures)
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Form Accessibility
+
+- Labels associated with inputs using `for` attribute
+- Error messages linked to fields with `aria-describedby`
+- Required fields marked with `required` attribute
+- Clear, descriptive error messages
+</SlideLayout.Full>

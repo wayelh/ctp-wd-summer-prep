@@ -1,0 +1,162 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## useState Hook
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>useState Example</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Basic useState example for habit tracking
+function HabitTracker(): JSX.Element {
+  // Declare state variables for habit tracking
+  const [streak, setStreak] = useState<number>(0);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  const [habitName, setHabitName] = useState<string>('Morning Meditation');
+  const [lastCompleted, setLastCompleted] = useState<Date | null>(null);
+
+  const completeHabit = () => {
+    setIsCompleted(true);
+    setStreak(streak + 1);
+    setLastCompleted(new Date());
+  };
+
+  const resetHabit = () => {
+    setIsCompleted(false);
+    // Only reset streak if it's a new day
+  };
+
+  return (
+    <div>
+      <h2>{habitName}</h2>
+      <p>Current Streak: {streak} days 🔥</p>
+      
+      <input 
+        value={habitName} 
+        onChange={(e) => setHabitName(e.target.value)}
+        placeholder="Habit name"
+      />
+      
+      <div>
+        <button 
+          onClick={completeHabit}
+          disabled={isCompleted}
+          style={{ backgroundColor: isCompleted ? '#4caf50' : '#2196f3' }}
+        >
+          {isCompleted ? '✅ Completed Today' : '⭕ Mark Complete'}
+        </button>
+        <button onClick={resetHabit}>New Day</button>
+      </div>
+      
+      {lastCompleted && (
+        <p>Last completed: {lastCompleted.toLocaleString()}</p>
+      )}
+    </div>
+  );
+}
+
+// Multiple state variables for habit management
+function HabitList(): JSX.Element {
+  const [habits, setHabits] = useState<{name: string; streak: number; completed: boolean}[]>([]);
+  const [inputValue, setInputValue] = useState<string>('');
+  const [frequency, setFrequency] = useState<'daily' | 'weekly'>('daily');
+
+  const addHabit = () => {
+    if (inputValue.trim()) {
+      setHabits([...habits, {
+        name: inputValue,
+        streak: 0,
+        completed: false
+      }]);
+      setInputValue('');
+    }
+  };
+
+  const toggleHabit = (index: number) => {
+    setHabits(habits.map((habit, i) => 
+      i === index 
+        ? { 
+            ...habit, 
+            completed: !habit.completed,
+            streak: !habit.completed ? habit.streak + 1 : habit.streak
+          }
+        : habit
+    ));
+  };
+
+  const removeHabit = (index: number) => {
+    setHabits(habits.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div>
+      <h2>My Habits</h2>
+      <div>
+        <input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && addHabit()}
+          placeholder="Add a new habit"
+        />
+        <select value={frequency} onChange={(e) => setFrequency(e.target.value as any)}>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+        </select>
+        <button onClick={addHabit}>Add Habit</button>
+      </div>
+      <ul>
+        {habits.map((habit, index) => (
+          <li key={index} style={{ 
+            textDecoration: habit.completed ? 'line-through' : 'none',
+            opacity: habit.completed ? 0.7 : 1
+          }}>
+            <input 
+              type="checkbox" 
+              checked={habit.completed}
+              onChange={() => toggleHabit(index)}
+            />
+            {habit.name} - Streak: {habit.streak} 🔥
+            <button onClick={() => removeHabit(index)}>Remove</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  return (
+    <div>
+      <HabitTracker />
+      <hr />
+      <HabitList />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

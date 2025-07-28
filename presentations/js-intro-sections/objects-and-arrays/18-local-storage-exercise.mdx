@@ -1,0 +1,45 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Local Storage Integration
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Exercise: Save and load habits from localStorage
+// TODO: Implement persistence for the habit tracker
+
+const habitStorage = {
+  // TODO: Implement these methods
+  save(habits) {
+    // Save habits array to localStorage
+    // Your code here...
+  },
+  
+  load() {
+    // Load habits from localStorage
+    // Return empty array if none exist
+    // Your code here...
+  },
+  
+  clear() {
+    // Remove habits from localStorage
+    // Your code here...
+  }
+};
+
+// Test your implementation
+const testHabits = [
+  { name: "Exercise", category: "health", streak: 5 },
+  { name: "Read", category: "learning", streak: 3 }
+];
+
+habitStorage.save(testHabits);
+const loaded = habitStorage.load();
+console.log("Loaded:", loaded);
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

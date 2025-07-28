@@ -1,0 +1,32 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## What Are Generics?
+
+- Generics are "type variables" that make code reusable:
+- Write functions/classes that work with multiple types
+  - Maintain type safety without code duplication
+  - Think of them as "placeholders" for types
+
+**The `<T>` Syntax:**
+```typescript
+// T is a type variable (can be any name)
+function identity<T>(value: T): T {
+  return value;
+}
+
+// TypeScript infers the type
+const num = identity(42);        // T = number
+const str = identity("hello");   // T = string
+
+// Or specify explicitly
+const bool = identity<boolean>(true);
+```
+
+- Common Generic Names:
+- `T` - Type
+  - `K` - Key
+  - `V` - Value  
+  - `E` - Element
+</SlideLayout.Full>

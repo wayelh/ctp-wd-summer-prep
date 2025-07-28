@@ -1,0 +1,31 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Understanding Closures: The Concept
+
+**A closure is created when:**
+1. A function is defined inside another function
+2. The inner function uses variables from the outer function
+3. The inner function is available outside the outer function
+
+**Key insight**: The inner function "closes over" variables from its parent scope
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Example of a Closure
+
+```javascript
+function outer() {
+  const message = "Hello";  // Variable in outer scope
+  
+  function inner() {
+    console.log(message);   // Inner function uses outer variable
+  }
+  
+  return inner;             // Return the inner function
+}
+
+const myClosure = outer();  // outer() has finished executing
+myClosure();                // But inner() still remembers 'message'!
+```
+</SlideLayout.Full>

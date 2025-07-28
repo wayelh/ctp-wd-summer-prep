@@ -1,0 +1,135 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Objects: JavaScript's Building Blocks
+
+<CodeDisplay >
+  <File name="habit.js">
+    
+```javascript
+// Exercise: Create a habit object
+// TODO: Create an object representing a habit with:
+// - name (string)
+// - category (string)
+// - streakDays (number)
+// - isActive (boolean)
+// - complete() method that increments streakDays
+
+// Your code here...
+```
+    
+    
+```javascript
+// Step 1: Basic object literal
+const habit = {
+  name: "Morning Exercise",
+  category: "health",
+  streakDays: 0,
+  isActive: true
+};
+
+// Accessing properties
+console.log(habit.name);        // Dot notation
+console.log(habit["category"]); // Bracket notation
+
+// Dynamic property access
+const prop = "streakDays";
+console.log(habit[prop]);       // 0
+```
+    
+    
+```javascript
+// Step 2: Add methods and use 'this'
+const habit = {
+  name: "Morning Exercise",
+  category: "health",
+  streakDays: 0,
+  isActive: true,
+  
+  complete() {
+    this.streakDays++;
+    console.log(`${this.name} completed! Streak: ${this.streakDays}`);
+  },
+  
+  reset() {
+    this.streakDays = 0;
+    console.log(`${this.name} streak reset.`);
+  },
+  
+  getStatus() {
+    return `${this.name}: ${this.streakDays} day streak`;
+  }
+};
+
+// Use the methods
+habit.complete(); // Morning Exercise completed! Streak: 1
+habit.complete(); // Morning Exercise completed! Streak: 2
+console.log(habit.getStatus()); // Morning Exercise: 2 day streak
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Test: Check habit object structure
+describe('Habit Object', () => {
+  it('should define a variable called `habit`', () => {
+    expect(typeof habit).to.be('object');
+  });
+
+  it('should have required properties', () => {
+    expect(habit).to.have.property('name');
+    expect(habit).to.have.property('category');
+    expect(habit).to.have.property('streakDays');
+    expect(habit).to.have.property('isActive');
+  });
+  
+  it('should have complete method', () => {
+    expect(habit.complete).to.be.a('function');
+    const initialStreak = habit.streakDays;
+    habit.complete();
+    expect(habit.streakDays).to.equal(initialStreak + 1);
+  });
+
+  it('should have correct initial values', () => {
+    expect(habit.name).to.equal("Morning Exercise");
+    expect(habit.category).to.equal("health");
+    expect(habit.streakDays).to.equal(0);
+    expect(habit.isActive).to.be.true;
+  });
+
+  it('should increment streak on complete', () => {
+    const startStreak = habit.streakDays;
+    habit.complete();
+    expect(habit.streakDays).to.equal(startStreak + 1);
+  });
+  
+  it('should reset streak to 0', () => {
+    habit.reset();
+    expect(habit.streakDays).to.equal(0);
+  });
+  
+  it('should return status string', () => {
+    expect(habit.getStatus()).to.be.a('string');
+    expect(habit.getStatus()).to.contain(habit.name);
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Object Methods and 'this'
+    **Objects can contain functions (methods)**
+    
+    **The 'this' keyword refers to the current object**
+    
+    - Methods can access object properties using 'this'
+    - Methods can modify object state
+    - Methods enable object-oriented programming
+  </FlexBox>
+</SlideLayout.Full>

@@ -1,0 +1,127 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Testing Async Behavior
+
+<CodeDisplay>
+  <File name="UserList.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface UserListProps {
+  fetchUsers: () => Promise<User[]>;
+}
+
+function UserList({ fetchUsers }: UserListProps) {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchUsers();
+      setUsers(data);
+    } catch (err) {
+      setError('Failed to load users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div>Loading users...</div>;
+  if (error) return <div role="alert">{error}</div>;
+  if (users.length === 0) return <div>No users found</div>;
+
+  return (
+    <div>
+      <h2>Users</h2>
+      <ul>
+        {users.map(user => (
+          <li key={user.id}>
+            {user.name} ({user.email})
+          </li>
+        ))}
+      </ul>
+      <button onClick={loadUsers}>Refresh</button>
+    </div>
+  );
+}
+
+export default UserList;
+```
+  </File>
+  <File name="UserList.test.tsx">
+```tsx
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import UserList from './UserList';
+
+describe('UserList', () => {
+  test('displays users after loading', async () => {
+    const mockUsers = [
+      { id: 1, name: 'John Doe', email: 'john@example.com' },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+    ];
+    
+    const fetchUsers = jest.fn().mockResolvedValue(mockUsers);
+    render(<UserList fetchUsers={fetchUsers} />);
+
+    // Initially shows loading
+    expect(screen.getByText('Loading users...')).toBeInTheDocument();
+
+    // Wait for users to load
+    await waitFor(() => {
+      expect(screen.getByText('John Doe (john@example.com)')).toBeInTheDocument();
+      expect(screen.getByText('Jane Smith (jane@example.com)')).toBeInTheDocument();
+    });
+
+    expect(fetchUsers).toHaveBeenCalledTimes(1);
+  });
+
+  test('displays error when fetch fails', async () => {
+    const fetchUsers = jest.fn().mockRejectedValue(new Error('API Error'));
+    render(<UserList fetchUsers={fetchUsers} />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Failed to load users');
+    });
+  });
+
+  test('refreshes users when button clicked', async () => {
+    const user = userEvent.setup();
+    const fetchUsers = jest.fn()
+      .mockResolvedValueOnce([{ id: 1, name: 'Initial', email: 'initial@example.com' }])
+      .mockResolvedValueOnce([{ id: 2, name: 'Updated', email: 'updated@example.com' }]);
+    
+    render(<UserList fetchUsers={fetchUsers} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Initial (initial@example.com)')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText('Refresh'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Updated (updated@example.com)')).toBeInTheDocument();
+    });
+
+    expect(fetchUsers).toHaveBeenCalledTimes(2);
+  });
+});
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

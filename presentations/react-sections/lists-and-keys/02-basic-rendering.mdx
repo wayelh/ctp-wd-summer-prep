@@ -1,0 +1,244 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Basic List Rendering
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Lists</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Simple array rendering
+function BasicList(): JSX.Element {
+  const fruits = ['Apple', 'Banana', 'Orange', 'Grape', 'Mango'];
+  
+  return (
+    <div>
+      <h2>Fruit List</h2>
+      <ul>
+        {fruits.map((fruit, index) => (
+          <li key={index}>{fruit}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// Rendering array of objects
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+function UserList(): JSX.Element {
+  const users: User[] = [
+    { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin' },
+    { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'User' },
+    { id: 3, name: 'Carol Williams', email: 'carol@example.com', role: 'User' },
+    { id: 4, name: 'David Brown', email: 'david@example.com', role: 'Moderator' }
+  ];
+
+  return (
+    <div>
+      <h2>User Directory</h2>
+      <div className="user-list">
+        {users.map(user => (
+          <div key={user.id} className="user-card">
+            <h3>{user.name}</h3>
+            <p>{user.email}</p>
+            <span className={`role ${user.role.toLowerCase()}`}>
+              {user.role}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Rendering with index and conditionals
+function NumberList(): JSX.Element {
+  const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+  return (
+    <div>
+      <h2>Number List</h2>
+      <ul>
+        {numbers.map((num, index) => (
+          <li 
+            key={num} 
+            className={num % 2 === 0 ? 'even' : 'odd'}
+          >
+            Position {index + 1}: {num} 
+            {num % 2 === 0 ? ' (even)' : ' (odd)'}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// Nested lists
+interface Category {
+  id: number;
+  name: string;
+  items: string[];
+}
+
+function NestedList(): JSX.Element {
+  const categories: Category[] = [
+    { id: 1, name: 'Fruits', items: ['Apple', 'Banana', 'Orange'] },
+    { id: 2, name: 'Vegetables', items: ['Carrot', 'Broccoli', 'Spinach'] },
+    { id: 3, name: 'Dairy', items: ['Milk', 'Cheese', 'Yogurt'] }
+  ];
+
+  return (
+    <div>
+      <h2>Grocery Categories</h2>
+      {categories.map(category => (
+        <div key={category.id} className="category">
+          <h3>{category.name}</h3>
+          <ul>
+            {category.items.map((item, index) => (
+              <li key={`${category.id}-${index}`}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  return (
+    <div className="app">
+      <h1>List Rendering Examples</h1>
+      <BasicList />
+      <UserList />
+      <NumberList />
+      <NestedList />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h2 {
+  color: #333;
+  margin-top: 30px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  padding: 8px;
+  margin: 4px 0;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+}
+
+li.even {
+  background-color: #e3f2fd;
+}
+
+li.odd {
+  background-color: #fff3e0;
+}
+
+.user-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.user-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.user-card h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.user-card p {
+  color: #666;
+  margin: 0 0 12px 0;
+}
+
+.role {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.role.admin {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.role.user {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.role.moderator {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.category {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.category h3 {
+  margin: 0 0 10px 0;
+  color: #555;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

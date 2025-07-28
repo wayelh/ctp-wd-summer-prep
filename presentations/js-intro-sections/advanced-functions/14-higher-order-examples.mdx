@@ -1,0 +1,23 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Higher-Order Function Examples
+
+- Common Examples:
+- Array methods: map, filter, reduce
+  - Event handlers: addEventListener
+  - Decorators and middleware
+
+```javascript
+// Array method example
+const habits = ['Exercise', 'Reading', 'Meditation'];
+const upperCaseHabits = habits.map(habit => habit.toUpperCase());
+
+// Event handler example
+button.addEventListener('click', handleClick);
+
+// Decorator example
+const loggedFunction = withLogging(myFunction);
+```
+</SlideLayout.Full>

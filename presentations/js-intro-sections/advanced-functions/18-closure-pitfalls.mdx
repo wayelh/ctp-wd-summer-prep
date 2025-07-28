@@ -1,0 +1,63 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Common Closure Pitfalls
+
+**Watch out for these gotchas:**
+
+1. **Loop Variable Capture**
+```javascript
+// ❌ Problem: All buttons alert "3"
+for (var i = 0; i < 3; i++) {
+  button[i].onclick = function() {
+    alert(i); // Always 3!
+  };
+}
+```
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Common Closure Pitfalls
+
+```javascript
+**Watch out for these gotchas:**
+
+// ✅ Solution 1: Use let (block scope)
+for (let i = 0; i < 3; i++) {
+  button[i].onclick = function() {
+    alert(i); // Works correctly
+  };
+}
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Common Closure Pitfalls
+
+**Watch out for these gotchas:**
+
+```javascript
+// ✅ Solution 2: IIFE to create new scope
+for (var i = 0; i < 3; i++) {
+  (function(index) {
+    button[index].onclick = function() {
+      alert(index);
+    };
+  })(i);
+}
+```
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Common Closure Pitfalls
+
+**Watch out for these gotchas:**
+
+2. **Memory Leaks**
+```javascript
+// Closures can prevent garbage collection
+function createLeak() {
+  const hugeData = new Array(1000000).fill('💾');
+  return function() {
+    console.log(hugeData.length); // Keeps hugeData in memory
+  };
+}
+```
+</SlideLayout.Full>

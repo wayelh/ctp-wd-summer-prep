@@ -1,161 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/ctp-logo-square.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" href="./favicon.ico" />
     <title>CTP Presentations</title>
     <style>
       body {
         margin: 0;
-        padding: 40px 20px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      }
+      .loading {
         display: flex;
-        align-items: center;
         justify-content: center;
-      }
-      
-      .container {
-        max-width: 800px;
-        background: white;
-        border-radius: 12px;
-        padding: 60px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        text-align: center;
-      }
-      
-      h1 {
-        font-size: 48px;
-        margin-bottom: 20px;
-        color: #333;
-        font-weight: bold;
-      }
-      
-      .subtitle {
-        font-size: 20px;
+        align-items: center;
+        height: 100vh;
+        font-size: 2rem;
         color: #666;
-        margin-bottom: 50px;
-        line-height: 1.5;
       }
-      
-      .options {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 30px;
-        margin-bottom: 40px;
+      .error {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #dc3545;
       }
-      
-      .option {
-        display: block;
-        padding: 30px;
-        margin: 0;
-        background-color: #f9f9f9;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        text-decoration: none;
-        color: #333;
-        transition: all 0.3s ease;
-        cursor: pointer;
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
       }
-      
-      .option:hover {
-        background-color: #e8f4fd;
-        border-color: #61dafb;
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-      }
-      
-      .option.js:hover {
-        background-color: #fff8e1;
-        border-color: #f7df1e;
-      }
-      
-      .option.ts:hover {
-        background-color: #e3f2fd;
-        border-color: #3178c6;
-      }
-      
-      .option-icon {
-        font-size: 36px;
-        margin-bottom: 15px;
-        display: block;
-      }
-      
-      .option-title {
-        font-size: 24px;
-        margin-bottom: 15px;
-        color: #333;
-        font-weight: bold;
-      }
-      
-      .option-description {
-        font-size: 16px;
-        color: #666;
-        margin: 0;
-        line-height: 1.4;
-      }
-      
-      .tip {
-        padding: 20px;
-        background-color: #f0f8ff;
-        border-left: 4px solid #61dafb;
+      .nav button {
+        background: #2196F3;
+        color: white;
+        border: none;
+        padding: 5px 15px;
         border-radius: 4px;
-        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
       }
-      
-      .tip h3 {
-        margin: 0 0 10px 0;
-        color: #333;
+      .nav button:hover {
+        background: #1976D2;
       }
-      
-      .tip p {
-        margin: 0;
-        color: #666;
+      .nav button.active {
+        background: #4CAF50;
+      }
+      .presentation-container {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>CTP Presentations</h1>
-      
-      <p class="subtitle">
-        Choose how you'd like to experience the content:
-      </p>
-
-      <div class="options">
-        <a href="/section-index.html" class="option">
-          <span class="option-icon">📚</span>
-          <div class="option-title">Individual Sections</div>
-          <p class="option-description">
-            Browse and jump between sections independently. Perfect for targeted learning or quick reference.
-          </p>
-        </a>
-
-        <a href="/combined.html?presentation=js" class="option js">
-          <span class="option-icon">🟨</span>
-          <div class="option-title">Full JavaScript Course</div>
-          <p class="option-description">
-            Complete presentation with all JavaScript sections in one flow. Traditional slide experience.
-          </p>
-        </a>
-
-        <a href="/combined.html?presentation=ts" class="option ts">
-          <span class="option-icon">🟦</span>
-          <div class="option-title">Full TypeScript Course</div>
-          <p class="option-description">
-            Complete presentation with all TypeScript sections in one flow. Traditional slide experience.
-          </p>
-        </a>
-      </div>
-
-      <div class="tip">
-        <h3>💡 Tip</h3>
-        <p>
-          The individual sections format is great for instructors who want to teach specific topics or students who want to review particular concepts without going through the entire presentation.
-        </p>
-      </div>
-    </div>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

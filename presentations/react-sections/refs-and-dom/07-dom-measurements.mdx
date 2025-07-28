@@ -1,0 +1,78 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## DOM Measurements
+
+<CodeDisplay>
+  <File name="Measurements.tsx">
+```tsx
+import React, { useRef, useState, useLayoutEffect } from 'react';
+
+function ResizeObserverExample() {
+  const elementRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [isOverflowing, setIsOverflowing] = useState(false);
+
+  useLayoutEffect(() => {
+    const element = elementRef.current;
+    if (!element) return;
+
+    // Check for overflow
+    const checkOverflow = () => {
+      setIsOverflowing(
+        element.scrollHeight > element.clientHeight ||
+        element.scrollWidth > element.clientWidth
+      );
+    };
+
+    // Observe size changes
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setDimensions({ width, height });
+        checkOverflow();
+      }
+    });
+
+    resizeObserver.observe(element);
+    checkOverflow();
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  return (
+    <div>
+      <div
+        ref={elementRef}
+        style={{
+          width: '300px',
+          height: '200px',
+          padding: '20px',
+          border: '2px solid #333',
+          overflow: 'auto',
+          resize: 'both',
+          backgroundColor: isOverflowing ? '#fee' : '#efe'
+        }}
+      >
+        <p>Resize this box!</p>
+        <p>Width: {Math.round(dimensions.width)}px</p>
+        <p>Height: {Math.round(dimensions.height)}px</p>
+        <p>Overflowing: {isOverflowing ? 'Yes' : 'No'}</p>
+        <p style={{ marginTop: '50px' }}>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+          Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default ResizeObserverExample;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

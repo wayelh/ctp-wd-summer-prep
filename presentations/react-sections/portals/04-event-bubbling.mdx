@@ -1,0 +1,105 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Event Bubbling Through Portals
+
+<CodeDisplay>
+  <File name="EventBubbling.tsx">
+```tsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
+
+function EventBubblingDemo() {
+  const [parentClicks, setParentClicks] = useState(0);
+  const [portalClicks, setPortalClicks] = useState(0);
+  const [showPortal, setShowPortal] = useState(false);
+
+  const handleParentClick = () => {
+    setParentClicks(parentClicks + 1);
+    console.log('Parent clicked (bubbled)');
+  };
+
+  return (
+    <div 
+      onClick={handleParentClick}
+      style={{
+        padding: '20px',
+        border: '2px solid blue',
+        cursor: 'pointer'
+      }}
+    >
+      <h3>Parent Container</h3>
+      <p>Parent clicks (including bubbled): {parentClicks}</p>
+      
+      <button 
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowPortal(true);
+        }}
+      >
+        Show Portal
+      </button>
+
+      {showPortal && ReactDOM.createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            background: 'white',
+            padding: '20px',
+            border: '2px solid red',
+            borderRadius: '8px',
+            zIndex: 1000
+          }}
+          onClick={(e) => {
+            setPortalClicks(portalClicks + 1);
+            console.log('Portal clicked');
+            // Note: This will still bubble to parent!
+          }}
+        >
+          <h4>Portal Content</h4>
+          <p>Portal clicks: {portalClicks}</p>
+          <p>Click me - I'll bubble to parent!</p>
+          <button onClick={(e) => {
+            e.stopPropagation();
+            setShowPortal(false);
+          }}>
+            Close (no bubble)
+          </button>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+}
+
+export default EventBubblingDemo;
+```
+  </File>
+  <Tests>
+```js
+import { render, screen, fireEvent } from '@testing-library/react';
+import EventBubblingDemo from './EventBubbling';
+
+test('portal events bubble through React tree', () => {
+  render(<EventBubblingDemo />);
+  
+  // Open portal
+  fireEvent.click(screen.getByText('Show Portal'));
+  
+  // Click portal content
+  const portalContent = screen.getByText('Click me - I\'ll bubble to parent!');
+  fireEvent.click(portalContent);
+  
+  // Check both counters incremented
+  expect(screen.getByText('Parent clicks (including bubbled): 1')).toBeInTheDocument();
+  expect(screen.getByText('Portal clicks: 1')).toBeInTheDocument();
+});
+```
+  </Tests>
+</CodeDisplay>
+
+</SlideLayout.Full>

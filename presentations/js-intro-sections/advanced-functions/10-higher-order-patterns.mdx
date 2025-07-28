@@ -1,0 +1,35 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Higher-Order Function Patterns
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// 1. Function as argument
+function processHabits(habits, operation) {
+  return habits.map(operation);
+}
+
+// 2. Function as return value
+function createMultiplier(factor) {
+  return function(points) {
+    return points * factor;
+  };
+}
+
+// 3. Function transformation
+function withLogging(fn) {
+  return function(...args) {
+    console.log(`Calling ${fn.name} with:`, args);
+    const result = fn(...args);
+    console.log(`Result:`, result);
+    return result;
+  };
+}
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

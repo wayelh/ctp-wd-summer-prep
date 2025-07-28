@@ -1,0 +1,391 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Multiple Contexts
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiple Contexts</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { createContext, useContext, useState, useReducer } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// User Context
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: 'admin' | 'user' | 'guest';
+}
+
+const UserContext = createContext<{
+  user: User | null;
+  login: (user: User) => void;
+  logout: () => void;
+} | undefined>(undefined);
+
+function UserProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+
+  const login = (userData: User) => setUser(userData);
+  const logout = () => setUser(null);
+
+  return (
+    <UserContext.Provider value={{ user, login, logout }}>
+      {children}
+    </UserContext.Provider>
+  );
+}
+
+function useUser() {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within UserProvider');
+  }
+  return context;
+}
+
+// Notification Context with Reducer
+type Notification = {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'info';
+};
+
+type NotificationAction =
+  | { type: 'ADD'; payload: Omit<Notification, 'id'> }
+  | { type: 'REMOVE'; payload: number };
+
+const NotificationContext = createContext<{
+  notifications: Notification[];
+  addNotification: (notification: Omit<Notification, 'id'>) => void;
+  removeNotification: (id: number) => void;
+} | undefined>(undefined);
+
+function notificationReducer(
+  state: Notification[],
+  action: NotificationAction
+): Notification[] {
+  switch (action.type) {
+    case 'ADD':
+      return [...state, { ...action.payload, id: Date.now() }];
+    case 'REMOVE':
+      return state.filter(n => n.id !== action.payload);
+    default:
+      return state;
+  }
+}
+
+function NotificationProvider({ children }: { children: React.ReactNode }) {
+  const [notifications, dispatch] = useReducer(notificationReducer, []);
+
+  const addNotification = (notification: Omit<Notification, 'id'>) => {
+    dispatch({ type: 'ADD', payload: notification });
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      dispatch({ type: 'REMOVE', payload: Date.now() });
+    }, 5000);
+  };
+
+  const removeNotification = (id: number) => {
+    dispatch({ type: 'REMOVE', payload: id });
+  };
+
+  return (
+    <NotificationContext.Provider 
+      value={{ notifications, addNotification, removeNotification }}
+    >
+      {children}
+    </NotificationContext.Provider>
+  );
+}
+
+function useNotifications() {
+  const context = useContext(NotificationContext);
+  if (!context) {
+    throw new Error('useNotifications must be used within NotificationProvider');
+  }
+  return context;
+}
+
+// Settings Context
+interface Settings {
+  language: 'en' | 'es' | 'fr';
+  timezone: string;
+  emailNotifications: boolean;
+}
+
+const SettingsContext = createContext<{
+  settings: Settings;
+  updateSettings: (updates: Partial<Settings>) => void;
+} | undefined>(undefined);
+
+function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const [settings, setSettings] = useState<Settings>({
+    language: 'en',
+    timezone: 'UTC',
+    emailNotifications: true
+  });
+
+  const updateSettings = (updates: Partial<Settings>) => {
+    setSettings(prev => ({ ...prev, ...updates }));
+  };
+
+  return (
+    <SettingsContext.Provider value={{ settings, updateSettings }}>
+      {children}
+    </SettingsContext.Provider>
+  );
+}
+
+function useSettings() {
+  const context = useContext(SettingsContext);
+  if (!context) {
+    throw new Error('useSettings must be used within SettingsProvider');
+  }
+  return context;
+}
+
+// Components using multiple contexts
+function UserProfile() {
+  const { user, logout } = useUser();
+  const { addNotification } = useNotifications();
+  const { settings, updateSettings } = useSettings();
+
+  if (!user) {
+    return <p>Please log in to view profile</p>;
+  }
+
+  const handleLogout = () => {
+    logout();
+    addNotification({ 
+      message: 'Successfully logged out', 
+      type: 'success' 
+    });
+  };
+
+  return (
+    <div className="profile">
+      <h2>User Profile</h2>
+      <p><strong>Name:</strong> {user.name}</p>
+      <p><strong>Email:</strong> {user.email}</p>
+      <p><strong>Role:</strong> {user.role}</p>
+      
+      <h3>Settings</h3>
+      <label>
+        Language:
+        <select 
+          value={settings.language}
+          onChange={(e) => updateSettings({ 
+            language: e.target.value as Settings['language'] 
+          })}
+        >
+          <option value="en">English</option>
+          <option value="es">Spanish</option>
+          <option value="fr">French</option>
+        </select>
+      </label>
+      
+      <label>
+        <input
+          type="checkbox"
+          checked={settings.emailNotifications}
+          onChange={(e) => updateSettings({ 
+            emailNotifications: e.target.checked 
+          })}
+        />
+        Email Notifications
+      </label>
+      
+      <button onClick={handleLogout}>Logout</button>
+    </div>
+  );
+}
+
+function NotificationList() {
+  const { notifications, removeNotification } = useNotifications();
+
+  return (
+    <div className="notifications">
+      {notifications.map(notification => (
+        <div 
+          key={notification.id} 
+          className={`notification ${notification.type}`}
+        >
+          <span>{notification.message}</span>
+          <button onClick={() => removeNotification(notification.id)}>
+            ×
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LoginForm() {
+  const { login } = useUser();
+  const { addNotification } = useNotifications();
+
+  const handleLogin = () => {
+    const mockUser: User = {
+      id: 1,
+      name: 'John Doe',
+      email: 'john@example.com',
+      role: 'admin'
+    };
+    
+    login(mockUser);
+    addNotification({ 
+      message: `Welcome back, ${mockUser.name}!`, 
+      type: 'success' 
+    });
+  };
+
+  return (
+    <button onClick={handleLogin}>Login as John</button>
+  );
+}
+
+// App with multiple providers
+function App() {
+  return (
+    <UserProvider>
+      <NotificationProvider>
+        <SettingsProvider>
+          <div className="app">
+            <h1>Multi-Context App</h1>
+            <NotificationList />
+            <LoginForm />
+            <UserProfile />
+          </div>
+        </SettingsProvider>
+      </NotificationProvider>
+    </UserProvider>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.profile {
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.profile h3 {
+  margin-top: 20px;
+}
+
+.profile label {
+  display: block;
+  margin: 10px 0;
+}
+
+.profile select {
+  margin-left: 10px;
+  padding: 4px 8px;
+}
+
+.notifications {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.notification {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  min-width: 250px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.notification.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.notification.info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.notification button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 10px;
+  color: inherit;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 10px 10px 10px 0;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

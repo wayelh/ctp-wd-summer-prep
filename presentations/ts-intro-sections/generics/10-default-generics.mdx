@@ -1,0 +1,42 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Generic Constraints: Default generics
+
+**3. Default generics**
+- Provide default types for convenience
+- Make APIs easier to use
+- Maintain backwards compatibility
+
+```typescript
+// Default generic type
+interface ApiResponse<T = unknown> {
+  data: T;
+  status: number;
+  message: string;
+}
+
+// Use with specific type
+const userResponse: ApiResponse<User> = {
+  data: { id: 1, name: "Alice", email: "alice@example.com" },
+  status: 200,
+  message: "Success"
+};
+
+// Use with default (unknown)
+const genericResponse: ApiResponse = {
+  data: { anything: "goes here" },
+  status: 200, 
+  message: "Success"
+};
+
+// Function with default generic
+function createArray<T = string>(length: number, defaultValue: T): T[] {
+  return Array(length).fill(defaultValue);
+}
+
+const strings = createArray(3, "hello"); // string[]
+const numbers = createArray(3, 42); // number[]
+```
+</SlideLayout.Full>

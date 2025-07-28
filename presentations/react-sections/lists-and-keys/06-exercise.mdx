@@ -1,0 +1,707 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Build a Dynamic Table
+
+<CodeDisplay height="70vh">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Table Exercise</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// TODO: Build a dynamic table component with:
+// 1. Display employee data in a table
+// 2. Sort by any column (click column headers)
+// 3. Search/filter across all fields
+// 4. Pagination (10 items per page)
+// 5. Select rows with checkboxes
+// 6. Bulk actions (delete selected)
+// 7. Edit inline (double-click cells)
+// 8. Add new employees
+// 9. Column visibility toggle
+
+interface Employee {
+  id: number;
+  name: string;
+  email: string;
+  department: string;
+  salary: number;
+  startDate: string;
+}
+
+function EmployeeTable(): JSX.Element {
+  // Sample data
+  const initialEmployees: Employee[] = [
+    { id: 1, name: 'Alice Johnson', email: 'alice@company.com', department: 'Engineering', salary: 75000, startDate: '2020-01-15' },
+    { id: 2, name: 'Bob Smith', email: 'bob@company.com', department: 'Sales', salary: 65000, startDate: '2019-06-01' },
+    // Add more sample data...
+  ];
+
+  // TODO: Implement state for:
+  // - employees list
+  // - sort configuration
+  // - search term
+  // - current page
+  // - selected rows
+  // - visible columns
+  
+  // TODO: Implement functions for:
+  // - Sorting
+  // - Filtering/searching
+  // - Pagination
+  // - Row selection
+  // - Inline editing
+  // - Adding new employee
+  // - Deleting employees
+  
+  return (
+    <div className="employee-table">
+      <h1>Employee Management</h1>
+      {/* TODO: Build your dynamic table here */}
+      <p>Implement the employee table</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<HabitDashboard />);
+```
+
+```tsx
+// SOLUTION
+import React, { useState, useMemo } from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface Employee {
+  id: number;
+  name: string;
+  email: string;
+  department: string;
+  salary: number;
+  startDate: string;
+}
+
+type SortConfig = {
+  key: keyof Employee;
+  direction: 'asc' | 'desc';
+} | null;
+
+function EmployeeTable(): JSX.Element {
+  // Sample data
+  const initialEmployees: Employee[] = [
+    { id: 1, name: 'Alice Johnson', email: 'alice@company.com', department: 'Engineering', salary: 75000, startDate: '2020-01-15' },
+    { id: 2, name: 'Bob Smith', email: 'bob@company.com', department: 'Sales', salary: 65000, startDate: '2019-06-01' },
+    { id: 3, name: 'Carol Williams', email: 'carol@company.com', department: 'Marketing', salary: 70000, startDate: '2021-03-10' },
+    { id: 4, name: 'David Brown', email: 'david@company.com', department: 'Engineering', salary: 85000, startDate: '2018-11-20' },
+    { id: 5, name: 'Eve Davis', email: 'eve@company.com', department: 'HR', salary: 60000, startDate: '2020-07-01' },
+    { id: 6, name: 'Frank Miller', email: 'frank@company.com', department: 'Sales', salary: 72000, startDate: '2019-09-15' },
+    { id: 7, name: 'Grace Wilson', email: 'grace@company.com', department: 'Engineering', salary: 90000, startDate: '2017-05-01' },
+    { id: 8, name: 'Henry Moore', email: 'henry@company.com', department: 'Marketing', salary: 68000, startDate: '2021-01-10' },
+    { id: 9, name: 'Iris Taylor', email: 'iris@company.com', department: 'HR', salary: 55000, startDate: '2022-02-01' },
+    { id: 10, name: 'Jack Anderson', email: 'jack@company.com', department: 'Engineering', salary: 82000, startDate: '2019-04-15' },
+    { id: 11, name: 'Kate Thomas', email: 'kate@company.com', department: 'Sales', salary: 67000, startDate: '2020-08-20' },
+    { id: 12, name: 'Leo Jackson', email: 'leo@company.com', department: 'Marketing', salary: 73000, startDate: '2018-12-01' },
+  ];
+
+  const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
+  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+  const [editingCell, setEditingCell] = useState<{ id: number; field: keyof Employee } | null>(null);
+  const [visibleColumns, setVisibleColumns] = useState<Set<keyof Employee>>(
+    new Set(['name', 'email', 'department', 'salary', 'startDate'])
+  );
+  
+  const itemsPerPage = 10;
+
+  // Sorting
+  const handleSort = (key: keyof Employee) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Filtering
+  const filteredEmployees = useMemo(() => {
+    return employees.filter(employee => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        employee.name.toLowerCase().includes(searchLower) ||
+        employee.email.toLowerCase().includes(searchLower) ||
+        employee.department.toLowerCase().includes(searchLower) ||
+        employee.salary.toString().includes(searchLower) ||
+        employee.startDate.includes(searchLower)
+      );
+    });
+  }, [employees, searchTerm]);
+
+  // Sorting
+  const sortedEmployees = useMemo(() => {
+    if (!sortConfig) return filteredEmployees;
+
+    return [...filteredEmployees].sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredEmployees, sortConfig]);
+
+  // Pagination
+  const paginatedEmployees = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedEmployees.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedEmployees, currentPage]);
+
+  const totalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
+
+  // Selection
+  const handleSelectAll = () => {
+    if (selectedRows.size === paginatedEmployees.length) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(paginatedEmployees.map(e => e.id)));
+    }
+  };
+
+  const handleSelectRow = (id: number) => {
+    const newSelected = new Set(selectedRows);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedRows(newSelected);
+  };
+
+  // Editing
+  const handleCellEdit = (id: number, field: keyof Employee, value: string) => {
+    setEmployees(employees.map(emp => {
+      if (emp.id === id) {
+        return { ...emp, [field]: field === 'salary' ? parseInt(value) || 0 : value };
+      }
+      return emp;
+    }));
+    setEditingCell(null);
+  };
+
+  // Delete selected
+  const handleDeleteSelected = () => {
+    setEmployees(employees.filter(emp => !selectedRows.has(emp.id)));
+    setSelectedRows(new Set());
+  };
+
+  // Add new employee
+  const handleAddEmployee = () => {
+    const newEmployee: Employee = {
+      id: Math.max(...employees.map(e => e.id)) + 1,
+      name: 'New Employee',
+      email: 'new@company.com',
+      department: 'Engineering',
+      salary: 50000,
+      startDate: new Date().toISOString().split('T')[0]
+    };
+    setEmployees([...employees, newEmployee]);
+  };
+
+  // Toggle column visibility
+  const toggleColumn = (column: keyof Employee) => {
+    const newVisible = new Set(visibleColumns);
+    if (newVisible.has(column)) {
+      newVisible.delete(column);
+    } else {
+      newVisible.add(column);
+    }
+    setVisibleColumns(newVisible);
+  };
+
+  return (
+    <div className="employee-table">
+      <h1>Employee Management</h1>
+
+      <div className="controls">
+        <input
+          type="text"
+          placeholder="Search employees..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-box"
+        />
+        
+        <button onClick={handleAddEmployee} className="add-btn">
+          Add Employee
+        </button>
+
+        {selectedRows.size > 0 && (
+          <button onClick={handleDeleteSelected} className="delete-btn">
+            Delete Selected ({selectedRows.size})
+          </button>
+        )}
+
+        <div className="column-toggle">
+          <span>Columns:</span>
+          {(['name', 'email', 'department', 'salary', 'startDate'] as const).map(col => (
+            <label key={col}>
+              <input
+                type="checkbox"
+                checked={visibleColumns.has(col)}
+                onChange={() => toggleColumn(col)}
+              />
+              {col}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>
+              <input
+                type="checkbox"
+                checked={selectedRows.size === paginatedEmployees.length && paginatedEmployees.length > 0}
+                onChange={handleSelectAll}
+              />
+            </th>
+            {visibleColumns.has('name') && (
+              <th onClick={() => handleSort('name')} className="sortable">
+                Name {sortConfig?.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </th>
+            )}
+            {visibleColumns.has('email') && (
+              <th onClick={() => handleSort('email')} className="sortable">
+                Email {sortConfig?.key === 'email' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </th>
+            )}
+            {visibleColumns.has('department') && (
+              <th onClick={() => handleSort('department')} className="sortable">
+                Department {sortConfig?.key === 'department' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </th>
+            )}
+            {visibleColumns.has('salary') && (
+              <th onClick={() => handleSort('salary')} className="sortable">
+                Salary {sortConfig?.key === 'salary' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </th>
+            )}
+            {visibleColumns.has('startDate') && (
+              <th onClick={() => handleSort('startDate')} className="sortable">
+                Start Date {sortConfig?.key === 'startDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </th>
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedEmployees.map(employee => (
+            <tr key={employee.id} className={selectedRows.has(employee.id) ? 'selected' : ''}>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={selectedRows.has(employee.id)}
+                  onChange={() => handleSelectRow(employee.id)}
+                />
+              </td>
+              {visibleColumns.has('name') && (
+                <td
+                  onDoubleClick={() => setEditingCell({ id: employee.id, field: 'name' })}
+                >
+                  {editingCell?.id === employee.id && editingCell.field === 'name' ? (
+                    <input
+                      type="text"
+                      defaultValue={employee.name}
+                      onBlur={(e) => handleCellEdit(employee.id, 'name', e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleCellEdit(employee.id, 'name', e.currentTarget.value);
+                        }
+                      }}
+                      autoFocus
+                    />
+                  ) : (
+                    employee.name
+                  )}
+                </td>
+              )}
+              {visibleColumns.has('email') && <td>{employee.email}</td>}
+              {visibleColumns.has('department') && <td>{employee.department}</td>}
+              {visibleColumns.has('salary') && <td>${employee.salary.toLocaleString()}</td>}
+              {visibleColumns.has('startDate') && <td>{employee.startDate}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="pagination">
+        <button
+          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>
+          Page {currentPage} of {totalPages} ({sortedEmployees.length} total)
+        </span>
+        <button
+          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<HabitDashboard />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.employee-table {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.add-btn {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background-color: #218838;
+}
+
+.delete-btn {
+  padding: 10px 20px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}
+
+.column-toggle {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.column-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  color: #333;
+}
+
+.data-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.data-table th.sortable:hover {
+  background-color: #e9ecef;
+}
+
+.data-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.data-table tr.selected {
+  background-color: #e3f2fd;
+}
+
+.data-table td input[type="text"] {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #007bff;
+  border-radius: 2px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+```
+  </File>
+  <File name="tests.js">
+```javascript
+describe('Employee Table', () => {
+  it('should render table headers', () => {
+    const headers = document.querySelectorAll('th');
+    assert.isAtLeast(headers.length, 5, 'Should have at least 5 column headers');
+  });
+
+  it('should have search input', () => {
+    const searchBox = document.querySelector('.search-box');
+    assert.exists(searchBox, 'Search box should exist');
+    assert.equal(searchBox.type, 'text', 'Should be a text input');
+  });
+
+  it('should have add employee button', () => {
+    const addBtn = document.querySelector('.add-btn');
+    assert.exists(addBtn, 'Add button should exist');
+    assert.include(addBtn.textContent, 'Add', 'Button should say Add');
+  });
+
+  it('should display employee data in rows', () => {
+    const rows = document.querySelectorAll('tbody tr');
+    assert.isAtLeast(rows.length, 1, 'Should have at least one employee row');
+  });
+
+  it('should have pagination controls', () => {
+    const pagination = document.querySelector('.pagination');
+    assert.exists(pagination, 'Pagination controls should exist');
+    
+    const buttons = pagination.querySelectorAll('button');
+    assert.equal(buttons.length, 2, 'Should have Previous and Next buttons');
+  });
+
+  it('should have column visibility toggles', () => {
+    const columnToggle = document.querySelector('.column-toggle');
+    assert.exists(columnToggle, 'Column toggle controls should exist');
+    
+    const checkboxes = columnToggle.querySelectorAll('input[type="checkbox"]');
+    assert.isAtLeast(checkboxes.length, 5, 'Should have checkboxes for each column');
+  });
+});
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Key Best Practices
+
+### 1. **Always Use Stable Keys**
+```tsx
+// ❌ Bad: Using index as key for dynamic habits
+habits.map((habit, index) => <HabitCard key={index} />)
+
+// ✅ Good: Using stable, unique ID
+habits.map(habit => <HabitCard key={habit.id} />)
+```
+
+### 2. **Keys Must Be Unique Among Siblings**
+```tsx
+// Keys only need to be unique within the same array
+<div>
+  {dailyHabits.map(habit => <HabitCard key={habit.id} />)}
+  {weeklyHabits.map(habit => <HabitCard key={habit.id} />)}
+</div>
+```
+
+### 3. **Don't Use Math.random() for Keys**
+```tsx
+// ❌ Bad: Creates new key on every render
+<HabitCard key={Math.random()} />
+
+// ✅ Good: Stable key
+<HabitCard key={habit.id} />
+```
+
+### 4. **Extract List Items to Components**
+```tsx
+// Better performance and cleaner code
+const HabitItem = ({ habit, onToggle }) => (
+  <li onClick={() => onToggle(habit.id)}>
+    {habit.name} - Streak: {habit.streak}
+  </li>
+);
+```
+
+### 5. **Use Fragments for Multiple Elements**
+```tsx
+habits.map(habit => (
+  <React.Fragment key={habit.id}>
+    <dt>{habit.name}</dt>
+    <dd>Streak: {habit.streak} | {habit.frequency}</dd>
+  </React.Fragment>
+))
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Performance Optimization
+
+### 1. **Virtualization for Long Lists**
+- Use libraries like react-window or react-virtualized
+- Only render visible items
+- Crucial for lists with thousands of items
+
+### 2. **Memoization**
+```tsx
+// Memoize expensive computations
+const sortedHabits = useMemo(
+  () => habits.sort((a, b) => b.streak - a.streak),
+  [habits]
+);
+
+// Memoize callbacks
+const toggleHabit = useCallback(
+  (id) => { /* toggle habit completion */ },
+  [updateHabit]
+);
+```
+
+### 3. **Pagination or Infinite Scroll**
+- Load data in chunks
+- Better initial load time
+- Reduced memory usage
+
+### 4. **React.memo for List Items**
+```tsx
+const HabitCard = React.memo(({ habit, onToggle }) => (
+  <div onClick={() => onToggle(habit.id)}>
+    {habit.name} - {habit.completedToday ? '✓' : '○'}
+  </div>
+));
+```
+
+### 5. **Avoid Inline Objects/Functions**
+```tsx
+// ❌ Creates new object every render
+<HabitCard style={{ backgroundColor: 'green' }} />
+
+// ✅ Better
+const completedStyle = { backgroundColor: 'green' };
+<HabitCard style={completedStyle} />
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Summary
+
+### Key Takeaways:
+- **Lists are fundamental** in React applications
+- **Keys help React** identify which items have changed
+- **Use stable, unique keys** - never use index in dynamic lists
+- **Extract list items** into separate components
+- **Optimize performance** for large lists
+- **Many patterns available** for different use cases
+
+### Common Patterns:
+- Basic habit list rendering
+- Filtering by category and frequency
+- Grouping habits by time of day
+- Virtualized habit history
+- Searchable habit library
+- Habit dashboard with statistics
+
+### Next Steps:
+
+#### Immediate Next Topics:
+1. **Context API** - Share habit data across components
+2. **Custom Hooks** - Extract habit tracking logic
+3. **Performance** - Optimize large habit lists
+4. **Testing** - Test habit list interactions
+
+#### Building on Lists:
+5. **Drag and Drop** - Reorder habit priorities
+6. **Infinite Scroll** - Load habit history
+7. **Real-time Sync** - Multi-device habit tracking
+8. **Analytics** - Habit completion charts
+
+#### Advanced Patterns:
+9. **State Management** - Global habit state
+10. **Server State** - Sync habits with backend
+11. **Animations** - Streak celebrations
+12. **Accessibility** - Accessible habit tracking
+
+</SlideLayout.Full>

@@ -1,0 +1,52 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Best Practices
+
+### Pattern Selection:
+- **HOCs** - Cross-cutting concerns (auth, logging)
+- **Render Props** - Flexible component logic sharing
+- **Compound Components** - Related component groups
+- **Provider Pattern** - Global/shared state
+- **Hook Composition** - Reusable stateful logic
+
+### Guidelines:
+- **Prefer hooks** over HOCs and render props
+- **Keep patterns simple** - Don't over-engineer
+- **Document complex APIs** clearly
+- **Test pattern implementations** thoroughly
+- **Consider performance** implications
+
+### Common Pitfalls:
+```tsx
+// ❌ Bad: HOC wrapper hell
+withAuth(withLoading(withData(withStyles(Component))));
+
+// ✅ Good: Composed hooks
+function Component() {
+  const auth = useAuth();
+  const { data, loading } = useData();
+  const styles = useStyles();
+}
+
+// ❌ Bad: Render prop nesting
+<DataProvider>
+  {data => (
+    <AuthProvider>
+      {auth => (
+        <ThemeProvider>
+          {theme => <App />}
+        </ThemeProvider>
+      )}
+    </AuthProvider>
+  )}
+</DataProvider>
+
+// ✅ Good: Single provider with hooks
+<AppProvider>
+  <App />
+</AppProvider>
+```
+
+</SlideLayout.Full>

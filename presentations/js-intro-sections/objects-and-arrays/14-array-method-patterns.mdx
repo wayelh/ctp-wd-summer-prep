@@ -1,0 +1,54 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Array Method Patterns for Data Analysis
+
+Common patterns for processing array data
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Filtering and Counting
+
+```javascript
+const completedDays = records.filter(day => day.completed);
+const totalCompleted = completedDays.length;
+```
+
+Use `filter()` to select matching items, then count with `.length`
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Mapping for Transformation
+
+```javascript
+const pointsOnly = records.map(day => day.points);
+const dailyNames = records.map(day => day.date);
+```
+
+Use `map()` to extract specific properties from objects
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Reducing for Totals
+
+```javascript
+const totalPoints = records.reduce((sum, day) => {
+  return day.completed ? sum + day.points : sum;
+}, 0);
+```
+
+Use `reduce()` to combine all values into a single result
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Chaining Methods
+
+```javascript
+const completedDates = records
+  .filter(day => day.completed)
+  .map(day => day.date);
+```
+
+Combine multiple methods for complex transformations
+</SlideLayout.Full>

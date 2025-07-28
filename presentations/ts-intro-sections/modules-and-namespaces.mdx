@@ -58,20 +58,20 @@ import Calculator from './calculator';
 
 Before building a module system, understand these key concepts:
 
-**Module Boundaries:**
+- Module Boundaries:
 - What functionality belongs together?
-- How to expose public APIs while hiding implementation details
-- Planning dependencies and avoiding circular imports
+  - How to expose public APIs while hiding implementation details
+  - Planning dependencies and avoiding circular imports
 
-**Type Organization:**
+- Type Organization:
 - Group related interfaces and types in the same module
-- Use `export type` for type-only exports to optimize compilation
-- Consider re-exporting patterns for cleaner consumer APIs
+  - Use `export type` for type-only exports to optimize compilation
+  - Consider re-exporting patterns for cleaner consumer APIs
 
-**Testing Strategy:**
+- Testing Strategy:
 - Plan how to mock external dependencies
-- Design modules to be testable in isolation
-- Consider dependency injection for better testability
+  - Design modules to be testable in isolation
+  - Consider dependency injection for better testability
 
 </SlideLayout.Full>
 

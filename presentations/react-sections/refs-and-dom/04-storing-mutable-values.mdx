@@ -1,0 +1,104 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Storing Mutable Values
+
+<CodeDisplay>
+  <File name="Timer.tsx">
+```tsx
+import React, { useState, useRef, useEffect } from 'react';
+
+function Timer() {
+  const [count, setCount] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const intervalRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (isRunning) {
+      startTimeRef.current = Date.now() - count * 1000;
+      
+      intervalRef.current = window.setInterval(() => {
+        setCount(Math.floor((Date.now() - startTimeRef.current) / 1000));
+      }, 100);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isRunning]);
+
+  const reset = () => {
+    setCount(0);
+    setIsRunning(false);
+    startTimeRef.current = 0;
+  };
+
+  return (
+    <div>
+      <h2>Timer: {count}s</h2>
+      <button onClick={() => setIsRunning(!isRunning)}>
+        {isRunning ? 'Pause' : 'Start'}
+      </button>
+      <button onClick={reset}>Reset</button>
+      <p>Timer ID: {intervalRef.current || 'None'}</p>
+    </div>
+  );
+}
+
+export default Timer;
+```
+  </File>
+  <Tests>
+```js
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import Timer from './Timer';
+
+beforeEach(() => {
+  jest.useFakeTimers();
+});
+
+afterEach(() => {
+  jest.runOnlyPendingTimers();
+  jest.useRealTimers();
+});
+
+test('timer increments when running', () => {
+  render(<Timer />);
+  
+  fireEvent.click(screen.getByText('Start'));
+  
+  act(() => {
+    jest.advanceTimersByTime(3000);
+  });
+  
+  expect(screen.getByText('Timer: 3s')).toBeInTheDocument();
+});
+
+test('timer pauses and resumes', () => {
+  render(<Timer />);
+  
+  fireEvent.click(screen.getByText('Start'));
+  act(() => jest.advanceTimersByTime(2000));
+  
+  fireEvent.click(screen.getByText('Pause'));
+  act(() => jest.advanceTimersByTime(2000));
+  expect(screen.getByText('Timer: 2s')).toBeInTheDocument();
+  
+  fireEvent.click(screen.getByText('Start'));
+  act(() => jest.advanceTimersByTime(1000));
+  expect(screen.getByText('Timer: 3s')).toBeInTheDocument();
+});
+```
+  </Tests>
+</CodeDisplay>
+
+</SlideLayout.Full>

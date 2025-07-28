@@ -1,0 +1,273 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## useEffect Hook
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>useEffect Example</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// useEffect for habit tracking timers
+function HabitTimer(): JSX.Element {
+  const [minutes, setMinutes] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+  const [habitName] = useState('Meditation');
+  const [targetMinutes] = useState(10);
+
+  // Effect runs after every render where dependencies change
+  useEffect(() => {
+    let interval: number | null = null;
+
+    if (isActive && minutes < targetMinutes) {
+      interval = window.setInterval(() => {
+        setMinutes(m => {
+          if (m >= targetMinutes - 1) {
+            setIsActive(false);
+            alert('🎉 Habit completed!');
+          }
+          return m + 1;
+        });
+      }, 60000); // Update every minute
+    }
+
+    // Cleanup function
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isActive, minutes, targetMinutes]); // Dependency array
+
+  const reset = () => {
+    setMinutes(0);
+    setIsActive(false);
+  };
+
+  const progress = (minutes / targetMinutes) * 100;
+
+  return (
+    <div>
+      <h2>{habitName} Timer</h2>
+      <p>Progress: {minutes}/{targetMinutes} minutes</p>
+      <div style={{
+        width: '100%',
+        height: '20px',
+        backgroundColor: '#e0e0e0',
+        borderRadius: '10px',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          width: `${progress}%`,
+          height: '100%',
+          backgroundColor: '#4caf50',
+          transition: 'width 0.3s'
+        }} />
+      </div>
+      <button onClick={() => setIsActive(!isActive)}>
+        {isActive ? 'Pause' : 'Start'}
+      </button>
+      <button onClick={reset}>Reset</button>
+    </div>
+  );
+}
+
+// Loading habit data with useEffect
+interface HabitData {
+  id: number;
+  name: string;
+  streak: number;
+  completionRate: number;
+  category: string;
+}
+
+function HabitStats({ habitId }: { habitId: number }): JSX.Element {
+  const [habit, setHabit] = useState<HabitData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [weeklyData, setWeeklyData] = useState<boolean[]>([]);
+
+  useEffect(() => {
+    // Reset states when habitId changes
+    setLoading(true);
+
+    // Simulate fetching habit data
+    const fetchHabitData = async () => {
+      // In real app, this would be an API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const mockHabit: HabitData = {
+        id: habitId,
+        name: ['Morning Meditation', 'Exercise', 'Reading'][habitId % 3],
+        streak: Math.floor(Math.random() * 30) + 1,
+        completionRate: Math.floor(Math.random() * 30) + 70,
+        category: ['mindfulness', 'health', 'learning'][habitId % 3]
+      };
+      
+      // Generate weekly completion data
+      const weekly = Array(7).fill(0).map(() => Math.random() > 0.3);
+      
+      setHabit(mockHabit);
+      setWeeklyData(weekly);
+      setLoading(false);
+    };
+
+    fetchHabitData();
+  }, [habitId]); // Re-run when habitId changes
+
+  if (loading) return <p>Loading habit data...</p>;
+  if (!habit) return <p>No habit found</p>;
+
+  return (
+    <div>
+      <h3>{habit.name}</h3>
+      <p>Category: {habit.category}</p>
+      <p>Current Streak: {habit.streak} days 🔥</p>
+      <p>Completion Rate: {habit.completionRate}%</p>
+      <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+        {weeklyData.map((completed, index) => (
+          <div
+            key={index}
+            style={{
+              width: '30px',
+              height: '30px',
+              backgroundColor: completed ? '#4caf50' : '#e0e0e0',
+              borderRadius: '4px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '12px'
+            }}
+          >
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'][index]}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Effect dependencies for habit reminders
+function HabitReminders(): JSX.Element {
+  const [habitCount, setHabitCount] = useState(0);
+  const [reminderTime, setReminderTime] = useState('');
+  const [lastReminder, setLastReminder] = useState<Date | null>(null);
+
+  // Check for daily reset at midnight
+  useEffect(() => {
+    const checkMidnight = () => {
+      const now = new Date();
+      if (now.getHours() === 0 && now.getMinutes() === 0) {
+        console.log('New day! Resetting habits...');
+        // Reset daily habits
+      }
+    };
+
+    const interval = setInterval(checkMidnight, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array - runs once
+
+  // Set up reminder notification
+  useEffect(() => {
+    if (!reminderTime) return;
+
+    const [hours, minutes] = reminderTime.split(':').map(Number);
+    const now = new Date();
+    const reminder = new Date();
+    reminder.setHours(hours, minutes, 0, 0);
+
+    if (reminder <= now) {
+      reminder.setDate(reminder.getDate() + 1);
+    }
+
+    const timeout = setTimeout(() => {
+      console.log('🔔 Time to complete your habits!');
+      setLastReminder(new Date());
+    }, reminder.getTime() - now.getTime());
+
+    return () => clearTimeout(timeout);
+  }, [reminderTime]);
+
+  // Update document title with habit count
+  useEffect(() => {
+    document.title = habitCount > 0 
+      ? `${habitCount} habits to complete` 
+      : 'Habit Tracker';
+  }, [habitCount]);
+
+  return (
+    <div>
+      <h3>Habit Reminders</h3>
+      <p>Habits remaining today: {habitCount}</p>
+      <button onClick={() => setHabitCount(habitCount + 1)}>Add Habit</button>
+      <button onClick={() => setHabitCount(Math.max(0, habitCount - 1))}>
+        Complete Habit
+      </button>
+      
+      <div>
+        <label>Daily reminder time: </label>
+        <input
+          type="time"
+          value={reminderTime}
+          onChange={(e) => setReminderTime(e.target.value)}
+        />
+      </div>
+      
+      {lastReminder && (
+        <p>Last reminder: {lastReminder.toLocaleTimeString()}</p>
+      )}
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  const [selectedHabitId, setSelectedHabitId] = useState(0);
+
+  return (
+    <div>
+      <HabitTimer />
+      <hr />
+      
+      <div>
+        <h2>Habit Statistics</h2>
+        <select 
+          value={selectedHabitId} 
+          onChange={(e) => setSelectedHabitId(Number(e.target.value))}
+        >
+          {[0, 1, 2].map(id => (
+            <option key={id} value={id}>
+              {['Meditation', 'Exercise', 'Reading'][id]}
+            </option>
+          ))}
+        </select>
+        <HabitStats habitId={selectedHabitId} />
+      </div>
+      
+      <hr />
+      <HabitReminders />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -5,15 +5,15 @@ import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 
 The `readonly` modifier prevents property modification after creation:
 
-**Why use readonly?**
+- Why use readonly?**
 - Prevents accidental changes to important configuration
 - Makes intent clear - this shouldn't be modified
 - Enables better optimization by TypeScript compiler
 
-**When to use:**
+**When to use:
 - Configuration objects that shouldn't change
-- Immutable data structures
-- Properties set once during construction
+  - Immutable data structures
+  - Properties set once during construction
 
 </SlideLayout.Full>
 
@@ -40,14 +40,14 @@ config.apiUrl = "https://new-api.example.com";
 
 Index signatures allow dynamic property access with type safety:
 
-**What they solve:**
+- What they solve:
 - Objects with unknown property names but known value types
-- Dictionary/map-like structures
-- Dynamic property access patterns
+  - Dictionary/map-like structures
+  - Dynamic property access patterns
 
-**Syntax explanation:**
+- Syntax explanation:
 - `[key: string]: string` - any string key maps to string value
-- `[key: number]: boolean` - any number key maps to boolean value
+  - `[key: number]: boolean` - any number key maps to boolean value
 
 **Common use case:** Configuration objects, API responses with dynamic keys
 
@@ -83,15 +83,15 @@ const unknown: string = translations["unknown"]; // ✅ (might be undefined)
 
 Before using this pattern, understand the concept:
 
-**The Problem:**
+- The Problem:
 - Need to represent data that can be one of several different shapes
-- Each shape has different properties
-- Want TypeScript to help us handle each case correctly
+  - Each shape has different properties
+  - Want TypeScript to help us handle each case correctly
 
-**The Solution:**
+- The Solution:
 - Create a union type with a common "discriminator" property
-- Each variant has the same discriminator key but different value
-- TypeScript can "narrow" the type based on the discriminator
+  - Each variant has the same discriminator key but different value
+  - TypeScript can "narrow" the type based on the discriminator
 
 **Real-world use:** API responses, state management, form validation results
 

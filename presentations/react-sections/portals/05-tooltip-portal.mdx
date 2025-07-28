@@ -1,0 +1,136 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Tooltip with Portal
+
+<CodeDisplay>
+  <File name="Tooltip.tsx">
+```tsx
+import React, { useState, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
+
+interface TooltipProps {
+  children: React.ReactElement;
+  content: React.ReactNode;
+  delay?: number;
+}
+
+function Tooltip({ children, content, delay = 300 }: TooltipProps) {
+  const [show, setShow] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const targetRef = useRef<HTMLElement>(null);
+  const timeoutRef = useRef<number>();
+
+  const showTooltip = () => {
+    if (targetRef.current) {
+      const rect = targetRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY + 5,
+        left: rect.left + window.scrollX + rect.width / 2
+      });
+    }
+    
+    timeoutRef.current = window.setTimeout(() => {
+      setShow(true);
+    }, delay);
+  };
+
+  const hideTooltip = () => {
+    clearTimeout(timeoutRef.current);
+    setShow(false);
+  };
+
+  useEffect(() => {
+    return () => clearTimeout(timeoutRef.current);
+  }, []);
+
+  const childWithRef = React.cloneElement(children, {
+    ref: targetRef,
+    onMouseEnter: showTooltip,
+    onMouseLeave: hideTooltip,
+    onFocus: showTooltip,
+    onBlur: hideTooltip
+  });
+
+  return (
+    <>
+      {childWithRef}
+      {show && ReactDOM.createPortal(
+        <div
+          style={{
+            position: 'absolute',
+            top: position.top,
+            left: position.left,
+            transform: 'translateX(-50%)',
+            background: '#333',
+            color: 'white',
+            padding: '8px 12px',
+            borderRadius: '4px',
+            fontSize: '14px',
+            whiteSpace: 'nowrap',
+            zIndex: 10000,
+            pointerEvents: 'none',
+            animation: 'fadeIn 0.2s'
+          }}
+        >
+          {content}
+          <div style={{
+            position: 'absolute',
+            top: '-4px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '4px solid transparent',
+            borderRight: '4px solid transparent',
+            borderBottom: '4px solid #333'
+          }} />
+        </div>,
+        document.body
+      )}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ padding: '50px' }}>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateX(-50%) translateY(5px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
+      
+      <h3>Hover over these elements:</h3>
+      
+      <Tooltip content="This is a helpful tooltip">
+        <button>Hover me</button>
+      </Tooltip>
+      
+      <Tooltip content="You can put any content here!" delay={100}>
+        <span style={{ marginLeft: '20px', textDecoration: 'underline', cursor: 'help' }}>
+          Quick tooltip
+        </span>
+      </Tooltip>
+      
+      <Tooltip content={
+        <div>
+          <strong>Rich content!</strong>
+          <br />
+          Multiple lines supported
+        </div>
+      }>
+        <button style={{ marginLeft: '20px' }}>Complex tooltip</button>
+      </Tooltip>
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

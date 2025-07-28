@@ -1,0 +1,25 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Functional Programming: Composition
+
+```javascript
+// Simple functions
+const addPoints = (habit, points) => ({ ...habit, points });
+const addTimestamp = habit => ({ ...habit, timestamp: Date.now() });
+const addId = habit => ({ ...habit, id: generateId() });
+// Compose them
+function createCompleteHabit(habitData) {
+  return addId(
+    addTimestamp(addPoints(habitData, 10))
+  );
+}
+// Or use pipe for better readability
+const createCompleteHabit = pipe(
+  habit => addPoints(habit, 10),
+  addTimestamp,
+  addId
+);
+```
+</SlideLayout.Full>

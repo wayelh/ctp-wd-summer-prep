@@ -1,0 +1,118 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Testing User Interactions
+
+<CodeDisplay>
+  <File name="LoginForm.tsx">
+```tsx
+import React, { useState } from 'react';
+
+interface LoginFormProps {
+  onSubmit: (email: string, password: string) => void;
+}
+
+function LoginForm({ onSubmit }: LoginFormProps) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    
+    if (!email.includes('@')) {
+      setError('Please enter a valid email');
+      return;
+    }
+    
+    setError('');
+    onSubmit(email, password);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>Login</h2>
+      {error && <div role="alert" className="error">{error}</div>}
+      
+      <label>
+        Email:
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          aria-label="Email"
+        />
+      </label>
+      
+      <label>
+        Password:
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          aria-label="Password"
+        />
+      </label>
+      
+      <button type="submit">Login</button>
+    </form>
+  );
+}
+
+export default LoginForm;
+```
+  </File>
+  <File name="LoginForm.test.tsx">
+```tsx
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import LoginForm from './LoginForm';
+
+describe('LoginForm', () => {
+  test('submits form with valid data', async () => {
+    const user = userEvent.setup();
+    const handleSubmit = jest.fn();
+    render(<LoginForm onSubmit={handleSubmit} />);
+
+    await user.type(screen.getByLabelText('Email'), 'test@example.com');
+    await user.type(screen.getByLabelText('Password'), 'password123');
+    await user.click(screen.getByText('Login'));
+
+    expect(handleSubmit).toHaveBeenCalledWith('test@example.com', 'password123');
+  });
+
+  test('shows error for empty fields', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm onSubmit={jest.fn()} />);
+
+    await user.click(screen.getByText('Login'));
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Please fill in all fields'
+    );
+  });
+
+  test('validates email format', async () => {
+    const user = userEvent.setup();
+    render(<LoginForm onSubmit={jest.fn()} />);
+
+    await user.type(screen.getByLabelText('Email'), 'invalid-email');
+    await user.type(screen.getByLabelText('Password'), 'password123');
+    await user.click(screen.getByText('Login'));
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Please enter a valid email'
+    );
+  });
+});
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

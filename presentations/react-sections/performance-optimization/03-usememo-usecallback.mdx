@@ -1,0 +1,321 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## useMemo and useCallback
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>useMemo & useCallback</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useMemo, useCallback, memo } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Child component that receives a callback
+const SearchResults = memo(({ 
+  onItemClick 
+}: { 
+  onItemClick: (item: string) => void 
+}) => {
+  console.log('SearchResults rendered');
+  
+  const items = ['React', 'Vue', 'Angular', 'Svelte'];
+  
+  return (
+    <div className="search-results">
+      <h3>Search Results</h3>
+      {items.map(item => (
+        <button key={item} onClick={() => onItemClick(item)}>
+          {item}
+        </button>
+      ))}
+    </div>
+  );
+});
+
+// Component showing useMemo for expensive calculations
+function DataProcessor({ numbers }: { numbers: number[] }) {
+  const [filter, setFilter] = useState<'all' | 'even' | 'odd'>('all');
+  const [multiplier, setMultiplier] = useState(1);
+
+  // ❌ Bad: Recalculates on every render
+  const expensiveCalculationBad = () => {
+    console.log('Expensive calculation (bad) running...');
+    let result = 0;
+    for (let i = 0; i < 1000000; i++) {
+      result += numbers.reduce((sum, n) => sum + n, 0);
+    }
+    return result;
+  };
+
+  // ✅ Good: Only recalculates when dependencies change
+  const expensiveCalculation = useMemo(() => {
+    console.log('Expensive calculation (memoized) running...');
+    let result = 0;
+    for (let i = 0; i < 1000000; i++) {
+      result += numbers.reduce((sum, n) => sum + n, 0);
+    }
+    return result;
+  }, [numbers]); // Only recalculate when numbers change
+
+  // Filtered numbers with useMemo
+  const filteredNumbers = useMemo(() => {
+    console.log('Filtering numbers...');
+    switch (filter) {
+      case 'even':
+        return numbers.filter(n => n % 2 === 0);
+      case 'odd':
+        return numbers.filter(n => n % 2 !== 0);
+      default:
+        return numbers;
+    }
+  }, [numbers, filter]);
+
+  // Computed value based on filtered numbers
+  const stats = useMemo(() => {
+    console.log('Computing stats...');
+    const sum = filteredNumbers.reduce((a, b) => a + b, 0);
+    const avg = filteredNumbers.length > 0 ? sum / filteredNumbers.length : 0;
+    const multiplied = filteredNumbers.map(n => n * multiplier);
+    
+    return { sum, avg, multiplied };
+  }, [filteredNumbers, multiplier]);
+
+  return (
+    <div className="data-processor">
+      <h2>Data Processor</h2>
+      
+      <div className="controls">
+        <select value={filter} onChange={(e) => setFilter(e.target.value as any)}>
+          <option value="all">All Numbers</option>
+          <option value="even">Even Only</option>
+          <option value="odd">Odd Only</option>
+        </select>
+        
+        <input
+          type="number"
+          value={multiplier}
+          onChange={(e) => setMultiplier(Number(e.target.value))}
+          placeholder="Multiplier"
+        />
+      </div>
+
+      <div className="results">
+        <p>Filtered: {filteredNumbers.join(', ')}</p>
+        <p>Sum: {stats.sum}</p>
+        <p>Average: {stats.avg.toFixed(2)}</p>
+        <p>Multiplied: {stats.multiplied.join(', ')}</p>
+        <p>Expensive Result: {expensiveCalculation}</p>
+      </div>
+    </div>
+  );
+}
+
+// Main App showing useCallback
+function App() {
+  const [count, setCount] = useState(0);
+  const [selectedItem, setSelectedItem] = useState('');
+  const [numbers] = useState([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+  // ❌ Bad: Creates new function on every render
+  const handleItemClickBad = (item: string) => {
+    console.log('Selected:', item);
+    setSelectedItem(item);
+  };
+
+  // ✅ Good: Stable function reference
+  const handleItemClick = useCallback((item: string) => {
+    console.log('Selected:', item);
+    setSelectedItem(item);
+  }, []); // Empty deps = never changes
+
+  // useCallback with dependencies
+  const handleItemClickWithCount = useCallback((item: string) => {
+    console.log(`Selected ${item} at count ${count}`);
+    setSelectedItem(`${item} (${count})`);
+  }, [count]); // Recreates when count changes
+
+  // Expensive function creation
+  const createExpensiveHandler = useCallback(() => {
+    // Imagine this creates a complex event handler
+    const handler = (event: any) => {
+      // Complex logic here
+      console.log('Complex handler executed');
+    };
+    return handler;
+  }, []);
+
+  return (
+    <div className="app">
+      <h1>useMemo & useCallback Demo</h1>
+      
+      <div className="counter">
+        <button onClick={() => setCount(count + 1)}>
+          Count: {count} (triggers re-render)
+        </button>
+        <p>Selected: {selectedItem}</p>
+      </div>
+
+      <div className="demo-sections">
+        <div>
+          <h2>Without useCallback</h2>
+          <p className="bad">❌ Child re-renders on every parent update</p>
+          <SearchResults onItemClick={handleItemClickBad} />
+        </div>
+
+        <div>
+          <h2>With useCallback</h2>
+          <p className="good">✅ Child only re-renders when callback changes</p>
+          <SearchResults onItemClick={handleItemClick} />
+        </div>
+      </div>
+
+      <DataProcessor numbers={numbers} />
+
+      <div className="tips">
+        <h3>When to use:</h3>
+        <ul>
+          <li><strong>useMemo:</strong> Expensive calculations, complex object creation</li>
+          <li><strong>useCallback:</strong> Passing callbacks to memoized children</li>
+          <li><strong>Both:</strong> Only when you have actual performance issues!</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.counter {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.demo-sections {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.demo-sections > div {
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.bad {
+  color: #dc3545;
+}
+
+.good {
+  color: #28a745;
+}
+
+.search-results {
+  background-color: white;
+  padding: 15px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.search-results button {
+  display: block;
+  width: 100%;
+  margin: 5px 0;
+  padding: 8px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.search-results button:hover {
+  background-color: #5a6268;
+}
+
+.data-processor {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.controls select,
+.controls input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.results {
+  background-color: white;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.results p {
+  margin: 5px 0;
+}
+
+.tips {
+  background-color: #e7f3ff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 30px;
+}
+
+.tips ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

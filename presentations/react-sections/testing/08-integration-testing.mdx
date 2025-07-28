@@ -1,0 +1,169 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Integration Testing
+
+<CodeDisplay>
+  <File name="TodoApp.tsx">
+```tsx
+import React, { useState } from 'react';
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+}
+
+function TodoApp() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [input, setInput] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+
+  const addTodo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim()) {
+      setTodos([...todos, {
+        id: Date.now(),
+        text: input.trim(),
+        completed: false
+      }]);
+      setInput('');
+    }
+  };
+
+  const toggleTodo = (id: number) => {
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const deleteTodo = (id: number) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'active') return !todo.completed;
+    if (filter === 'completed') return todo.completed;
+    return true;
+  });
+
+  const activeCount = todos.filter(todo => !todo.completed).length;
+
+  return (
+    <div>
+      <h1>Todo App</h1>
+      
+      <form onSubmit={addTodo}>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="What needs to be done?"
+          aria-label="New todo"
+        />
+        <button type="submit">Add</button>
+      </form>
+
+      <div>
+        <button 
+          onClick={() => setFilter('all')}
+          aria-pressed={filter === 'all'}
+        >
+          All
+        </button>
+        <button 
+          onClick={() => setFilter('active')}
+          aria-pressed={filter === 'active'}
+        >
+          Active
+        </button>
+        <button 
+          onClick={() => setFilter('completed')}
+          aria-pressed={filter === 'completed'}
+        >
+          Completed
+        </button>
+      </div>
+
+      <ul>
+        {filteredTodos.map(todo => (
+          <li key={todo.id}>
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() => toggleTodo(todo.id)}
+              aria-label={`Mark ${todo.text} as ${todo.completed ? 'incomplete' : 'complete'}`}
+            />
+            <span style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
+              {todo.text}
+            </span>
+            <button 
+              onClick={() => deleteTodo(todo.id)}
+              aria-label={`Delete ${todo.text}`}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <p>{activeCount} active items</p>
+    </div>
+  );
+}
+
+export default TodoApp;
+```
+  </File>
+  <File name="TodoApp.test.tsx">
+```tsx
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import TodoApp from './TodoApp';
+
+describe('TodoApp Integration', () => {
+  test('complete todo workflow', async () => {
+    const user = userEvent.setup();
+    render(<TodoApp />);
+
+    // Add todos
+    const input = screen.getByLabelText('New todo');
+    await user.type(input, 'Buy groceries');
+    await user.click(screen.getByText('Add'));
+    
+    await user.type(input, 'Walk the dog');
+    await user.click(screen.getByText('Add'));
+
+    // Verify todos are displayed
+    expect(screen.getByText('Buy groceries')).toBeInTheDocument();
+    expect(screen.getByText('Walk the dog')).toBeInTheDocument();
+    expect(screen.getByText('2 active items')).toBeInTheDocument();
+
+    // Complete a todo
+    const firstCheckbox = screen.getByLabelText('Mark Buy groceries as complete');
+    await user.click(firstCheckbox);
+    
+    expect(screen.getByText('1 active items')).toBeInTheDocument();
+
+    // Filter todos
+    await user.click(screen.getByText('Active'));
+    expect(screen.queryByText('Buy groceries')).not.toBeInTheDocument();
+    expect(screen.getByText('Walk the dog')).toBeInTheDocument();
+
+    await user.click(screen.getByText('Completed'));
+    expect(screen.getByText('Buy groceries')).toBeInTheDocument();
+    expect(screen.queryByText('Walk the dog')).not.toBeInTheDocument();
+
+    // Delete a todo
+    await user.click(screen.getByText('All'));
+    await user.click(screen.getByLabelText('Delete Walk the dog'));
+    
+    expect(screen.queryByText('Walk the dog')).not.toBeInTheDocument();
+    expect(screen.getByText('0 active items')).toBeInTheDocument();
+  });
+});
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

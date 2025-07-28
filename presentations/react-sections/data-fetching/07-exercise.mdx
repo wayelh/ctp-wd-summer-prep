@@ -1,0 +1,803 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Movie Search App
+
+Build a movie search application with caching, loading states, and infinite scroll.
+
+<CodeDisplay>
+  <File name="MovieSearchApp.tsx">
+```tsx
+import React, { useState } from 'react';
+import { 
+  QueryClient, 
+  QueryClientProvider, 
+  useQuery, 
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient 
+} from '@tanstack/react-query';
+
+// TODO: Implement the movie search app with the following features:
+// 1. Search movies by title with debouncing
+// 2. Display search results with loading and error states
+// 3. Implement infinite scroll for results
+// 4. Add movies to a favorites list (optimistic updates)
+// 5. Cache search results for 5 minutes
+// 6. Prefetch movie details on hover
+
+interface Movie {
+  id: number;
+  title: string;
+  year: number;
+  poster: string;
+  overview: string;
+  rating: number;
+}
+
+interface SearchResponse {
+  results: Movie[];
+  page: number;
+  totalPages: number;
+  totalResults: number;
+}
+
+// Mock API functions (replace with real API calls)
+const searchMovies = async (query: string, page = 1): Promise<SearchResponse> => {
+  // TODO: Implement API call
+  throw new Error('Not implemented');
+};
+
+const getMovieDetails = async (id: number): Promise<Movie & { genres: string[] }> => {
+  // TODO: Implement API call
+  throw new Error('Not implemented');
+};
+
+const addToFavorites = async (movieId: number): Promise<void> => {
+  // TODO: Implement API call
+  throw new Error('Not implemented');
+};
+
+const getFavorites = async (): Promise<Movie[]> => {
+  // TODO: Implement API call
+  throw new Error('Not implemented');
+};
+
+// TODO: Create a custom hook for debounced search
+function useDebounce(value: string, delay: number) {
+  // Implement debounce logic
+}
+
+// TODO: Create the MovieSearch component
+function MovieSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // TODO: Implement search with debouncing
+  // TODO: Use useInfiniteQuery for pagination
+  // TODO: Handle loading, error, and empty states
+  
+  return (
+    <div>
+      <h2>Movie Search</h2>
+      {/* TODO: Add search input */}
+      {/* TODO: Display search results */}
+      {/* TODO: Add load more button */}
+    </div>
+  );
+}
+
+// TODO: Create the MovieCard component
+function MovieCard({ movie }: { movie: Movie }) {
+  // TODO: Implement prefetch on hover
+  // TODO: Add to favorites functionality
+  
+  return (
+    <div>
+      {/* TODO: Display movie information */}
+      {/* TODO: Add favorite button */}
+    </div>
+  );
+}
+
+// TODO: Create the Favorites component
+function Favorites() {
+  // TODO: Fetch and display favorites
+  // TODO: Implement remove from favorites
+  
+  return (
+    <div>
+      <h2>My Favorites</h2>
+      {/* TODO: Display favorite movies */}
+    </div>
+  );
+}
+
+// Main App component
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+});
+
+function App() {
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div style={{ padding: '20px' }}>
+        <h1>Movie Database</h1>
+        <nav style={{ marginBottom: '20px' }}>
+          <button onClick={() => setShowFavorites(false)}>Search</button>
+          <button onClick={() => setShowFavorites(true)}>Favorites</button>
+        </nav>
+        {showFavorites ? <Favorites /> : <MovieSearch />}
+      </div>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
+```
+  </File>
+  <File name="MovieSearchApp.solution.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+import { 
+  QueryClient, 
+  QueryClientProvider, 
+  useQuery, 
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient 
+} from '@tanstack/react-query';
+
+interface Movie {
+  id: number;
+  title: string;
+  year: number;
+  poster: string;
+  overview: string;
+  rating: number;
+}
+
+interface SearchResponse {
+  results: Movie[];
+  page: number;
+  totalPages: number;
+  totalResults: number;
+}
+
+// Mock API data
+const mockMovies: Movie[] = Array.from({ length: 50 }, (_, i) => ({
+  id: i + 1,
+  title: `Movie ${i + 1}`,
+  year: 2020 + (i % 4),
+  poster: `https://via.placeholder.com/300x450?text=Movie+${i + 1}`,
+  overview: `This is the overview for Movie ${i + 1}. It's a great film with amazing actors and stunning visuals.`,
+  rating: 6 + (Math.random() * 3)
+}));
+
+// Mock API functions
+const searchMovies = async (query: string, page = 1): Promise<SearchResponse> => {
+  await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+  
+  if (!query) {
+    return { results: [], page: 1, totalPages: 0, totalResults: 0 };
+  }
+  
+  const filtered = mockMovies.filter(movie => 
+    movie.title.toLowerCase().includes(query.toLowerCase())
+  );
+  
+  const pageSize = 10;
+  const start = (page - 1) * pageSize;
+  const paginatedResults = filtered.slice(start, start + pageSize);
+  
+  return {
+    results: paginatedResults,
+    page,
+    totalPages: Math.ceil(filtered.length / pageSize),
+    totalResults: filtered.length
+  };
+};
+
+const getMovieDetails = async (id: number): Promise<Movie & { genres: string[] }> => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const movie = mockMovies.find(m => m.id === id);
+  if (!movie) throw new Error('Movie not found');
+  
+  return {
+    ...movie,
+    genres: ['Action', 'Adventure', 'Sci-Fi']
+  };
+};
+
+let favorites = new Set<number>();
+
+const addToFavorites = async (movieId: number): Promise<void> => {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  favorites.add(movieId);
+};
+
+const removeFromFavorites = async (movieId: number): Promise<void> => {
+  await new Promise(resolve => setTimeout(resolve, 200));
+  favorites.delete(movieId);
+};
+
+const getFavorites = async (): Promise<Movie[]> => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  return mockMovies.filter(movie => favorites.has(movie.id));
+};
+
+// Custom debounce hook
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  
+  return debouncedValue;
+}
+
+// MovieSearch component
+function MovieSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 500);
+  
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    error
+  } = useInfiniteQuery({
+    queryKey: ['movies', 'search', debouncedSearch],
+    queryFn: ({ pageParam = 1 }) => searchMovies(debouncedSearch, pageParam),
+    getNextPageParam: (lastPage) => {
+      return lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined;
+    },
+    enabled: debouncedSearch.length > 0,
+    keepPreviousData: true
+  });
+  
+  const movies = data?.pages.flatMap(page => page.results) ?? [];
+  const totalResults = data?.pages[0]?.totalResults ?? 0;
+  
+  return (
+    <div>
+      <h2>Movie Search</h2>
+      
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search for movies..."
+        style={{
+          width: '100%',
+          padding: '10px',
+          fontSize: '16px',
+          borderRadius: '4px',
+          border: '1px solid #ddd',
+          marginBottom: '20px'
+        }}
+      />
+      
+      {isLoading && <div>Searching...</div>}
+      {isError && <div>Error: {(error as Error).message}</div>}
+      
+      {debouncedSearch && totalResults === 0 && !isLoading && (
+        <div>No movies found for "{debouncedSearch}"</div>
+      )}
+      
+      {movies.length > 0 && (
+        <>
+          <p style={{ marginBottom: '10px' }}>
+            Found {totalResults} results for "{debouncedSearch}"
+          </p>
+          
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: '20px',
+            marginBottom: '20px'
+          }}>
+            {movies.map(movie => (
+              <MovieCard key={movie.id} movie={movie} />
+            ))}
+          </div>
+          
+          {hasNextPage && (
+            <button
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              style={{
+                width: '100%',
+                padding: '10px',
+                fontSize: '16px',
+                background: '#2196f3',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                opacity: isFetchingNextPage ? 0.7 : 1
+              }}
+            >
+              {isFetchingNextPage ? 'Loading more...' : 'Load More'}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// MovieCard component
+function MovieCard({ movie }: { movie: Movie }) {
+  const queryClient = useQueryClient();
+  const { data: favoritesList } = useQuery({
+    queryKey: ['favorites'],
+    queryFn: getFavorites
+  });
+  
+  const isFavorite = favoritesList?.some(fav => fav.id === movie.id) ?? false;
+  
+  const addMutation = useMutation({
+    mutationFn: () => addToFavorites(movie.id),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['favorites'] });
+      const previousFavorites = queryClient.getQueryData<Movie[]>(['favorites']);
+      
+      queryClient.setQueryData<Movie[]>(['favorites'], old => 
+        [...(old || []), movie]
+      );
+      
+      return { previousFavorites };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['favorites'], context?.previousFavorites);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    }
+  });
+  
+  const removeMutation = useMutation({
+    mutationFn: () => removeFromFavorites(movie.id),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['favorites'] });
+      const previousFavorites = queryClient.getQueryData<Movie[]>(['favorites']);
+      
+      queryClient.setQueryData<Movie[]>(['favorites'], old => 
+        old?.filter(fav => fav.id !== movie.id) || []
+      );
+      
+      return { previousFavorites };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['favorites'], context?.previousFavorites);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    }
+  });
+  
+  const handleMouseEnter = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['movie', movie.id],
+      queryFn: () => getMovieDetails(movie.id),
+      staleTime: 10 * 60 * 1000
+    });
+  };
+  
+  return (
+    <div
+      onMouseEnter={handleMouseEnter}
+      style={{
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        transition: 'transform 0.2s',
+        cursor: 'pointer'
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.transform = 'scale(1.05)';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = 'scale(1)';
+      }}
+    >
+      <img
+        src={movie.poster}
+        alt={movie.title}
+        style={{
+          width: '100%',
+          height: '300px',
+          objectFit: 'cover'
+        }}
+      />
+      <div style={{ padding: '10px' }}>
+        <h4 style={{ margin: '0 0 5px 0' }}>{movie.title}</h4>
+        <p style={{ margin: '0 0 5px 0', fontSize: '14px', color: '#666' }}>
+          {movie.year} • ⭐ {movie.rating.toFixed(1)}
+        </p>
+        <p style={{
+          margin: '0 0 10px 0',
+          fontSize: '12px',
+          lineHeight: '1.4',
+          height: '50px',
+          overflow: 'hidden'
+        }}>
+          {movie.overview}
+        </p>
+        <button
+          onClick={() => isFavorite ? removeMutation.mutate() : addMutation.mutate()}
+          disabled={addMutation.isLoading || removeMutation.isLoading}
+          style={{
+            width: '100%',
+            padding: '8px',
+            background: isFavorite ? '#f44336' : '#4caf50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          {isFavorite ? '❤️ Remove from Favorites' : '🤍 Add to Favorites'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Favorites component
+function Favorites() {
+  const queryClient = useQueryClient();
+  const { data: favorites, isLoading, isError } = useQuery({
+    queryKey: ['favorites'],
+    queryFn: getFavorites
+  });
+  
+  if (isLoading) return <div>Loading favorites...</div>;
+  if (isError) return <div>Error loading favorites</div>;
+  
+  return (
+    <div>
+      <h2>My Favorites ({favorites?.length || 0})</h2>
+      
+      {!favorites || favorites.length === 0 ? (
+        <p>No favorite movies yet. Start adding some!</p>
+      ) : (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: '20px'
+        }}>
+          {favorites.map(movie => (
+            <MovieCard key={movie.id} movie={movie} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Main App component
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      refetchOnWindowFocus: false
+    },
+  },
+});
+
+function App() {
+  const [showFavorites, setShowFavorites] = useState(false);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
+        <h1>Movie Database</h1>
+        <nav style={{ marginBottom: '20px' }}>
+          <button
+            onClick={() => setShowFavorites(false)}
+            style={{
+              padding: '10px 20px',
+              marginRight: '10px',
+              background: !showFavorites ? '#2196f3' : '#e0e0e0',
+              color: !showFavorites ? 'white' : 'black',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Search
+          </button>
+          <button
+            onClick={() => setShowFavorites(true)}
+            style={{
+              padding: '10px 20px',
+              background: showFavorites ? '#2196f3' : '#e0e0e0',
+              color: showFavorites ? 'white' : 'black',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Favorites
+          </button>
+        </nav>
+        {showFavorites ? <Favorites /> : <MovieSearch />}
+      </div>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
+```
+  </File>
+  <Tests>
+```tsx
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
+import App from './MovieSearchApp.solution';
+
+// Mock the fetch API
+global.fetch = jest.fn();
+
+describe('MovieSearchApp', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('renders app with navigation', () => {
+    render(<App />);
+    
+    expect(screen.getByText('Movie Database')).toBeInTheDocument();
+    expect(screen.getByText('Search')).toBeInTheDocument();
+    expect(screen.getByText('Favorites')).toBeInTheDocument();
+  });
+
+  test('switches between search and favorites views', async () => {
+    render(<App />);
+    
+    // Initially shows search
+    expect(screen.getByText('Movie Search')).toBeInTheDocument();
+    
+    // Click favorites
+    fireEvent.click(screen.getByText('Favorites'));
+    expect(screen.getByText(/My Favorites/)).toBeInTheDocument();
+    
+    // Click search again
+    fireEvent.click(screen.getByText('Search'));
+    expect(screen.getByText('Movie Search')).toBeInTheDocument();
+  });
+
+  test('searches movies with debouncing', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    
+    const searchInput = screen.getByPlaceholderText('Search for movies...');
+    
+    // Type search term
+    await user.type(searchInput, 'Movie 1');
+    
+    // Should show loading state after debounce
+    await waitFor(() => {
+      expect(screen.getByText('Searching...')).toBeInTheDocument();
+    }, { timeout: 1000 });
+    
+    // Should show results
+    await waitFor(() => {
+      expect(screen.getByText(/Found \d+ results for "Movie 1"/)).toBeInTheDocument();
+    });
+  });
+
+  test('displays no results message', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    
+    const searchInput = screen.getByPlaceholderText('Search for movies...');
+    
+    // Search for non-existent movie
+    await user.type(searchInput, 'NonExistentMovie');
+    
+    await waitFor(() => {
+      expect(screen.getByText('No movies found for "NonExistentMovie"')).toBeInTheDocument();
+    }, { timeout: 1000 });
+  });
+
+  test('loads more movies with infinite scroll', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    
+    // Search for movies
+    await user.type(screen.getByPlaceholderText('Search for movies...'), 'Movie');
+    
+    // Wait for initial results
+    await waitFor(() => {
+      expect(screen.getByText(/Found \d+ results/)).toBeInTheDocument();
+    });
+    
+    // Click load more
+    const loadMoreButton = await screen.findByText('Load More');
+    fireEvent.click(loadMoreButton);
+    
+    // Should show loading state
+    expect(screen.getByText('Loading more...')).toBeInTheDocument();
+  });
+
+  test('adds movie to favorites', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    
+    // Search for movies
+    await user.type(screen.getByPlaceholderText('Search for movies...'), 'Movie 1');
+    
+    // Wait for results
+    await waitFor(() => {
+      expect(screen.getByText(/Movie 1/)).toBeInTheDocument();
+    });
+    
+    // Click add to favorites
+    const addButton = screen.getByText('🤍 Add to Favorites');
+    fireEvent.click(addButton);
+    
+    // Should change to remove button
+    await waitFor(() => {
+      expect(screen.getByText('❤️ Remove from Favorites')).toBeInTheDocument();
+    });
+  });
+
+  test('removes movie from favorites', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    
+    // First add a movie to favorites
+    await user.type(screen.getByPlaceholderText('Search for movies...'), 'Movie 1');
+    await waitFor(() => screen.getByText(/Movie 1/));
+    
+    const addButton = screen.getByText('🤍 Add to Favorites');
+    fireEvent.click(addButton);
+    
+    await waitFor(() => screen.getByText('❤️ Remove from Favorites'));
+    
+    // Now remove it
+    const removeButton = screen.getByText('❤️ Remove from Favorites');
+    fireEvent.click(removeButton);
+    
+    // Should change back to add button
+    await waitFor(() => {
+      expect(screen.getByText('🤍 Add to Favorites')).toBeInTheDocument();
+    });
+  });
+
+  test('displays favorites list', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    
+    // Add a movie to favorites
+    await user.type(screen.getByPlaceholderText('Search for movies...'), 'Movie 1');
+    await waitFor(() => screen.getByText(/Movie 1/));
+    
+    fireEvent.click(screen.getByText('🤍 Add to Favorites'));
+    await waitFor(() => screen.getByText('❤️ Remove from Favorites'));
+    
+    // Navigate to favorites
+    fireEvent.click(screen.getByText('Favorites'));
+    
+    // Should show the favorite movie
+    expect(screen.getByText(/My Favorites \(1\)/)).toBeInTheDocument();
+    expect(screen.getByText('Movie 1')).toBeInTheDocument();
+  });
+
+  test('shows empty favorites message', () => {
+    render(<App />);
+    
+    // Navigate to favorites
+    fireEvent.click(screen.getByText('Favorites'));
+    
+    expect(screen.getByText('No favorite movies yet. Start adding some!')).toBeInTheDocument();
+  });
+
+  test('prefetches movie details on hover', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    
+    // Search for movies
+    await user.type(screen.getByPlaceholderText('Search for movies...'), 'Movie');
+    
+    // Wait for results
+    await waitFor(() => {
+      expect(screen.getAllByText(/Movie \d+/)[0]).toBeInTheDocument();
+    });
+    
+    // Hover over a movie card
+    const movieCard = screen.getAllByText(/Movie \d+/)[0].closest('div');
+    if (movieCard) {
+      fireEvent.mouseEnter(movieCard);
+      // Prefetch would happen here, but we can't easily test it without mocking React Query internals
+    }
+  });
+
+  test('clears search results when input is cleared', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    
+    const searchInput = screen.getByPlaceholderText('Search for movies...');
+    
+    // Type and then clear
+    await user.type(searchInput, 'Movie');
+    await waitFor(() => screen.getByText(/Found \d+ results/));
+    
+    await user.clear(searchInput);
+    
+    // Results should disappear
+    await waitFor(() => {
+      expect(screen.queryByText(/Found \d+ results/)).not.toBeInTheDocument();
+    });
+  });
+});
+```
+  </Tests>
+  <File name="styles.css">
+```css
+/* Add custom styles for the movie app */
+.movie-card-hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #fcc;
+}
+
+.success-message {
+  background-color: #efe;
+  color: #3c3;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #cfc;
+}
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

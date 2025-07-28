@@ -2,47 +2,47 @@ import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
-## Understanding Variables
+## Variables and Types
 
-Variables are containers that store data values:
+Understanding how JavaScript stores and manages data
+</SlideLayout.Full>
 
-**What are variables?**
+<SlideLayout.Full>
+## What are Variables?
+
 - Named storage locations in memory
 - Hold values that can be used throughout your program
 - Can be updated (or not) depending on how they're declared
 
-**Three ways to declare variables:**
-- `var` - Old way, function-scoped (avoid in modern code)
-- `let` - Block-scoped, can be reassigned
-- `const` - Block-scoped, cannot be reassigned (preferred)
+```javascript
+let userName = "Alice";
+let currentStreak = 42;
+const MAX_HABITS = 10;
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Three Ways to Declare Variables
 
 ```javascript
 var oldWay = "I can be redeclared and have function scope";
 let modern = "I can be reassigned but have block scope";
 const preferred = "I cannot be reassigned and have block scope";
 ```
+
+- `var` - Old way, function-scoped (avoid in modern code)
+- `let` - Block-scoped, can be reassigned
+- `const` - Block-scoped, cannot be reassigned (preferred)
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Variable Declaration Best Practices
+## Use const by Default
 
-**Use `const` by default:**
 ```javascript
 const MAX_HABITS = 10;        // Won't change
 const habitName = "Exercise"; // Won't be reassigned
 const habit = { name: "Read" }; // Reference won't change
 ```
-
-**Use `let` when reassignment is needed:**
-```javascript
-let currentStreak = 0;  // Will increment
-let status = "active";  // May change to "inactive"
-```
-
-**Never use `var` in modern JavaScript:**
-- Function-scoped instead of block-scoped
-- Can be redeclared (source of bugs)
-- Hoisted in confusing ways
 
 **Key insight**: Even `const` objects can have their properties modified!
 ```javascript
@@ -53,7 +53,37 @@ habit = {};        // ❌ Error - can't reassign const
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Variables in JavaScript
+## Use let When Reassignment is Needed
+
+```javascript
+let currentStreak = 0;  // Will increment
+let status = "active";  // May change to "inactive"
+
+// Example usage
+currentStreak++;
+status = "completed";
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Never Use var in Modern JavaScript
+
+Problems with `var`:
+- Function-scoped instead of block-scoped
+- Can be redeclared (source of bugs)
+- Hoisted in confusing ways
+
+```javascript
+// Problem with var
+if (true) {
+  var leaked = "I'm visible outside!";
+}
+console.log(leaked); // Still accessible! 😱
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Variable Declarations
 
 <CodeDisplay>
   <File name="app.js">
@@ -71,16 +101,7 @@ habit = {};        // ❌ Error - can't reassign const
     
     
 ```javascript
-// Solution Step 1: Start with basic variable declarations
-var userName = "Alice";  // Using var (old way)
-var currentStreak = 0;
-var MAX_HABITS = 10;
-var habit = { name: "Drink Water", streak: 0 };
-```
-    
-    
-```javascript
-// Solution Step 2: Modernize with let and const
+// Solution: Modern variable declarations
 let userName = "Alice";      // let for values that change
 let currentStreak = 0;      // let for mutable numbers
 const MAX_HABITS = 10;      // const for constants
@@ -127,6 +148,30 @@ describe('Variable Declarations', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
+## Block Scope vs Function Scope
+
+```javascript
+// Function scope (var)
+function example() {
+  if (true) {
+    var x = 1;
+  }
+  console.log(x); // 1 - Still accessible!
+}
+
+// Block scope (let/const)
+function betterExample() {
+  if (true) {
+    let y = 1;
+    const z = 2;
+  }
+  console.log(y); // Error - not accessible
+  console.log(z); // Error - not accessible
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
 ## Exercise: Variable Scoping
 
 <CodeDisplay>
@@ -167,21 +212,14 @@ console.log("Outside block:", habitStatus);      // "incomplete" - Fixed!
 // Tests for Variable Scoping
 describe('Variable Scoping', () => {
   it('should maintain different values inside and outside block', () => {
-    // The outer habitStatus should be "incomplete"
     if (typeof habitStatus !== 'undefined') {
-      // Check what the final value is
       const finalValue = habitStatus;
       
-      // With var, this would be "complete" (wrong)
-      // With let, this should be "incomplete" (correct)
       if (finalValue === "incomplete") {
         expect(finalValue).to.equal("incomplete");
       } else {
-        // If it's "complete", the student hasn't fixed the scoping issue yet
         expect.fail('habitStatus was overwritten - use let instead of var for block scoping');
       }
-    } else {
-      expect.fail('habitStatus is not defined');
     }
   });
 });
@@ -192,58 +230,90 @@ describe('Variable Scoping', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## JavaScript Data Types
-**Primitives:**
-- `undefined`
-- `null`
-- `boolean`
-- `number`
-- `bigint`
-- `string`
-- `symbol`
+## JavaScript Data Types Overview
 
-**Objects:**
-- `Object`
-- `Array`
-- `Function`
-- `Date`
-- `RegExp`
-- `Map/Set`
-- `Promise`
+JavaScript has 7 primitive types and objects:
+
+**Primitives** (immutable values):
+- `undefined` - Variable declared but not assigned
+- `null` - Intentional absence of value
+- `boolean` - true/false
+- `number` - Integers and decimals
+- `bigint` - Large integers
+- `string` - Text
+- `symbol` - Unique identifiers
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Data Types in Action
+## Object Types
+
+**Objects** (mutable reference types):
+- `Object` - Key-value pairs
+- `Array` - Ordered lists
+- `Function` - Executable code blocks
+- `Date` - Date and time
+- `RegExp` - Pattern matching
+- `Map/Set` - Specialized collections
+- `Promise` - Async operations
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Primitive Types in Action
+
 <CodeDisplay >
-  <File name="example.js">
+  <File name="primitives.js">
     
 ```javascript
-// Habit Tracker: Data types we'll use in our app
+// Habit Tracker: Using primitive types
 
-// Primitives
-let lastCompleted;                    // undefined (habit not completed yet)
+let lastCompleted;                    // undefined (not completed yet)
 let deletedHabit = null;              // null (explicitly no value)
-let isCompleted = true;               // boolean (habit completion status)
+let isCompleted = true;               // boolean (completion status)
 let currentStreak = 42;               // number (days in a row)
-let totalPoints = 9007199254740991n;  // bigint (for huge point values)
+let totalPoints = 9007199254740991n;  // bigint (huge point values)
 let habitName = "Drink 8 glasses";    // string (habit description)
 let habitId = Symbol("unique-id");    // symbol (unique identifier)
 
-// Objects for our habit tracker
+console.log(typeof lastCompleted);    // "undefined"
+console.log(typeof deletedHabit);     // "object" (quirk!)
+console.log(typeof isCompleted);      // "boolean"
+console.log(typeof currentStreak);    // "number"
+console.log(typeof totalPoints);      // "bigint"
+console.log(typeof habitName);        // "string"
+console.log(typeof habitId);          // "symbol"
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Object Types in Action
+
+<CodeDisplay >
+  <File name="objects.js">
+    
+```javascript
+// Habit Tracker: Using object types
+
 let habit = {                         // object (main data structure)
   name: "Exercise",
   streak: 5
 };
+
 let completionDates = [               // array (tracking dates)
   "2024-01-01", 
   "2024-01-02"
 ];
+
 let calculateStreak = () => 5;        // function (business logic)
 let today = new Date();               // date (current date)
 let validHabitName = /^[a-zA-Z\s]+$/; // regexp (name validation)
+
 let habitCategories = new Map([       // map (category storage)
   ["health", ["Exercise", "Sleep"]]
 ]);
+
 let saveHabit = Promise.resolve(true); // promise (async operations)
 ```
     
@@ -252,43 +322,60 @@ let saveHabit = Promise.resolve(true); // promise (async operations)
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Understanding Type Coercion
+## Type Coercion - The + Operator
 
-**JavaScript tries to be helpful by converting types automatically:**
+The `+` operator is special - it prefers string concatenation:
 
 ```javascript
-// Addition operator (+) prefers string concatenation
+// Addition operator (+) with strings
 "5" + 3         // "53" - String concatenation
 5 + "3"         // "53" - Number converted to string
+"" + 10         // "10" - Number to string
 
-// Other operators convert to numbers
+// But only with the + operator!
 "5" - 3         // 2 - String converted to number
 "5" * "3"       // 15 - Both converted to numbers
 "10" / "2"      // 5 - Both converted to numbers
+```
+</SlideLayout.Full>
 
+<SlideLayout.Full>
+## Type Coercion - Other Cases
+
+```javascript
 // Boolean conversions
 true + true     // 2 - true becomes 1
 false + 5       // 5 - false becomes 0
+!0              // true - 0 is falsy
+!""             // true - empty string is falsy
 
 // Complex type conversions
 [] + {}         // "[object Object]" - Both convert to strings
 {} + []         // 0 - Empty array converts to 0
-```
+[1,2] + [3,4]   // "1,23,4" - Arrays to strings
 
-**Key insight**: The `+` operator is special - it concatenates with strings but adds with numbers!
+// Equality with coercion
+"5" == 5        // true - Type coercion happens
+"5" === 5       // false - No coercion with ===
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## JavaScript's Flexibility Problem
-What happens here?
+
 <CodeDisplay >
-  <File name="example.js">
+  <File name="coercion-gotchas.js">
 ```javascript
 // Habit Tracker: Type coercion gotchas
-console.log("5" + 3);        // "53" - Oops! String concat instead of addition
+console.log("5" + 3);        // "53" - String concat, not addition!
 console.log("5" - 3);        // 2 - Subtraction converts to number
 console.log(true + true);    // 2 - Booleans convert to 1
-console.log([] + {});        // "[object Object]" - Both convert to strings
+console.log([] + {});        // "[object Object]" - Both to strings
+
+// Real world example
+let streakFromInput = "10";  // From a form field
+let bonus = 5;
+let total = streakFromInput + bonus;  // "105" not 15! 😱
 ```
 </File>
 </CodeDisplay>
@@ -324,7 +411,49 @@ console.log("Type:", typeof totalPoints);      // "number"
     
     
 ```javascript
-// Solution 2: Create a safe calculator function
+// Solution 2: Use parseInt() for integers
+const currentStreakInput = "42";
+const bonusPoints = 8;
+const totalPoints = parseInt(currentStreakInput, 10) + bonusPoints;
+
+console.log("Total points:", totalPoints);     // 50
+console.log("Type:", typeof totalPoints);      // "number"
+
+// Note: parseInt stops at first non-digit
+console.log(parseInt("42abc", 10));  // 42
+console.log(Number("42abc"));        // NaN
+```
+    
+  </File>
+  <Tests>
+    
+```javascript
+// Tests for Type Conversion
+describe('Habit Points Calculation', () => {
+  it('should calculate total points as a number', () => {
+    if (typeof totalPoints !== 'undefined') {
+      if (totalPoints === 50) {
+        expect(totalPoints).to.equal(50);
+        expect(typeof totalPoints).to.equal('number');
+      } else if (totalPoints === "428") {
+        expect.fail('Points were concatenated as strings - use Number() or parseInt()');
+      }
+    }
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Safe Type Conversion
+
+<CodeDisplay>
+  <File name="safe-conversion.js">
+```javascript
+// Create a safe calculator function
 function calculateHabitPoints(streakInput, bonus) {
   // Parse and validate user input
   const streak = parseInt(streakInput, 10);
@@ -340,102 +469,79 @@ function calculateHabitPoints(streakInput, bonus) {
 }
 
 // Now it's safe to use with any input
-const currentStreakInput = "42";
-const bonusPoints = 8;
-const totalPoints = calculateHabitPoints(currentStreakInput, bonusPoints);
-
-console.log("Total points:", totalPoints);     // 50
+console.log(calculateHabitPoints("42", 8));    // 50
+console.log(calculateHabitPoints("abc", 8));   // 0 (with error message)
+console.log(calculateHabitPoints("10.5", 8));  // 18 (parseInt stops at .)
 ```
-    
   </File>
-  <Tests>
-    
-```javascript
-// Tests for Type Conversion
-describe('Habit Points Calculation', () => {
-  it('should calculate total points as a number', () => {
-    if (typeof totalPoints !== 'undefined') {
-      // Check if the student fixed the type conversion
-      if (totalPoints === 50) {
-        expect(totalPoints).to.equal(50);
-        expect(typeof totalPoints).to.equal('number');
-      } else if (totalPoints === "428") {
-        expect.fail('Points were concatenated as strings - use Number() or parseInt() to convert the string to a number');
-      } else {
-        expect.fail(`Unexpected result: ${totalPoints}. Expected 50.`);
-      }
-    } else {
-      expect.fail('totalPoints is not defined');
-    }
-  });
-  
-  it('should have correct types', () => {
-    expect(typeof currentStreakInput).to.equal('string');
-    expect(typeof bonusPoints).to.equal('number');
-  });
-});
-
-// Test the calculator function if defined
-describe('Calculator Function', () => {
-  it('should handle valid inputs', () => {
-    if (typeof calculateHabitPoints === 'function') {
-      expect(calculateHabitPoints("42", 8)).to.equal(50);
-      expect(calculateHabitPoints("100", 25)).to.equal(125);
-      expect(calculateHabitPoints("0", 10)).to.equal(10);
-    }
-  });
-  
-  it('should handle invalid inputs safely', () => {
-    if (typeof calculateHabitPoints === 'function') {
-      expect(calculateHabitPoints("abc", 10)).to.equal(0);
-      expect(calculateHabitPoints("", 10)).to.equal(0);
-    }
-  });
-});
-```
-    
-  </Tests>
 </CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Type Coercion: Feature or Bug?
+
 <FlexBox alignItems="center" justifyContent="center" flexDirection="row">
   <Image src="https://media2.giphy.com/media/3o7TKTDn976rzVgky4/giphy.gif" width="50%" />
   
-  - JavaScript tries to be helpful by converting types automatically
-  - This can lead to unexpected behavior
-  - Understanding type coercion is crucial for writing bug-free code
-  - Modern tools like TypeScript help catch these issues
-  </FlexBox>
+  <Box>
+    <p>JavaScript tries to be helpful by converting types automatically</p>
+    <p>This can lead to unexpected behavior</p>
+    <p>Understanding type coercion is crucial for writing bug-free code</p>
+    <p>Modern tools like TypeScript help catch these issues</p>
+  </Box>
+</FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Common Pitfalls with Variables & Types
+## Common Pitfall: Accidental Globals
 
-**Watch out for these gotchas:**
-
-1. **Accidental Globals**
 ```javascript
 function createHabit() {
   habitName = "Exercise"; // Oops! Missing let/const creates global
   return habitName;
 }
+
+// Better:
+function createHabit() {
+  const habitName = "Exercise"; // Properly scoped
+  return habitName;
+}
 ```
 
-2. **Type Coercion Surprises**
+Always declare variables explicitly!
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Pitfall: Type Coercion Surprises
+
 ```javascript
+// Weird but true comparisons
 [] == false   // true (empty array coerces to false)
 [] == ![]     // true (WAT?! Both sides coerce to false)
 "" == 0       // true (empty string coerces to 0)
-```
+null == undefined  // true (special case)
 
-3. **Reference vs Value**
+// Solution: Always use === for comparisons
+[] === false  // false
+"" === 0      // false
+null === undefined  // false
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Pitfall: Reference vs Value
+
 ```javascript
+// Objects and arrays are passed by reference
 const habit = { streak: 5 };
 const habit2 = habit;  // Both point to same object!
 habit2.streak = 10;
 console.log(habit.streak); // 10 - original changed too!
+
+// To create a copy:
+const habit3 = { ...habit };  // Spread operator
+habit3.streak = 15;
+console.log(habit.streak);   // Still 10
 ```
 </SlideLayout.Full>
 

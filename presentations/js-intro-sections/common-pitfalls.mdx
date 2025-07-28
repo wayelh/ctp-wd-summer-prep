@@ -1,43 +1,114 @@
 import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
-## Common Pitfalls
+## Common JavaScript Pitfalls
+
+Understanding and avoiding common mistakes
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Equality Confusion
+
 <CodeDisplay >
-  <File name="example.js">
-    
+  <File name="equality.js">
 ```javascript
-// Equality confusion
-console.log(0 == false);    // true (loose equality)
-console.log(0 === false);   // false (strict equality)
+// Loose equality (==) vs Strict equality (===)
+console.log(0 == false);    // true (type coercion)
+console.log(0 === false);   // false (no coercion)
 
-// Floating point precision
-console.log(0.1 + 0.2);     // 0.30000000000000004
+console.log("5" == 5);      // true
+console.log("5" === 5);     // false
 
-// Array/Object references
-const arr1 = [1, 2, 3];
-const arr2 = arr1;
-arr2.push(4);
-console.log(arr1);          // [1, 2, 3, 4]
+console.log(null == undefined);   // true
+console.log(null === undefined);  // false
 
-// "this" binding
-const obj = {
-  name: "Object",
-  greet: function() {
-    setTimeout(function() {
-      console.log(this.name); // undefined!
-    }, 1000);
-  }
-};
+// Always use === for predictable comparisons!
 ```
-    
   </File>
 </CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Understanding "this" Binding Problems
+## Floating Point Precision
 
-The `this` keyword can be confusing because its value depends on how a function is called:
+<CodeDisplay >
+  <File name="floating-point.js">
+```javascript
+// JavaScript uses IEEE 754 floating point
+console.log(0.1 + 0.2);           // 0.30000000000000004
+console.log(0.1 + 0.2 === 0.3);  // false!
+
+// Solutions:
+// 1. Round to fixed decimal places
+const sum = (0.1 + 0.2).toFixed(2);  // "0.30"
+
+// 2. Use integers for calculations
+const cents1 = 10;  // 10 cents
+const cents2 = 20;  // 20 cents
+const totalCents = cents1 + cents2;  // 30 cents
+const dollars = totalCents / 100;    // 0.3
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Reference vs Value
+
+<CodeDisplay >
+  <File name="references.js">
+```javascript
+// Arrays and objects are passed by reference
+const arr1 = [1, 2, 3];
+const arr2 = arr1;      // arr2 points to same array
+arr2.push(4);
+console.log(arr1);      // [1, 2, 3, 4] - arr1 changed!
+
+// To copy an array:
+const arr3 = [...arr1];  // Spread operator
+const arr4 = arr1.slice(); // slice method
+
+// Objects have same issue
+const obj1 = { name: "John" };
+const obj2 = obj1;
+obj2.name = "Jane";
+console.log(obj1.name);  // "Jane" - obj1 changed!
+
+// To copy an object:
+const obj3 = { ...obj1 };  // Shallow copy
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## The "this" Problem
+
+<CodeDisplay >
+  <File name="this-binding.js">
+```javascript
+// "this" binding confusion
+const obj = {
+  name: "Object",
+  greet: function() {
+    console.log(this.name);  // "Object" ✅
+    
+    setTimeout(function() {
+      console.log(this.name); // undefined ❌
+      // In setTimeout, this = window/global
+    }, 1000);
+  }
+};
+
+obj.greet();
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Understanding "this" Binding
 
 **Function Context Rules:**
 1. **Method calls**: `obj.method()` - `this` is `obj`
@@ -53,50 +124,48 @@ const obj = {
     console.log(this.name); // "MyObject"
     
     setTimeout(function() {
-      console.log(this.name); // undefined! (this is window/global)
+      console.log(this.name); // undefined!
     }, 1000);
   }
 };
 ```
-
-**Solutions**: Arrow functions, `.bind()`, or saving `this` to a variable
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Arrow Functions vs Regular Functions
 
-**Regular Function - Dynamic `this`:**
+<CodeDisplay >
+  <File name="arrow-vs-regular.js">
 ```javascript
-const obj = {
+// Regular Function - Dynamic this
+const obj1 = {
   name: "Timer",
   start() {
     setInterval(function() {
-      console.log(this.name); // this = window (not obj!)
+      console.log(this.name); // undefined (this = window)
     }, 1000);
   }
 };
-```
 
-**Arrow Function - Lexical `this`:**
-```javascript
-const obj = {
+// Arrow Function - Lexical this
+const obj2 = {
   name: "Timer", 
   start() {
     setInterval(() => {
-      console.log(this.name); // this = obj ✅
+      console.log(this.name); // "Timer" ✅ (this = obj2)
     }, 1000);
   }
 };
 ```
-
-**For the exercise**: Fix the timer by ensuring `this` refers to the timer object inside the callback.
+  </File>
+</CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Exercise: Fix the "this" Problem
+
 <CodeDisplay >
-  <File name="example.js">
-    
+  <File name="timer-exercise.js">
 ```javascript
 // Fix the code so it prints countdown from 5 to 0, then "Timer: Done!"
 const timer = {
@@ -119,7 +188,6 @@ const timer = {
 
 timer.start();
 ```
-    
   </File>
 </CodeDisplay>
 </SlideLayout.Full>

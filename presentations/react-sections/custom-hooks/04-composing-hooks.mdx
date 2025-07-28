@@ -1,0 +1,569 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Composing Custom Hooks
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hook Composition</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Base hooks that we'll compose
+function useToggle(initialValue = false) {
+  const [value, setValue] = useState(initialValue);
+  const toggle = useCallback(() => setValue(v => !v), []);
+  return [value, toggle] as const;
+}
+
+function useAsync<T>() {
+  const [state, setState] = useState<{
+    loading: boolean;
+    error: Error | null;
+    data: T | null;
+  }>({
+    loading: false,
+    error: null,
+    data: null,
+  });
+
+  const execute = useCallback(async (asyncFunction: () => Promise<T>) => {
+    setState({ loading: true, error: null, data: null });
+    try {
+      const data = await asyncFunction();
+      setState({ loading: false, error: null, data });
+      return data;
+    } catch (error) {
+      setState({ loading: false, error: error as Error, data: null });
+      throw error;
+    }
+  }, []);
+
+  return { ...state, execute };
+}
+
+// Composed hooks
+// 1. Form handling with validation
+interface ValidationRule {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  custom?: (value: any) => string | null;
+}
+
+interface FormField {
+  value: any;
+  error: string | null;
+  touched: boolean;
+}
+
+function useForm<T extends Record<string, any>>(
+  initialValues: T,
+  validationRules: Partial<Record<keyof T, ValidationRule>> = {}
+) {
+  const [values, setValues] = useState<T>(initialValues);
+  const [errors, setErrors] = useState<Partial<Record<keyof T, string | null>>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
+
+  const validate = useCallback((name: keyof T, value: any): string | null => {
+    const rules = validationRules[name];
+    if (!rules) return null;
+
+    if (rules.required && !value) {
+      return 'This field is required';
+    }
+
+    if (rules.minLength && value.length < rules.minLength) {
+      return `Minimum length is ${rules.minLength}`;
+    }
+
+    if (rules.maxLength && value.length > rules.maxLength) {
+      return `Maximum length is ${rules.maxLength}`;
+    }
+
+    if (rules.pattern && !rules.pattern.test(value)) {
+      return 'Invalid format';
+    }
+
+    if (rules.custom) {
+      return rules.custom(value);
+    }
+
+    return null;
+  }, [validationRules]);
+
+  const handleChange = useCallback((name: keyof T) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const value = e.target.value;
+    setValues(prev => ({ ...prev, [name]: value }));
+    
+    if (touched[name]) {
+      const error = validate(name, value);
+      setErrors(prev => ({ ...prev, [name]: error }));
+    }
+  }, [touched, validate]);
+
+  const handleBlur = useCallback((name: keyof T) => () => {
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = validate(name, values[name]);
+    setErrors(prev => ({ ...prev, [name]: error }));
+  }, [values, validate]);
+
+  const isValid = useMemo(() => {
+    return Object.keys(validationRules).every(key => {
+      const error = validate(key as keyof T, values[key as keyof T]);
+      return !error;
+    });
+  }, [values, validationRules, validate]);
+
+  const reset = useCallback(() => {
+    setValues(initialValues);
+    setErrors({});
+    setTouched({});
+  }, [initialValues]);
+
+  return {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    isValid,
+    reset,
+  };
+}
+
+// 2. Search with debounce and fetch
+function useSearch<T>(
+  searchFn: (query: string) => Promise<T[]>,
+  delay = 300
+) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<T[]>([]);
+  const { loading, error, execute } = useAsync<T[]>();
+  
+  const debouncedQuery = useDebounce(query, delay);
+
+  useEffect(() => {
+    if (debouncedQuery) {
+      execute(() => searchFn(debouncedQuery)).then(setResults).catch(() => {});
+    } else {
+      setResults([]);
+    }
+  }, [debouncedQuery, execute, searchFn]);
+
+  return {
+    query,
+    setQuery,
+    results,
+    loading,
+    error,
+  };
+}
+
+// 3. Pagination hook
+function usePagination<T>(items: T[], itemsPerPage = 10) {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return items.slice(start, end);
+  }, [items, currentPage, itemsPerPage]);
+
+  const goToPage = useCallback((page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  }, [totalPages]);
+
+  const nextPage = useCallback(() => {
+    goToPage(currentPage + 1);
+  }, [currentPage, goToPage]);
+
+  const prevPage = useCallback(() => {
+    goToPage(currentPage - 1);
+  }, [currentPage, goToPage]);
+
+  return {
+    items: paginatedItems,
+    currentPage,
+    totalPages,
+    goToPage,
+    nextPage,
+    prevPage,
+    hasNextPage: currentPage < totalPages,
+    hasPrevPage: currentPage > 1,
+  };
+}
+
+// Helper hook for the search demo
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+// Demo Components
+function FormDemo() {
+  const form = useForm(
+    {
+      username: '',
+      email: '',
+      password: '',
+    },
+    {
+      username: {
+        required: true,
+        minLength: 3,
+        maxLength: 20,
+        pattern: /^[a-zA-Z0-9_]+$/,
+      },
+      email: {
+        required: true,
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        custom: (value) => {
+          if (value && value.endsWith('.test')) {
+            return 'Test emails are not allowed';
+          }
+          return null;
+        },
+      },
+      password: {
+        required: true,
+        minLength: 8,
+        custom: (value) => {
+          if (!/[A-Z]/.test(value)) {
+            return 'Password must contain at least one uppercase letter';
+          }
+          if (!/[0-9]/.test(value)) {
+            return 'Password must contain at least one number';
+          }
+          return null;
+        },
+      },
+    }
+  );
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (form.isValid) {
+      alert('Form submitted: ' + JSON.stringify(form.values));
+      form.reset();
+    }
+  };
+
+  return (
+    <div className="demo-section">
+      <h2>useForm Hook (Composed)</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="form-field">
+          <input
+            type="text"
+            placeholder="Username"
+            value={form.values.username}
+            onChange={form.handleChange('username')}
+            onBlur={form.handleBlur('username')}
+          />
+          {form.touched.username && form.errors.username && (
+            <span className="error">{form.errors.username}</span>
+          )}
+        </div>
+
+        <div className="form-field">
+          <input
+            type="email"
+            placeholder="Email"
+            value={form.values.email}
+            onChange={form.handleChange('email')}
+            onBlur={form.handleBlur('email')}
+          />
+          {form.touched.email && form.errors.email && (
+            <span className="error">{form.errors.email}</span>
+          )}
+        </div>
+
+        <div className="form-field">
+          <input
+            type="password"
+            placeholder="Password"
+            value={form.values.password}
+            onChange={form.handleChange('password')}
+            onBlur={form.handleBlur('password')}
+          />
+          {form.touched.password && form.errors.password && (
+            <span className="error">{form.errors.password}</span>
+          )}
+        </div>
+
+        <button type="submit" disabled={!form.isValid}>
+          Submit
+        </button>
+        <button type="button" onClick={form.reset}>
+          Reset
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function SearchDemo() {
+  // Simulate API search
+  const searchUsers = async (query: string) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const allUsers = [
+      { id: 1, name: 'Alice Johnson' },
+      { id: 2, name: 'Bob Smith' },
+      { id: 3, name: 'Carol Williams' },
+      { id: 4, name: 'David Brown' },
+      { id: 5, name: 'Eve Davis' },
+    ];
+    return allUsers.filter(user =>
+      user.name.toLowerCase().includes(query.toLowerCase())
+    );
+  };
+
+  const search = useSearch(searchUsers, 300);
+
+  return (
+    <div className="demo-section">
+      <h2>useSearch Hook (Composed)</h2>
+      <input
+        type="text"
+        value={search.query}
+        onChange={(e) => search.setQuery(e.target.value)}
+        placeholder="Search users..."
+      />
+      
+      {search.loading && <p>Searching...</p>}
+      {search.error && <p>Error: {search.error.message}</p>}
+      
+      {search.results.length > 0 && (
+        <ul>
+          {search.results.map(user => (
+            <li key={user.id}>{user.name}</li>
+          ))}
+        </ul>
+      )}
+      
+      {search.query && !search.loading && search.results.length === 0 && (
+        <p>No results found</p>
+      )}
+    </div>
+  );
+}
+
+function PaginationDemo() {
+  // Generate sample data
+  const items = Array.from({ length: 100 }, (_, i) => ({
+    id: i + 1,
+    name: `Item ${i + 1}`,
+  }));
+
+  const pagination = usePagination(items, 10);
+
+  return (
+    <div className="demo-section">
+      <h2>usePagination Hook</h2>
+      
+      <ul>
+        {pagination.items.map(item => (
+          <li key={item.id}>{item.name}</li>
+        ))}
+      </ul>
+
+      <div className="pagination-controls">
+        <button
+          onClick={pagination.prevPage}
+          disabled={!pagination.hasPrevPage}
+        >
+          Previous
+        </button>
+        
+        <span>
+          Page {pagination.currentPage} of {pagination.totalPages}
+        </span>
+        
+        <button
+          onClick={pagination.nextPage}
+          disabled={!pagination.hasNextPage}
+        >
+          Next
+        </button>
+      </div>
+
+      <div className="page-jumper">
+        Jump to page:
+        {[1, 2, 3, '...', pagination.totalPages - 1, pagination.totalPages]
+          .filter((page, index, arr) => {
+            if (typeof page === 'string') return pagination.totalPages > 5;
+            return page <= pagination.totalPages && arr.indexOf(page) === index;
+          })
+          .map((page, index) => (
+            <button
+              key={index}
+              onClick={() => typeof page === 'number' && pagination.goToPage(page)}
+              disabled={page === pagination.currentPage || page === '...'}
+              className={page === pagination.currentPage ? 'active' : ''}
+            >
+              {page}
+            </button>
+          ))}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div className="app">
+      <h1>Composing Custom Hooks</h1>
+      <FormDemo />
+      <SearchDemo />
+      <PaginationDemo />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.demo-section {
+  background-color: #f5f5f5;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+}
+
+.demo-section h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.form-field {
+  margin-bottom: 15px;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
+}
+
+button {
+  margin: 0 5px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+button.active {
+  background-color: #28a745;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+li {
+  padding: 8px;
+  background-color: white;
+  margin: 5px 0;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.page-jumper {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.page-jumper button {
+  min-width: 40px;
+  padding: 5px 10px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

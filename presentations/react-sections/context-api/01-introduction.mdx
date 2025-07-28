@@ -1,0 +1,28 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+# Context API
+
+## Sharing State Without Prop Drilling
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## The Prop Drilling Problem
+
+### What is Prop Drilling?
+- Passing props through multiple component levels
+- Components receive props just to pass them down
+- Makes refactoring difficult
+- Creates unnecessary dependencies
+- Harder to maintain as app grows
+
+### When Context Helps:
+- **Theme data** - Colors, fonts, dark mode
+- **User authentication** - Current user, permissions
+- **Language/locale** - i18n settings
+- **App configuration** - Feature flags, API endpoints
+- **UI state** - Modals, notifications, sidebars
+
+</SlideLayout.Full>

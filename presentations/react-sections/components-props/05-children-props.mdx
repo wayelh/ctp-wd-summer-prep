@@ -1,0 +1,362 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Children Props
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Children Props in Habit Tracker</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { ReactNode } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Components can receive other components as children
+interface HabitSectionProps {
+  children: ReactNode;
+  title: string;
+  icon?: string;
+}
+
+function HabitSection({ children, title, icon }: HabitSectionProps): JSX.Element {
+  return (
+    <div className="habit-section">
+      <div className="section-header">
+        {icon && <span className="section-icon">{icon}</span>}
+        <h2>{title}</h2>
+      </div>
+      <div className="section-content">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Card component for wrapping content
+interface CardProps {
+  children: ReactNode;
+  variant?: 'default' | 'success' | 'warning';
+}
+
+function Card({ children, variant = 'default' }: CardProps): JSX.Element {
+  return (
+    <div className={`card card-${variant}`}>
+      {children}
+    </div>
+  );
+}
+
+// Modal for adding new habits
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: ReactNode;
+  title: string;
+}
+
+function Modal({ isOpen, onClose, children, title }: ModalProps): JSX.Element | null {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>{title}</h3>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Tooltip wrapper
+interface TooltipProps {
+  children: ReactNode;
+  text: string;
+}
+
+function Tooltip({ children, text }: TooltipProps): JSX.Element {
+  const [show, setShow] = React.useState(false);
+
+  return (
+    <div className="tooltip-wrapper"
+         onMouseEnter={() => setShow(true)}
+         onMouseLeave={() => setShow(false)}>
+      {children}
+      {show && <div className="tooltip">{text}</div>}
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  const [showModal, setShowModal] = React.useState(false);
+
+  return (
+    <div className="app">
+      <HabitSection title="Morning Routine" icon="🌅">
+        <Card variant="success">
+          <h4>Meditation</h4>
+          <p>5 minutes completed today!</p>
+        </Card>
+        <Card>
+          <h4>Stretching</h4>
+          <p>Not completed yet</p>
+        </Card>
+      </HabitSection>
+
+      <HabitSection title="Health & Fitness" icon="💪">
+        <Card variant="warning">
+          <h4>Workout</h4>
+          <p>3 days since last workout</p>
+        </Card>
+        <Card variant="success">
+          <h4>Water Intake</h4>
+          <p>6/8 glasses today</p>
+        </Card>
+      </HabitSection>
+
+      <div className="actions">
+        <Tooltip text="Add a new habit to track">
+          <button onClick={() => setShowModal(true)} className="add-habit-btn">
+            + Add New Habit
+          </button>
+        </Tooltip>
+      </div>
+
+      <Modal 
+        isOpen={showModal} 
+        onClose={() => setShowModal(false)}
+        title="Create New Habit"
+      >
+        <form className="habit-form">
+          <label>
+            Habit Name:
+            <input type="text" placeholder="e.g., Read for 30 minutes" />
+          </label>
+          <label>
+            Category:
+            <select>
+              <option>Health & Fitness</option>
+              <option>Learning</option>
+              <option>Productivity</option>
+              <option>Mindfulness</option>
+            </select>
+          </label>
+          <label>
+            Frequency:
+            <select>
+              <option>Daily</option>
+              <option>Weekly</option>
+              <option>Monthly</option>
+            </select>
+          </label>
+          <button type="button" className="submit-btn">Create Habit</button>
+        </form>
+      </Modal>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.habit-section {
+  margin-bottom: 30px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-icon {
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+.section-header h2 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.section-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+}
+
+.card-success {
+  background: #f0fdf4;
+  border-color: #22c55e;
+}
+
+.card-warning {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.card h4 {
+  margin: 0 0 8px;
+}
+
+.card p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.actions {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.add-habit-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-habit-btn:hover {
+  background: #2563eb;
+}
+
+.tooltip-wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.habit-form label {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.habit-form input,
+.habit-form select {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.submit-btn {
+  width: 100%;
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.submit-btn:hover {
+  background: #16a34a;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,8 +1,14 @@
 import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
-## ⚠️ Error Handling: Building Robust Applications
-### Making Your Habit Tracker Resilient
+## ⚠️ Error Handling
+
+Building Robust JavaScript Applications
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Making Your Code Resilient
 
 - Understanding errors in JavaScript
 - Try/catch/finally blocks
@@ -13,13 +19,17 @@ import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 <SlideLayout.Full>
 ## Why Error Handling Matters
 
-<FlexBox alignItems="center" justifyContent="space-between">
-**Common Habit Tracker Errors:**
+Common errors in applications:
 - Invalid user input
-- Network failures when syncing
+- Network failures
 - Storage quota exceeded
 - Missing or corrupted data
 - API rate limits
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Without vs With Error Handling
+
 ```javascript
 // Without error handling
 const data = JSON.parse(userInput); // 💥 Crash!
@@ -31,11 +41,11 @@ try {
   showMessage("Invalid data format");
 }
 ```
-</FlexBox>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Try/Catch/Finally Basics
+## Try/Catch/Finally Structure
+
 <CodeDisplay >
   <File name="example.js">
     
@@ -70,9 +80,10 @@ function saveHabitData(habitData) {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Types of Errors
+## Types of JavaScript Errors
+
 <CodeDisplay >
-  <File name="example.js">
+  <File name="errorTypes.js">
     
 ```javascript
 // Syntax Error - caught at parse time
@@ -97,9 +108,10 @@ throw new Error("Habit name is required");
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Error Handling Deep Dive
+## Basic Error Handling Pattern
+
 <CodeDisplay >
-  <File name="example.js">
+  <File name="basicPattern.js">
     
 ```javascript
 // Basic error handling for habit tracker
@@ -113,15 +125,28 @@ try {
 } finally {
   hideLoadingSpinner(); // Always hide spinner
 }
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
 
-// Throwing custom errors
+<SlideLayout.Full>
+## Throwing Custom Errors
+
+<CodeDisplay >
+  <File name="throwingErrors.js">
+    
+```javascript
 function createHabit(data) {
   if (!data.name) {
     throw new Error('Habit name is required');
   }
+  
   if (data.targetDays < 1 || data.targetDays > 365) {
     throw new RangeError('Target days must be between 1 and 365');
   }
+  
   return new Habit(data);
 }
 ```
@@ -131,11 +156,10 @@ function createHabit(data) {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Understanding Error Class Hierarchies
+## Custom Error Classes
 
-Custom error classes help organize different types of failures:
+Creating specific error types helps organize failures:
 
-**Error Inheritance Patterns:**
 ```javascript
 // Base error class
 class AppError extends Error {
@@ -144,17 +168,32 @@ class AppError extends Error {
     this.name = this.constructor.name;
   }
 }
+```
+</SlideLayout.Full>
 
-// Specific error types
+<SlideLayout.Full>
+## Specific Error Types
+
+```javascript
 class ValidationError extends AppError {
   constructor(message, field) {
     super(message);
     this.field = field;
   }
 }
-```
 
-**Benefits of Custom Errors:**
+class NetworkError extends AppError {
+  constructor(message, statusCode) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Benefits of Custom Errors
+
 - Easier to handle different error types
 - Can include additional context (field names, error codes)
 - Improved debugging and logging
@@ -162,13 +201,7 @@ class ValidationError extends AppError {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Defensive Programming Strategies
-
-**Validate inputs before processing:**
-- Check data types and formats
-- Verify required fields are present
-- Sanitize user input
-- Set reasonable limits and bounds
+## Defensive Programming: Input Validation
 
 ```javascript
 function createHabit(data) {
@@ -193,11 +226,15 @@ function createHabit(data) {
 <SlideLayout.Full>
 ## Error Recovery Patterns
 
-**Handle different error types specifically:**
+Handle different error types specifically:
 - Validation errors → Show form feedback
 - Network errors → Retry or show offline mode
 - Permission errors → Redirect to login
 - Unknown errors → Generic fallback
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Specific Error Handling
 
 ```javascript
 try {
@@ -216,17 +253,16 @@ try {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Error Handling Best Practices
+## Fallback Behaviors
 
-**Provide fallback behaviors when possible:**
+Provide alternatives when operations fail:
 - Save to local storage if cloud sync fails
 - Show cached data if network is unavailable
 - Gracefully degrade features
+</SlideLayout.Full>
 
-**Log errors for debugging:**
-- Include context and stack traces
-- Send error reports to monitoring service
-- Show user-friendly messages to users
+<SlideLayout.Full>
+## Error Logging Best Practices
 
 ```javascript
 function handleError(error, context) {
@@ -245,9 +281,10 @@ function handleError(error, context) {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Exercise: Custom Error Classes for Habit Tracker
+## Exercise: Custom Error Classes
+
 <CodeDisplay >
-  <File name="example.js">
+  <File name="errorExercise.js">
     
 ```javascript
 // Exercise: Create custom error classes for habit tracking
@@ -307,46 +344,6 @@ class HabitSyncError extends HabitError {
     this.statusCode = statusCode;
   }
 }
-
-// Usage examples
-function validateHabit(habitData) {
-  if (!habitData.name || habitData.name.trim() === '') {
-    throw new HabitValidationError('Habit name is required', 'name');
-  }
-  if (!habitData.category) {
-    throw new HabitValidationError('Habit category is required', 'category');
-  }
-  if (habitData.targetDays && (habitData.targetDays < 1 || habitData.targetDays > 365)) {
-    throw new HabitValidationError('Target days must be between 1 and 365', 'targetDays');
-  }
-}
-
-function saveHabit(habitData) {
-  try {
-    validateHabit(habitData);
-    // Simulate storage failure
-    if (Math.random() > 0.8) {
-      throw new HabitStorageError('Failed to save to database', 'save');
-    }
-    console.log('Habit saved successfully');
-  } catch (error) {
-    if (error instanceof HabitValidationError) {
-      console.error(`Validation error in ${error.field}: ${error.message}`);
-    } else if (error instanceof HabitStorageError) {
-      console.error(`Storage error during ${error.operation}: ${error.message}`);
-    } else {
-      console.error('Unexpected error:', error.message);
-    }
-    throw error; // Re-throw for caller to handle
-  }
-}
-
-// Test the error handling
-try {
-  saveHabit({ name: '', category: 'health' });
-} catch (error) {
-  console.log('Caught error:', error.name);
-}
 ```
     
   </File>
@@ -373,14 +370,6 @@ describe('Custom Error Classes', () => {
     expect(error.name).to.equal('HabitSyncError');
     expect(error.statusCode).to.equal(503);
   });
-  
-  it('should validate habit data and throw appropriate errors', () => {
-    expect(() => validateHabit({ name: '', category: 'health' }))
-      .to.throw(HabitValidationError, 'Habit name is required');
-    
-    expect(() => validateHabit({ name: 'Exercise' }))
-      .to.throw(HabitValidationError, 'Habit category is required');
-  });
 });
 ```
     
@@ -389,16 +378,59 @@ describe('Custom Error Classes', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Error Handling Best Practices
+## Using Custom Errors
 
-### Do's ✅
+```javascript
+function validateHabit(habitData) {
+  if (!habitData.name || habitData.name.trim() === '') {
+    throw new HabitValidationError('Habit name is required', 'name');
+  }
+  if (!habitData.category) {
+    throw new HabitValidationError('Habit category is required', 'category');
+  }
+  if (habitData.targetDays && (habitData.targetDays < 1 || habitData.targetDays > 365)) {
+    throw new HabitValidationError('Target days must be between 1 and 365', 'targetDays');
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Error Handling in Practice
+
+```javascript
+function saveHabit(habitData) {
+  try {
+    validateHabit(habitData);
+    // Save to database
+    console.log('Habit saved successfully');
+  } catch (error) {
+    if (error instanceof HabitValidationError) {
+      console.error(`Validation error in ${error.field}: ${error.message}`);
+    } else if (error instanceof HabitStorageError) {
+      console.error(`Storage error during ${error.operation}: ${error.message}`);
+    } else {
+      console.error('Unexpected error:', error.message);
+    }
+    throw error; // Re-throw for caller to handle
+  }
+}
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Error Handling Do's ✅
+
 - Use specific error types for different failures
 - Provide helpful error messages for debugging
 - Log errors with context for troubleshooting
 - Implement retry logic for transient failures
 - Show user-friendly messages
+</SlideLayout.Full>
 
-### Don'ts ❌
+<SlideLayout.Full>
+## Error Handling Don'ts ❌
+
 - Don't swallow errors silently
 - Don't expose sensitive info in error messages
 - Don't retry non-recoverable errors

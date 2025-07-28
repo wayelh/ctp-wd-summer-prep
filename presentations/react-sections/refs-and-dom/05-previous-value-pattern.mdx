@@ -1,0 +1,52 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Previous Value Pattern
+
+<CodeDisplay>
+  <File name="PreviousValue.tsx">
+```tsx
+import React, { useState, useRef, useEffect } from 'react';
+
+// Custom hook to track previous value
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  
+  useEffect(() => {
+    ref.current = value;
+  });
+  
+  return ref.current;
+}
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  const prevCount = usePrevious(count);
+  const renderCount = useRef(0);
+
+  useEffect(() => {
+    renderCount.current += 1;
+  });
+
+  return (
+    <div>
+      <h2>Counter with History</h2>
+      <p>Current: {count}</p>
+      <p>Previous: {prevCount ?? 'None'}</p>
+      <p>Change: {prevCount !== undefined ? count - prevCount : 'N/A'}</p>
+      <p>Render count: {renderCount.current}</p>
+      
+      <button onClick={() => setCount(count + 1)}>+1</button>
+      <button onClick={() => setCount(count + 5)}>+5</button>
+      <button onClick={() => setCount(count - 1)}>-1</button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

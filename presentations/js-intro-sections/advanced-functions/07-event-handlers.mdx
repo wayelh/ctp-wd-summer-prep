@@ -1,0 +1,25 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Closure Benefits: Event Handlers
+
+```javascript
+function setupHabitButton(habitName, pointValue) {
+  const button = document.createElement('button');
+  button.textContent = `Complete ${habitName}`;
+  
+  // Closure captures habitName and pointValue
+  button.addEventListener('click', function() {
+    updatePoints(pointValue);
+    showMessage(`${habitName} completed!`);
+  });
+  
+  return button;
+}
+
+// Each button remembers its own habit data
+const exerciseBtn = setupHabitButton('Exercise', 10);
+const readingBtn = setupHabitButton('Reading', 5);
+```
+</SlideLayout.Full>

@@ -1,0 +1,36 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Object Structure Planning
+
+Ask these questions when designing objects:
+
+1. **What properties does this thing have?**
+   - Name, category, streak count, completion status
+
+2. **What actions can this thing perform?**
+   - Complete a day, reset streak, get status
+
+3. **How will other code interact with this object?**
+   - Call methods, read properties, pass to functions
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Planning Example: Habit Object
+
+```javascript
+const habit = {
+  // Properties (data)
+  name: "Exercise",
+  streak: 5,
+  
+  // Methods (actions)
+  complete() { this.streak++; },
+  reset() { this.streak = 0; },
+  getStatus() { return `${this.name}: ${this.streak} days`; }
+};
+```
+
+Properties store state, methods provide behavior
+</SlideLayout.Full>

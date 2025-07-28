@@ -1,0 +1,112 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Build a Generic Container
+<CodeDisplay >
+  <File name="example.typescript">
+    
+```typescript
+// Create a generic Box class that can hold any type of value
+// It should have methods to get and set the value
+
+class Box {
+  // TODO: Make this generic!
+  private value: any;
+  
+  constructor(initial: any) {
+    this.value = initial;
+  }
+  
+  getValue(): any {
+    return this.value;
+  }
+  
+  setValue(newValue: any): void {
+    this.value = newValue;
+  }
+}
+
+// This should work with proper generics
+const numberBox = new Box(42);
+const num: number = numberBox.getValue(); // Should be type-safe
+
+const stringBox = new Box("hello");
+const str: string = stringBox.getValue(); // Should be type-safe
+```
+    
+    
+```typescript
+// Solution: Generic Box class
+class Box<T> {
+  private value: T;
+  
+  constructor(initial: T) {
+    this.value = initial;
+  }
+  
+  getValue(): T {
+    return this.value;
+  }
+  
+  setValue(newValue: T): void {
+    this.value = newValue;
+  }
+  
+  // Additional utility methods
+  isEmpty(): boolean {
+    return this.value === null || this.value === undefined;
+  }
+  
+  transform<U>(transformer: (value: T) => U): Box<U> {
+    return new Box(transformer(this.value));
+  }
+}
+
+// Usage examples with type safety
+const numberBox = new Box<number>(42);
+const num: number = numberBox.getValue(); // Type-safe!
+
+const stringBox = new Box<string>("hello");
+const str: string = stringBox.getValue(); // Type-safe!
+
+// Transform box contents
+const lengthBox = stringBox.transform(s => s.length);
+const length: number = lengthBox.getValue(); // Returns number
+
+// Array box
+const arrayBox = new Box<number[]>([1, 2, 3]);
+arrayBox.setValue([4, 5, 6]);
+
+//***
+describe('Generic Box - Complete Implementation', () => {
+  it('should store and retrieve values', () => {
+    const testBox = new Box<number>(100);
+    expect(testBox.getValue()).to.equal(100);
+  });
+  
+  it('should update values correctly', () => {
+    const testBox = new Box<number>(100);
+    testBox.setValue(200);
+    expect(testBox.getValue()).to.equal(200);
+  });
+  
+  it('should work with different types', () => {
+    const stringBox = new Box<string>("test");
+    const boolBox = new Box<boolean>(true);
+    
+    expect(stringBox.getValue()).to.equal("test");
+    expect(boolBox.getValue()).to.be.true;
+  });
+  
+  it('should transform box contents', () => {
+    const stringBox = new Box<string>("hello");
+    const lengthBox = stringBox.transform(s => s.length);
+    expect(lengthBox.getValue()).to.equal(5);
+  });
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

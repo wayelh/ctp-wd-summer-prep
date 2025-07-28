@@ -1,0 +1,509 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Build a Habit Card Component
+
+<CodeDisplay height="70vh">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Card Exercise</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+// TODO: Create a HabitCard component that accepts:
+// - name: string
+// - category: string
+// - frequency: 'daily' | 'weekly' | 'monthly'
+// - currentStreak: number
+// - bestStreak: number
+// - completedToday: boolean
+// - lastCompleted: Date | null
+// - onComplete: () => void
+// - onDelete: () => void
+
+interface HabitCardProps {
+  // Define your props here
+}
+
+function HabitCard(props: HabitCardProps): JSX.Element {
+  // Implement your component
+  return <div>Implement HabitCard</div>;
+}
+
+// TODO: Create a StreakDisplay component that:
+// - Shows current streak with fire emoji for streaks > 7
+// - Shows best streak
+// - Uses different colors based on streak length
+
+interface StreakDisplayProps {
+  // Define your props here
+}
+
+function StreakDisplay(props: StreakDisplayProps): JSX.Element {
+  // Implement your component
+  return <div>Implement StreakDisplay</div>;
+}
+
+// TODO: Create a FrequencyBadge component that:
+// - Shows the frequency in a styled badge
+// - Uses different colors for different frequencies
+
+interface FrequencyBadgeProps {
+  // Define your props here
+}
+
+function FrequencyBadge(props: FrequencyBadgeProps): JSX.Element {
+  // Implement your component
+  return <div>Implement FrequencyBadge</div>;
+}
+
+function App(): JSX.Element {
+  const habits = [
+    {
+      id: 1,
+      name: "Morning Meditation",
+      category: "Mindfulness",
+      frequency: "daily" as const,
+      currentStreak: 15,
+      bestStreak: 30,
+      completedToday: true,
+      lastCompleted: new Date()
+    },
+    {
+      id: 2,
+      name: "Read for 30 minutes",
+      category: "Learning",
+      frequency: "daily" as const,
+      currentStreak: 3,
+      bestStreak: 21,
+      completedToday: false,
+      lastCompleted: new Date(Date.now() - 86400000)
+    },
+    {
+      id: 3,
+      name: "Weekly Review",
+      category: "Productivity",
+      frequency: "weekly" as const,
+      currentStreak: 4,
+      bestStreak: 12,
+      completedToday: false,
+      lastCompleted: new Date(Date.now() - 7 * 86400000)
+    }
+  ];
+
+  return (
+    <div className="habits-grid">
+      {/* Use your HabitCard component here */}
+      <p>Render habits here</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+
+```tsx
+// SOLUTION
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface HabitCardProps {
+  name: string;
+  category: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  currentStreak: number;
+  bestStreak: number;
+  completedToday: boolean;
+  lastCompleted: Date | null;
+  onComplete: () => void;
+  onDelete: () => void;
+}
+
+function HabitCard({ 
+  name, 
+  category,
+  frequency,
+  currentStreak,
+  bestStreak,
+  completedToday,
+  lastCompleted,
+  onComplete,
+  onDelete
+}: HabitCardProps): JSX.Element {
+  const formatLastCompleted = (date: Date | null) => {
+    if (!date) return 'Never';
+    const today = new Date();
+    const diffTime = Math.abs(today.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    return `${diffDays} days ago`;
+  };
+
+  return (
+    <div className={`habit-card ${completedToday ? 'completed' : ''}`}>
+      <div className="habit-header">
+        <div>
+          <h3>{name}</h3>
+          <p className="category">{category}</p>
+        </div>
+        <button className="delete-btn" onClick={onDelete}>×</button>
+      </div>
+      
+      <FrequencyBadge frequency={frequency} />
+      
+      <StreakDisplay 
+        currentStreak={currentStreak} 
+        bestStreak={bestStreak} 
+      />
+      
+      <p className="last-completed">
+        Last: {formatLastCompleted(lastCompleted)}
+      </p>
+      
+      <button 
+        className={`complete-btn ${completedToday ? 'done' : ''}`}
+        onClick={onComplete}
+        disabled={completedToday}
+      >
+        {completedToday ? '✓ Completed' : 'Mark Complete'}
+      </button>
+    </div>
+  );
+}
+
+interface StreakDisplayProps {
+  currentStreak: number;
+  bestStreak: number;
+}
+
+function StreakDisplay({ currentStreak, bestStreak }: StreakDisplayProps): JSX.Element {
+  const getStreakEmoji = () => {
+    if (currentStreak === 0) return '💪';
+    if (currentStreak < 7) return '✨';
+    if (currentStreak < 30) return '🔥';
+    return '🏆';
+  };
+
+  const getStreakColor = () => {
+    if (currentStreak === 0) return '#6b7280';
+    if (currentStreak < 7) return '#3b82f6';
+    if (currentStreak < 30) return '#f59e0b';
+    return '#10b981';
+  };
+
+  return (
+    <div className="streak-display">
+      <div className="streak-current" style={{ color: getStreakColor() }}>
+        <span className="streak-emoji">{getStreakEmoji()}</span>
+        <span className="streak-number">{currentStreak}</span>
+        <span className="streak-label">current</span>
+      </div>
+      <div className="streak-best">
+        <span className="streak-number">{bestStreak}</span>
+        <span className="streak-label">best</span>
+      </div>
+    </div>
+  );
+}
+
+interface FrequencyBadgeProps {
+  frequency: 'daily' | 'weekly' | 'monthly';
+}
+
+function FrequencyBadge({ frequency }: FrequencyBadgeProps): JSX.Element {
+  const getFrequencyColor = () => {
+    switch (frequency) {
+      case 'daily': return '#3b82f6';
+      case 'weekly': return '#8b5cf6';
+      case 'monthly': return '#06b6d4';
+    }
+  };
+
+  return (
+    <span 
+      className="frequency-badge" 
+      style={{ backgroundColor: getFrequencyColor() }}
+    >
+      {frequency}
+    </span>
+  );
+}
+
+function App(): JSX.Element {
+  const [habits, setHabits] = React.useState([
+    {
+      id: 1,
+      name: "Morning Meditation",
+      category: "Mindfulness",
+      frequency: "daily" as const,
+      currentStreak: 15,
+      bestStreak: 30,
+      completedToday: true,
+      lastCompleted: new Date()
+    },
+    {
+      id: 2,
+      name: "Read for 30 minutes",
+      category: "Learning",
+      frequency: "daily" as const,
+      currentStreak: 3,
+      bestStreak: 21,
+      completedToday: false,
+      lastCompleted: new Date(Date.now() - 86400000)
+    },
+    {
+      id: 3,
+      name: "Weekly Review",
+      category: "Productivity",
+      frequency: "weekly" as const,
+      currentStreak: 4,
+      bestStreak: 12,
+      completedToday: false,
+      lastCompleted: new Date(Date.now() - 7 * 86400000)
+    }
+  ]);
+
+  const handleComplete = (id: number) => {
+    setHabits(habits.map(habit => 
+      habit.id === id 
+        ? { 
+            ...habit, 
+            completedToday: true,
+            currentStreak: habit.currentStreak + 1,
+            lastCompleted: new Date()
+          }
+        : habit
+    ));
+  };
+
+  const handleDelete = (id: number) => {
+    setHabits(habits.filter(habit => habit.id !== id));
+  };
+
+  return (
+    <div className="habits-grid">
+      {habits.map(habit => (
+        <HabitCard
+          key={habit.id}
+          name={habit.name}
+          category={habit.category}
+          frequency={habit.frequency}
+          currentStreak={habit.currentStreak}
+          bestStreak={habit.bestStreak}
+          completedToday={habit.completedToday}
+          lastCompleted={habit.lastCompleted}
+          onComplete={() => handleComplete(habit.id)}
+          onDelete={() => handleDelete(habit.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.habits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.habit-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.habit-card.completed {
+  background: #f0fdf4;
+  border-color: #22c55e;
+}
+
+.habit-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.habit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 12px;
+}
+
+.habit-header h3 {
+  margin: 0 0 4px;
+  color: #1f2937;
+}
+
+.category {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #ef4444;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.delete-btn:hover {
+  opacity: 1;
+}
+
+.frequency-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.streak-display {
+  display: flex;
+  gap: 24px;
+  margin: 16px 0;
+}
+
+.streak-current,
+.streak-best {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.streak-emoji {
+  font-size: 24px;
+}
+
+.streak-number {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.streak-label {
+  font-size: 14px;
+  color: #6b7280;
+  text-transform: lowercase;
+}
+
+.streak-best .streak-number {
+  color: #6b7280;
+  font-size: 20px;
+}
+
+.last-completed {
+  margin: 12px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.complete-btn {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.complete-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #22c55e;
+}
+
+.complete-btn.done {
+  background: #22c55e;
+  color: white;
+  border-color: #22c55e;
+  cursor: default;
+}
+
+.complete-btn:disabled {
+  opacity: 0.8;
+}
+```
+  </File>
+  <Tests name="tests.js">
+```javascript
+describe('HabitCard Component', () => {
+  it('should render all habits', () => {
+    const cards = document.querySelectorAll('.habit-card');
+    assert.equal(cards.length, 3, 'Should render 3 habit cards');
+  });
+
+  it('should display habit information', () => {
+    const firstCard = document.querySelector('.habit-card');
+    const name = firstCard.querySelector('h3');
+    const category = firstCard.querySelector('.category');
+    
+    assert.exists(name, 'Should have habit name');
+    assert.exists(category, 'Should have category');
+  });
+
+  it('should show frequency badge', () => {
+    const badges = document.querySelectorAll('.frequency-badge');
+    assert.equal(badges.length, 3, 'Each habit should have a frequency badge');
+  });
+
+  it('should display streak information', () => {
+    const streakDisplays = document.querySelectorAll('.streak-display');
+    assert.equal(streakDisplays.length, 3, 'Each habit should show streak info');
+    
+    const firstStreak = streakDisplays[0];
+    assert.exists(firstStreak.querySelector('.streak-current'), 'Should show current streak');
+    assert.exists(firstStreak.querySelector('.streak-best'), 'Should show best streak');
+  });
+
+  it('should mark completed habits', () => {
+    const completedCard = document.querySelector('.habit-card.completed');
+    assert.exists(completedCard, 'Should have completed state');
+    
+    const completeBtn = completedCard.querySelector('.complete-btn');
+    assert.equal(completeBtn.disabled, true, 'Complete button should be disabled when done');
+  });
+});
+```
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>

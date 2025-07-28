@@ -1,0 +1,550 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Complex Conditional Patterns
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complex Habit Conditionals</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Multiple conditions with switch statement for time-based recommendations
+type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'night';
+
+function HabitRecommendations({ timeOfDay }: { timeOfDay: TimeOfDay }): JSX.Element {
+  switch (timeOfDay) {
+    case 'morning':
+      return (
+        <div className="recommendations morning">
+          <h3>🌅 Morning Habits</h3>
+          <ul>
+            <li>Meditation - Start your day mindfully</li>
+            <li>Exercise - Boost your energy</li>
+            <li>Healthy breakfast - Fuel your body</li>
+          </ul>
+        </div>
+      );
+    
+    case 'afternoon':
+      return (
+        <div className="recommendations afternoon">
+          <h3>☀️ Afternoon Habits</h3>
+          <ul>
+            <li>Take a walk - Refresh your mind</li>
+            <li>Drink water - Stay hydrated</li>
+            <li>Deep work session - Peak productivity</li>
+          </ul>
+        </div>
+      );
+    
+    case 'evening':
+      return (
+        <div className="recommendations evening">
+          <h3>🌆 Evening Habits</h3>
+          <ul>
+            <li>Journal - Reflect on your day</li>
+            <li>Read - Wind down with a book</li>
+            <li>Plan tomorrow - Set yourself up for success</li>
+          </ul>
+        </div>
+      );
+    
+    case 'night':
+      return (
+        <div className="recommendations night">
+          <h3>🌙 Night Habits</h3>
+          <ul>
+            <li>No screens - Prepare for sleep</li>
+            <li>Gratitude practice - End on a positive note</li>
+            <li>Prepare for bed - Consistent routine</li>
+          </ul>
+        </div>
+      );
+    
+    default:
+      return <div>Invalid time of day</div>;
+  }
+}
+
+// Component with multiple loading states
+interface HabitDataProps {
+  loading: boolean;
+  error: string | null;
+  habits: Array<{
+    id: number;
+    name: string;
+    category: string;
+    completions: number;
+  }> | null;
+}
+
+function HabitDashboard({ loading, error, habits }: HabitDataProps): JSX.Element {
+  // Guard clauses pattern
+  if (loading) {
+    return (
+      <div className="dashboard-state loading">
+        <div className="skeleton-loader">
+          <div className="skeleton-item"></div>
+          <div className="skeleton-item"></div>
+          <div className="skeleton-item"></div>
+        </div>
+        <p>Loading your habits...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-state error">
+        <span className="error-icon">⚠️</span>
+        <p>Error loading habits: {error}</p>
+        <button onClick={() => window.location.reload()}>Try Again</button>
+      </div>
+    );
+  }
+
+  if (!habits || habits.length === 0) {
+    return (
+      <div className="dashboard-state empty">
+        <span className="empty-icon">📝</span>
+        <h3>No habits yet!</h3>
+        <p>Start building better habits today</p>
+        <button className="cta">Create Your First Habit</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="habit-dashboard">
+      <h2>Your Habit Statistics</h2>
+      <div className="stats-grid">
+        {habits.map(habit => (
+          <div key={habit.id} className="stat-card">
+            <h4>{habit.name}</h4>
+            <p className="category">{habit.category}</p>
+            <div className="completions">
+              <span className="number">{habit.completions}</span>
+              <span className="label">completions</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// IIFE pattern for complex streak analysis
+function StreakAnalysis({ streak }: { streak: number }): JSX.Element {
+  return (
+    <div className="streak-analysis">
+      <h3>Streak Analysis</h3>
+      <div className="analysis-result">
+        {(() => {
+          if (streak === 0) {
+            return (
+              <div className="level beginner">
+                <span className="icon">🌱</span>
+                <span>Beginner - Start your journey!</span>
+              </div>
+            );
+          } else if (streak <= 7) {
+            return (
+              <div className="level building">
+                <span className="icon">🏗️</span>
+                <span>Building - {7 - streak} days to first milestone!</span>
+              </div>
+            );
+          } else if (streak <= 30) {
+            return (
+              <div className="level consistent">
+                <span className="icon">💪</span>
+                <span>Consistent - Great progress!</span>
+              </div>
+            );
+          } else if (streak <= 100) {
+            return (
+              <div className="level dedicated">
+                <span className="icon">🌟</span>
+                <span>Dedicated - You're on fire!</span>
+              </div>
+            );
+          } else {
+            return (
+              <div className="level master">
+                <span className="icon">🏆</span>
+                <span>Habit Master - Incredible dedication!</span>
+              </div>
+            );
+          }
+        })()}
+      </div>
+    </div>
+  );
+}
+
+// Object lookup pattern for habit categories
+const categoryIcons = {
+  health: { icon: '💪', color: '#4caf50' },
+  mindfulness: { icon: '🧘', color: '#2196f3' },
+  productivity: { icon: '⚡', color: '#ff9800' },
+  learning: { icon: '📚', color: '#9c27b0' },
+  social: { icon: '👥', color: '#00bcd4' },
+} as const;
+
+function HabitCategory({ 
+  category 
+}: { 
+  category: keyof typeof categoryIcons 
+}): JSX.Element {
+  const categoryData = categoryIcons[category] || { icon: '📌', color: '#666' };
+  
+  return (
+    <span 
+      className="habit-category"
+      style={{ backgroundColor: categoryData.color }}
+    >
+      {categoryData.icon} {category}
+    </span>
+  );
+}
+
+function App(): JSX.Element {
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('morning');
+  const [dashboardState, setDashboardState] = useState({
+    loading: false,
+    error: null as string | null,
+    habits: [
+      { id: 1, name: 'Exercise', category: 'health', completions: 45 },
+      { id: 2, name: 'Meditate', category: 'mindfulness', completions: 30 },
+      { id: 3, name: 'Read', category: 'learning', completions: 60 }
+    ]
+  });
+  const [currentStreak, setCurrentStreak] = useState(15);
+
+  // Simulate data loading
+  const reloadData = async () => {
+    setDashboardState({ ...dashboardState, loading: true, error: null });
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Randomly succeed or fail for demo
+    if (Math.random() > 0.3) {
+      setDashboardState({
+        loading: false,
+        error: null,
+        habits: [
+          { id: 1, name: 'Exercise', category: 'health', completions: 45 },
+          { id: 2, name: 'Meditate', category: 'mindfulness', completions: 30 },
+          { id: 3, name: 'Read', category: 'learning', completions: 60 }
+        ]
+      });
+    } else {
+      setDashboardState({
+        loading: false,
+        error: 'Failed to load habit data',
+        habits: null
+      });
+    }
+  };
+
+  return (
+    <div className="app">
+      <h1>Habit Tracker Dashboard</h1>
+
+      <section>
+        <h2>Time-Based Recommendations</h2>
+        <select 
+          value={timeOfDay} 
+          onChange={(e) => setTimeOfDay(e.target.value as TimeOfDay)}
+        >
+          <option value="morning">Morning (6am-12pm)</option>
+          <option value="afternoon">Afternoon (12pm-6pm)</option>
+          <option value="evening">Evening (6pm-10pm)</option>
+          <option value="night">Night (10pm-6am)</option>
+        </select>
+        <HabitRecommendations timeOfDay={timeOfDay} />
+      </section>
+
+      <section>
+        <h2>Your Habits</h2>
+        <button onClick={reloadData}>Reload Data</button>
+        <HabitDashboard {...dashboardState} />
+      </section>
+
+      <section>
+        <h2>Streak Progress</h2>
+        <input
+          type="range"
+          min="0"
+          max="150"
+          value={currentStreak}
+          onChange={(e) => setCurrentStreak(Number(e.target.value))}
+        />
+        <p>Current streak: {currentStreak} days</p>
+        <StreakAnalysis streak={currentStreak} />
+      </section>
+
+      <section>
+        <h2>Habit Categories</h2>
+        <div className="categories-demo">
+          {Object.keys(categoryIcons).map(category => (
+            <HabitCategory 
+              key={category} 
+              category={category as keyof typeof categoryIcons} 
+            />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+section {
+  margin-bottom: 40px;
+  padding: 25px;
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+select {
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+}
+
+.recommendations {
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.recommendations.morning {
+  background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+}
+
+.recommendations.afternoon {
+  background: linear-gradient(135deg, #74b9ff, #a29bfe);
+}
+
+.recommendations.evening {
+  background: linear-gradient(135deg, #fd79a8, #e17055);
+}
+
+.recommendations.night {
+  background: linear-gradient(135deg, #636e72, #2d3436);
+  color: white;
+}
+
+.recommendations ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+
+.recommendations li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+.dashboard-state {
+  text-align: center;
+  padding: 40px;
+}
+
+.skeleton-loader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.skeleton-item {
+  height: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.error-icon,
+.empty-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.dashboard-state.error {
+  color: #d32f2f;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.stat-card h4 {
+  margin: 0 0 8px;
+  color: #333;
+}
+
+.stat-card .category {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+.completions .number {
+  display: block;
+  font-size: 32px;
+  font-weight: bold;
+  color: #2196f3;
+}
+
+.completions .label {
+  font-size: 14px;
+  color: #666;
+}
+
+.streak-analysis {
+  margin-top: 20px;
+}
+
+.level {
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 18px;
+}
+
+.level .icon {
+  font-size: 32px;
+}
+
+.level.beginner {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.level.building {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.level.consistent {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.level.dedicated {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.level.master {
+  background: linear-gradient(135deg, #ffd700, #ffed4b);
+  color: #6b4423;
+  font-weight: bold;
+}
+
+.habit-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 4px;
+  text-transform: capitalize;
+}
+
+.categories-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #1976d2;
+}
+
+button.cta {
+  background: #4caf50;
+  font-size: 18px;
+  padding: 12px 24px;
+}
+
+button.cta:hover {
+  background: #388e3c;
+}
+
+input[type="range"] {
+  width: 100%;
+  margin: 10px 0;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,269 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## React Query (TanStack Query)
+
+<CodeDisplay>
+  <File name="ReactQueryExample.tsx">
+```tsx
+import React from 'react';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+// API functions
+const fetchTodos = async (): Promise<Todo[]> => {
+  const res = await fetch('/api/todos');
+  if (!res.ok) throw new Error('Failed to fetch todos');
+  return res.json();
+};
+
+const addTodo = async (text: string): Promise<Todo> => {
+  const res = await fetch('/api/todos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, completed: false })
+  });
+  if (!res.ok) throw new Error('Failed to add todo');
+  return res.json();
+};
+
+const updateTodo = async ({ id, ...data }: Partial<Todo> & { id: number }) => {
+  const res = await fetch(`/api/todos/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to update todo');
+  return res.json();
+};
+
+// Todo component with React Query
+function TodoList() {
+  const queryClient = useQueryClient();
+
+  // Fetch todos
+  const {
+    data: todos,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isFetching
+  } = useQuery({
+    queryKey: ['todos'],
+    queryFn: fetchTodos,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: true,
+    refetchInterval: false, // or number in ms
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+
+  // Add todo mutation
+  const addMutation = useMutation({
+    mutationFn: addTodo,
+    onMutate: async (newTodoText) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['todos'] });
+
+      // Snapshot previous value
+      const previousTodos = queryClient.getQueryData(['todos']);
+
+      // Optimistically update
+      queryClient.setQueryData(['todos'], (old: Todo[] = []) => [
+        ...old,
+        { id: Date.now(), text: newTodoText, completed: false }
+      ]);
+
+      return { previousTodos };
+    },
+    onError: (err, newTodo, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['todos'], context?.previousTodos);
+    },
+    onSettled: () => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    }
+  });
+
+  // Toggle todo mutation
+  const toggleMutation = useMutation({
+    mutationFn: updateTodo,
+    onMutate: async ({ id, completed }) => {
+      await queryClient.cancelQueries({ queryKey: ['todos'] });
+      
+      const previousTodos = queryClient.getQueryData(['todos']);
+      
+      queryClient.setQueryData(['todos'], (old: Todo[] = []) =>
+        old.map(todo =>
+          todo.id === id ? { ...todo, completed } : todo
+        )
+      );
+
+      return { previousTodos };
+    },
+    onError: (err, variables, context) => {
+      queryClient.setQueryData(['todos'], context?.previousTodos);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    }
+  });
+
+  if (isLoading) return <div>Loading todos...</div>;
+  if (isError) return <div>Error: {error?.message}</div>;
+
+  return (
+    <div>
+      <h3>
+        Todos
+        {isFetching && <span> 🔄</span>}
+      </h3>
+
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const input = e.currentTarget.elements.namedItem('todo') as HTMLInputElement;
+        if (input.value) {
+          addMutation.mutate(input.value);
+          input.value = '';
+        }
+      }}>
+        <input 
+          name="todo" 
+          placeholder="Add todo..." 
+          disabled={addMutation.isLoading}
+        />
+        <button type="submit" disabled={addMutation.isLoading}>
+          {addMutation.isLoading ? 'Adding...' : 'Add'}
+        </button>
+      </form>
+
+      {addMutation.isError && (
+        <div style={{ color: 'red' }}>
+          Error: {addMutation.error?.message}
+        </div>
+      )}
+
+      <ul>
+        {todos?.map(todo => (
+          <li key={todo.id}>
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={(e) => toggleMutation.mutate({
+                id: todo.id,
+                completed: e.target.checked
+              })}
+              disabled={toggleMutation.isLoading}
+            />
+            <span style={{ 
+              textDecoration: todo.completed ? 'line-through' : 'none' 
+            }}>
+              {todo.text}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <button onClick={() => refetch()}>
+        Refresh
+      </button>
+    </div>
+  );
+}
+
+// Infinite scroll example
+function InfiniteUsers() {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError
+  } = useInfiniteQuery({
+    queryKey: ['users'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await fetch(`/api/users?page=${pageParam}&limit=10`);
+      return res.json();
+    },
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage.hasMore ? pages.length + 1 : undefined;
+    }
+  });
+
+  if (isLoading) return <div>Loading users...</div>;
+  if (isError) return <div>Error loading users</div>;
+
+  return (
+    <div>
+      <h3>Infinite Scroll Users</h3>
+      {data?.pages.map((page, i) => (
+        <div key={i}>
+          {page.users.map((user: any) => (
+            <div key={user.id} style={{ padding: '10px', borderBottom: '1px solid #eee' }}>
+              <strong>{user.name}</strong>
+              <p>{user.email}</p>
+            </div>
+          ))}
+        </div>
+      ))}
+      
+      <button
+        onClick={() => fetchNextPage()}
+        disabled={!hasNextPage || isFetchingNextPage}
+      >
+        {isFetchingNextPage
+          ? 'Loading more...'
+          : hasNextPage
+          ? 'Load More'
+          : 'No more users'}
+      </button>
+    </div>
+  );
+}
+
+// Main App
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div>
+        <h2>React Query Examples</h2>
+        <TodoList />
+        <InfiniteUsers />
+      </div>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

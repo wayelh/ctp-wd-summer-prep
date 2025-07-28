@@ -1,0 +1,55 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Backend Layer - The Server
+
+<FlexBox justifyContent="space-between" alignItems="flex-start">
+  <Box width="48%">
+    **Technologies:**
+    - Node.js (JavaScript server)
+    - Python (Django/Flask)
+    - Java (Spring)
+    - C# (.NET)
+  </Box>
+  <Box width="48%">
+    **Responsibilities:**
+    - Process business logic
+    - Handle API requests
+    - Authenticate users
+    - Communicate with database
+  </Box>
+</FlexBox>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Backend API Example
+
+<CodeDisplay>
+  <File name="backend-example.js">
+```javascript
+// Backend API endpoint example
+app.post('/api/habits', async (req, res) => {
+  try {
+    // Validate user input
+    const { name, description } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: 'Name is required' });
+    }
+    
+    // Save to database
+    const habit = await database.habits.create({
+      name,
+      description,
+      userId: req.user.id
+    });
+    
+    res.json({ success: true, habit });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

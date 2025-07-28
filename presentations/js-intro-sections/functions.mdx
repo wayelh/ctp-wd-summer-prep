@@ -2,75 +2,124 @@ import { SlideLayout, Image, FlexBox, Box } from 'spectacle'
 import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
-## Understanding Functions: The Building Blocks
+## Functions
 
-Functions are reusable blocks of code that:
-
-**1. Encapsulate Logic**
-- Group related operations together
-- Create reusable code that can be called multiple times
-- Accept inputs (parameters) and return outputs
-
-**2. Promote Organization**
-- Break complex problems into smaller pieces
-- Make code easier to read and maintain
-- Enable testing of individual components
-
-**3. Enable Abstraction**
-- Hide implementation details
-- Provide clean interfaces for complex operations
-- Allow code reuse across different parts of your application
+Reusable blocks of code that power JavaScript applications
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Function Fundamentals
+## Understanding Functions
 
-**Function Declaration:**
+Functions are reusable blocks of code that:
+
+- Group related operations together
+- Create reusable code that can be called multiple times
+- Accept inputs (parameters) and return outputs
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Why Use Functions?
+
+1. Encapsulate Logic
+    - Hide implementation details
+    - Provide clean interfaces
+2. Promote Organization
+    - Break complex problems into smaller pieces
+    - Make code easier to read and maintain
+3. Enable Testing
+    - Test individual components
+    - Isolate bugs more easily
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Function Declaration
+
+Traditional way to create functions:
+
 ```javascript
 function calculatePoints(streak) {
   return streak * 10;
 }
+
+// Call the function
+const points = calculatePoints(5); // 50
 ```
 
-**Function Expression:**
+- Hoisted to top of scope
+- Can be called before declaration
+- Has a name property
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Function Expression
+
+Assign a function to a variable:
+
 ```javascript
 const calculatePoints = function(streak) {
   return streak * 10;
 };
+
+// Call the function
+const points = calculatePoints(5); // 50
 ```
 
-**Arrow Function:**
+- Not hoisted
+- Must be defined before use
+- Can be anonymous
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Arrow Functions
+
+Modern, concise syntax:
+
 ```javascript
-const calculatePoints = (streak) => streak * 10;
-```
+// Single parameter, implicit return
+const calculatePoints = streak => streak * 10;
 
-**Key Concepts:**
-- Parameters vs Arguments
-- Return values vs side effects
-- Scope and variable access
-- Function naming best practices
+// Multiple parameters
+const add = (a, b) => a + b;
+
+// Block body with explicit return
+const getBonus = streak => {
+  if (streak > 30) return 100;
+  return 0;
+};
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Key Function Concepts
+
+- **Parameters**: Variables in function definition
+- **Arguments**: Values passed when calling
+- **Return value**: Output from the function
+- **Side effects**: Changes outside the function
+
+```javascript
+function greet(name) {    // name is parameter
+  return `Hello, ${name}!`;
+}
+
+greet("Alice");          // "Alice" is argument
+```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Exercise Overview: Habit Function Library
 
-You'll build a set of utility functions for habit tracking:
+You'll build utility functions for habit tracking:
 
 1. **calculateStreak()** - Count completion days
 2. **isHabitCompleted()** - Check if habit was done on a date
 3. **getPoints()** - Calculate points based on streak
 
-**Function Design Principles:**
-- Each function should do one thing well
-- Use descriptive names that explain what the function does
-- Accept the minimum data needed to complete the task
-- Return a useful value for the caller
-
-**Progressive Enhancement**: Start simple, then add modern syntax
+Each function should do one thing well!
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Functions: The Heart of JavaScript
+## Functions Exercise Part 1
 
 <CodeDisplay >
   <File name="habitFunctions.js">
@@ -92,7 +141,7 @@ console.log(getPoints(5));
     
     
 ```javascript
-// Step 1: Basic function declaration
+// Solution: Basic function declarations
 function calculateStreak(completionDates) {
   return completionDates.length;
 }
@@ -117,36 +166,6 @@ console.log(isHabitCompleted({ completions: ['2024-01-01'] }, '2024-01-01')); //
 console.log(getPoints(5)); // 50
 ```
     
-    
-```javascript
-// Step 2: Refactor with modern syntax
-// Function declaration - still good for main functions
-function calculateStreak(completionDates) {
-  return completionDates.length;
-}
-
-// Function expression - useful for conditional assignment
-const isHabitCompleted = function(habit, date) {
-  // Modern array method
-  return habit.completions.includes(date);
-};
-
-// Arrow function - concise for simple operations
-const getPoints = (streak) => streak * 10;
-
-// Arrow function with block body for complex logic
-const getStreakBonus = (streak) => {
-  if (streak >= 30) return 100;
-  if (streak >= 7) return 25;
-  return 0;
-};
-
-// Test them
-console.log(calculateStreak(['2024-01-01', '2024-01-02'])); // 2
-console.log(getPoints(5)); // 50
-console.log(getStreakBonus(30)); // 100
-```
-    
   </File>
   <Tests>
     
@@ -169,30 +188,6 @@ describe('Habit Functions', () => {
     expect(getPoints(5)).to.equal(50);
     expect(getPoints(10)).to.equal(100);
   });
-
-  it('should implement all required functions', () => {
-    expect(typeof calculateStreak).to.equal('function');
-    expect(typeof isHabitCompleted).to.equal('function');
-    expect(typeof getPoints).to.equal('function');
-    
-    expect(calculateStreak(['a', 'b', 'c'])).to.equal(3);
-    expect(getPoints(7)).to.equal(70);
-  });
-
-  it('should use includes for array checking', () => {
-    const habit = { completions: ['2024-01-01', '2024-01-03'] };
-    expect(isHabitCompleted(habit, '2024-01-01')).to.equal(true);
-    expect(isHabitCompleted(habit, '2024-01-02')).to.equal(false);
-  });
-  
-  it('should calculate streak bonuses', () => {
-    if (typeof getStreakBonus === 'function') {
-      expect(getStreakBonus(2)).to.equal(0);
-      expect(getStreakBonus(7)).to.equal(25);
-      expect(getStreakBonus(30)).to.equal(100);
-      expect(getStreakBonus(100)).to.equal(100);
-    }
-  });
 });
 ```
     
@@ -201,97 +196,117 @@ describe('Habit Functions', () => {
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Functions as First-Class Citizens
+## Refactoring with Modern Syntax
 
 <CodeDisplay >
-  <File name="advancedFunctions.js">
+  <File name="modernFunctions.js">
+    
 ```javascript
-// Step 3: Functions as first-class citizens
-// Store functions in variables
-const scoreCalculator = getPoints;
-const bonusCalculator = getStreakBonus;
-
-// Pass functions as arguments
-function calculateTotalScore(streak, pointsFn, bonusFn) {
-  return pointsFn(streak) + bonusFn(streak);
+// Refactor with modern syntax
+// Function declaration - still good for main functions
+function calculateStreak(completionDates) {
+  return completionDates.length;
 }
 
-// Return functions from functions
+// Function expression with array method
+const isHabitCompleted = function(habit, date) {
+  return habit.completions.includes(date); // Modern approach
+};
+
+// Arrow function - concise for simple operations
+const getPoints = (streak) => streak * 10;
+
+// Arrow function with conditional logic
+const getStreakBonus = (streak) => {
+  if (streak >= 30) return 100;
+  if (streak >= 7) return 25;
+  return 0;
+};
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Functions as First-Class Citizens
+
+In JavaScript, functions are values:
+
+```javascript
+// Store in variables
+const scorer = getPoints;
+
+// Pass as arguments
+function applyBonus(value, bonusFunc) {
+  return value + bonusFunc(value);
+}
+
+// Return from functions
 function createMultiplier(factor) {
   return (value) => value * factor;
 }
+```
+</SlideLayout.Full>
 
-const doublePoints = createMultiplier(2);
-const triplePoints = createMultiplier(3);
+<SlideLayout.Full>
+## Higher-Order Functions Example
 
-// Use them
-console.log(scoreCalculator(5)); // 50
-console.log(calculateTotalScore(30, getPoints, getStreakBonus)); // 300 + 100 = 400
-console.log(doublePoints(10)); // 20
-console.log(triplePoints(10)); // 30
+<CodeDisplay >
+  <File name="higherOrder.js">
+```javascript
+// Functions that operate on other functions
+const getPoints = (streak) => streak * 10;
+const getBonus = (streak) => streak >= 7 ? 25 : 0;
+
+// Higher-order function
+function calculateTotal(streak, ...calculators) {
+  return calculators.reduce((total, calc) => {
+    return total + calc(streak);
+  }, 0);
+}
+
+// Usage
+const streak = 10;
+const total = calculateTotal(streak, getPoints, getBonus);
+console.log(total); // 100 + 25 = 125
+
+// Function factory
+function createThreshold(threshold) {
+  return (value) => value >= threshold;
+}
+
+const isGoodStreak = createThreshold(7);
+const isGreatStreak = createThreshold(30);
+
+console.log(isGoodStreak(10));  // true
+console.log(isGreatStreak(10)); // false
 ```
 </File>
 </CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Understanding Function Parameters and Logic
+## Exercise: Analytics Function
 
-Before building the analytics function, understand these patterns:
+Build a versatile function for different calculations:
 
-**Switch Statements in Functions:**
 ```javascript
-function getGrade(score) {
-  switch (true) {
-    case score >= 90: return "A";
-    case score >= 80: return "B"; 
-    case score >= 70: return "C";
-    default: return "F";
-  }
+function analyzeHabit(action, habitData) {
+  // Actions: "streak", "points", "completion-rate", "best-day"
 }
 ```
 
-**Calculation Functions:**
-```javascript
-function calculatePercentage(completed, total) {
-  if (total === 0) return 0;
-  return Math.round((completed / total) * 100);
-}
-```
-
-**The Goal**: Build a versatile analytics function that can perform different calculations based on the action parameter.
+Use switch statements to handle different actions
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Exercise: Function Calculator
+## Analytics Function Solution
+
 <CodeDisplay >
-  <File name="example.js">
+  <File name="analytics.js">
     
 ```javascript
-// Habit Tracker: Create a habit analytics function
-// Exercise: Build a function that analyzes habit completion data
-
-function analyzeHabit(action, habitData) {
-  // Your code here
-  // Actions: "streak", "points", "completion-rate", "best-day"
-}
-
-// Test data
-const myHabit = {
-  name: "Morning Exercise",
-  completions: ['2024-01-01', '2024-01-02', '2024-01-04', '2024-01-05', '2024-01-06'],
-  totalDays: 7,
-  pointsPerDay: 10
-};
-
-console.log(analyzeHabit("streak", myHabit));
-console.log(analyzeHabit("points", myHabit));
-console.log(analyzeHabit("completion-rate", myHabit));
-```
-    
-    
-```javascript
-// Solution: Comprehensive analytics function
 function analyzeHabit(action, habitData) {
   switch (action) {
     case "streak":
@@ -306,7 +321,6 @@ function analyzeHabit(action, habitData) {
     
     case "best-day":
       if (habitData.completions.length === 0) return "No completions yet";
-      // Find the most recent completion
       const sorted = habitData.completions.sort();
       return sorted[sorted.length - 1];
     
@@ -318,120 +332,103 @@ function analyzeHabit(action, habitData) {
 // Test data
 const myHabit = {
   name: "Morning Exercise",
-  completions: ['2024-01-01', '2024-01-02', '2024-01-04', '2024-01-05', '2024-01-06'],
+  completions: ['2024-01-01', '2024-01-02', '2024-01-04'],
   totalDays: 7,
   pointsPerDay: 10
 };
 
-console.log("Current streak:", analyzeHabit("streak", myHabit));      // 5
-console.log("Total points:", analyzeHabit("points", myHabit));        // 50
-console.log("Completion rate:", analyzeHabit("completion-rate", myHabit) + "%"); // 71%
-console.log("Most recent completion:", analyzeHabit("best-day", myHabit)); // 2024-01-06
+console.log(analyzeHabit("streak", myHabit));      // 3
+console.log(analyzeHabit("points", myHabit));      // 30
+console.log(analyzeHabit("completion-rate", myHabit)); // 43
 ```
     
   </File>
-  <Tests>
-    
-```javascript
-// Tests for Function Calculator
-describe('Habit Analytics Function', () => {
-  it('should calculate streak correctly', () => {
-    expect(analyzeHabit("streak", myHabit)).to.equal(5);
-  });
-  
-  it('should calculate points correctly', () => {
-    expect(analyzeHabit("points", myHabit)).to.equal(50);
-  });
-  
-  it('should calculate completion rate correctly', () => {
-    expect(analyzeHabit("completion-rate", myHabit)).to.equal(71);
-  });
-  
-  it('should find best day correctly', () => {
-    expect(analyzeHabit("best-day", myHabit)).to.equal('2024-01-06');
-  });
-  
-  it('should handle unknown actions', () => {
-    expect(analyzeHabit("unknown", myHabit)).to.equal("Unknown action");
-  });
-});
-```
-    
-  </Tests>
 </CodeDisplay>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
-## Common Function Pitfalls
+## Common Pitfall: Arrow Function `this`
 
-**Avoid these common mistakes:**
-
-1. **Arrow Function `this` Binding**
 ```javascript
 const habitTracker = {
   count: 0,
+  // ❌ Arrow function doesn't have its own 'this'
   increment: () => {
-    this.count++; // ❌ Arrow functions don't have their own 'this'
+    this.count++; // 'this' is not habitTracker!
+  },
+  // ✅ Regular function method
+  incrementCorrect: function() {
+    this.count++;
   }
 };
 ```
 
-2. **Forgetting Return in Arrow Functions**
+Arrow functions inherit `this` from surrounding scope
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Pitfall: Missing Return
+
 ```javascript
-// This returns undefined!
+// ❌ This returns undefined!
 const getPoints = (streak) => {
   streak * 10; // Missing return
 };
 
-// Correct:
+// ✅ Implicit return (no braces)
 const getPoints = (streak) => streak * 10;
-// OR
+
+// ✅ Explicit return (with braces)
 const getPoints = (streak) => {
   return streak * 10;
 };
 ```
+</SlideLayout.Full>
 
-3. **Function Hoisting Confusion**
+<SlideLayout.Full>
+## Common Pitfall: Hoisting
+
 ```javascript
-console.log(declaredFn()); // ✅ Works - hoisted
-console.log(expressionFn()); // ❌ Error - not hoisted
+// ✅ Works - function declarations are hoisted
+console.log(declaredFn()); 
 
-function declaredFn() { return "I'm hoisted!"; }
-const expressionFn = () => "I'm not hoisted!";
+// ❌ Error - expressions are not hoisted
+console.log(expressionFn()); 
+
+function declaredFn() { 
+  return "I'm hoisted!"; 
+}
+
+const expressionFn = () => {
+  return "I'm not hoisted!";
+};
 ```
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Debugging Functions
 
-**Pro tips for debugging functions:**
-
-1. **Use console.log() strategically**
+**1. Strategic console.log()**
 ```javascript
-function calculateHabitScore(habit) {
-  console.log('Input habit:', habit); // Check input
-  
-  const baseScore = habit.streak * 10;
-  console.log('Base score:', baseScore); // Check calculation
-  
-  const bonus = habit.difficulty === 'hard' ? 50 : 0;
-  console.log('Bonus:', bonus); // Check logic
-  
-  return baseScore + bonus;
+function calculateScore(habit) {
+  console.log('Input:', habit);
+  const base = habit.streak * 10;
+  console.log('Base score:', base);
+  return base;
 }
 ```
 
-2. **Use debugger statement**
+**2. Debugger statement**
 ```javascript
-function complexCalculation(data) {
-  debugger; // Pauses execution in DevTools
-  // Step through code line by line
+function complexCalc(data) {
+  debugger; // Pauses in DevTools
+  // Step through line by line
 }
 ```
 
-3. **Check function.name for debugging**
+**3. Function names help**
 ```javascript
-const myFunc = () => console.log('Running:', myFunc.name);
+const myFunc = () => console.log(myFunc.name);
 ```
 </SlideLayout.Full>
 

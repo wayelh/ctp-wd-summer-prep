@@ -1,0 +1,583 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Interactive Habit Tracker
+
+<CodeDisplay >
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Tracker UI</title>
+</head>
+<body>
+    <div class="app-container">
+        <h1>My Habits</h1>
+        
+        <div class="add-habit-form">
+            <input id="habitName" type="text" placeholder="Habit name" value="Morning Run" />
+            <select id="habitCategory">
+                <option value="health">Health</option>
+                <option value="productivity">Productivity</option>
+                <option value="learning">Learning</option>
+            </select>
+            <button id="addHabitBtn">Add Habit</button>
+        </div>
+        
+        <div id="habitsList"></div>
+    </div>
+</body>
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Tracker UI</title>
+</head>
+<body>
+  <input id="habitName" placeholder="Enter habit name" value="Morning Run">
+  <select id="habitCategory">
+    <option value="health">Health</option>
+    <option value="productivity">Productivity</option>
+    <option value="learning">Learning</option>
+  </select>
+  <button id="addHabitBtn">Add Habit</button>
+  <div id="habitsList"></div>
+</body>
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Tracker UI</title>
+    <style>
+        .habit-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: box-shadow 0.2s;
+        }
+        .habit-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .category-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .category-health { background-color: #4CAF50; }
+        .category-productivity { background-color: #2196F3; }
+        .category-learning { background-color: #FF9800; }
+    </style>
+</head>
+<body>
+  <input id="habitName" value="Morning Run">
+  <select id="habitCategory">
+    <option value="health">Health</option>
+    <option value="productivity">Productivity</option>
+    <option value="learning">Learning</option>
+  </select>
+  <button id="addHabitBtn">Add Habit</button>
+  <div id="habitsList"></div>
+</body>
+</html>
+```
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Habit Tracker UI</title>
+</head>
+<body>
+  <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1>My Habits</h1>
+    
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+      <input id="habitName" placeholder="What habit do you want to build?" style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #ddd; border-radius: 4px;">
+      
+      <div style="display: flex; gap: 12px;">
+        <select id="habitCategory" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          <option value="health">💪 Health</option>
+          <option value="productivity">⚡ Productivity</option>
+          <option value="learning">📚 Learning</option>
+          <option value="mindfulness">🧘 Mindfulness</option>
+        </select>
+        
+        <button id="addHabitBtn" style="padding: 8px 24px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+          Add Habit
+        </button>
+      </div>
+    </div>
+    
+    <div id="stats" style="display: flex; gap: 16px; margin-bottom: 24px;">
+      <div style="flex: 1; background: #E3F2FD; padding: 16px; border-radius: 8px; text-align: center;">
+        <div style="font-size: 24px; font-weight: bold;" id="totalHabits">0</div>
+        <div style="color: #666;">Total Habits</div>
+      </div>
+      <div style="flex: 1; background: #E8F5E9; padding: 16px; border-radius: 8px; text-align: center;">
+        <div style="font-size: 24px; font-weight: bold;" id="completedToday">0</div>
+        <div style="color: #666;">Completed Today</div>
+      </div>
+    </div>
+    
+    <div id="habitsList"></div>
+  </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+.app-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.add-habit-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+#habitName {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#addHabitBtn {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.habit-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    border-left: 4px solid #4CAF50;
+}
+
+.habit-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.category-badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background-color: #e0e0e0;
+}
+
+.category-badge.health {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.category-badge.productivity {
+    background-color: #2196F3;
+    color: white;
+}
+
+.category-badge.learning {
+    background-color: #ff9800;
+    color: white;
+}
+```
+  </File>
+  <File name="app.js">
+```javascript
+// TODO: Build an interactive habit tracker UI
+// 1. Select the form elements
+// 2. Add click handler to create habit cards
+// 3. Display habits with complete buttons
+
+// Your code here...
+```
+
+```javascript
+// Step 1: Basic form handling
+
+// Select form elements
+const nameInput = document.querySelector("#habitName");
+const categorySelect = document.querySelector("#habitCategory");
+const addButton = document.querySelector("#addHabitBtn");
+const habitsList = document.querySelector("#habitsList");
+
+// Add click handler
+addButton.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const category = categorySelect.value;
+  
+  if (name === "") {
+    alert("Please enter a habit name");
+    return;
+  }
+  
+  console.log(`Adding habit: ${name} (${category})`);
+  
+  // Create habit element
+  const habitDiv = document.createElement("div");
+  habitDiv.className = "habit-item";
+  habitDiv.innerHTML = `
+    <span class="habit-name">${name}</span>
+    <span class="habit-category">${category}</span>
+  `;
+  
+  habitsList.appendChild(habitDiv);
+  nameInput.value = ""; // Clear input
+});
+
+// Trigger add for testing
+addButton.click();
+```
+
+```javascript
+// Step 2: Enhanced habit cards with styling
+
+const nameInput = document.querySelector("#habitName");
+const categorySelect = document.querySelector("#habitCategory");
+const addButton = document.querySelector("#addHabitBtn");
+const habitsList = document.querySelector("#habitsList");
+
+let habitCount = 0;
+
+function createHabitCard(name, category) {
+  habitCount++;
+  
+  const card = document.createElement("div");
+  card.className = "habit-card";
+  card.id = `habit-${habitCount}`;
+  
+  const leftSection = document.createElement("div");
+  leftSection.innerHTML = `
+    <h3 style="margin: 0 0 8px 0;">${name}</h3>
+    <span class="category-badge category-${category}">${category.toUpperCase()}</span>
+  `;
+  
+  const rightSection = document.createElement("div");
+  rightSection.innerHTML = `
+    <span class="streak" style="margin-right: 16px;">Streak: <strong>0</strong></span>
+    <button class="complete-btn" style="padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+      Complete Today
+    </button>
+  `;
+  
+  card.appendChild(leftSection);
+  card.appendChild(rightSection);
+  
+  // Add complete functionality
+  const completeBtn = card.querySelector(".complete-btn");
+  const streakCount = card.querySelector("strong");
+  
+  completeBtn.addEventListener("click", () => {
+    const currentStreak = parseInt(streakCount.textContent);
+    streakCount.textContent = currentStreak + 1;
+    completeBtn.disabled = true;
+    completeBtn.textContent = "Completed ✓";
+    completeBtn.style.background = "#9E9E9E";
+  });
+  
+  return card;
+}
+
+addButton.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const category = categorySelect.value;
+  
+  if (name) {
+    const card = createHabitCard(name, category);
+    habitsList.appendChild(card);
+    nameInput.value = "";
+    nameInput.focus();
+  }
+});
+
+// Add initial habit
+addButton.click();
+```
+
+```javascript
+// Step 3: Full habit management system
+
+// Global state
+const habits = [];
+let completedToday = 0;
+
+// Elements
+const nameInput = document.querySelector("#habitName");
+const categorySelect = document.querySelector("#habitCategory");
+const addButton = document.querySelector("#addHabitBtn");
+const habitsList = document.querySelector("#habitsList");
+const totalHabitsEl = document.querySelector("#totalHabits");
+const completedTodayEl = document.querySelector("#completedToday");
+
+// Category colors
+const categoryColors = {
+  health: "#4CAF50",
+  productivity: "#2196F3",
+  learning: "#FF9800",
+  mindfulness: "#9C27B0"
+};
+
+function updateStats() {
+  totalHabitsEl.textContent = habits.length;
+  completedTodayEl.textContent = completedToday;
+}
+
+function createHabitCard(habitData) {
+  const card = document.createElement("div");
+  card.style.cssText = `
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+  `;
+  
+  card.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 style="margin: 0; font-size: 20px;">${habitData.name}</h3>
+      <button class="delete-btn" style="background: none; border: none; color: #f44336; cursor: pointer; font-size: 20px;">×</button>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <span style="background: ${categoryColors[habitData.category]}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+          ${habitData.category.toUpperCase()}
+        </span>
+        <span style="margin-left: 12px; color: #666;">
+          Streak: <strong style="color: ${habitData.streak > 0 ? '#4CAF50' : '#666'};">${habitData.streak} days</strong>
+        </span>
+      </div>
+      
+      <button class="complete-btn" style="padding: 10px 20px; background: ${habitData.completedToday ? '#9E9E9E' : '#4CAF50'}; color: white; border: none; border-radius: 6px; cursor: ${habitData.completedToday ? 'default' : 'pointer'}; font-weight: bold;" ${habitData.completedToday ? 'disabled' : ''}>
+        ${habitData.completedToday ? 'Completed ✓' : 'Mark Complete'}
+      </button>
+    </div>
+  `;
+  
+  // Delete functionality
+  const deleteBtn = card.querySelector(".delete-btn");
+  deleteBtn.addEventListener("click", () => {
+    const index = habits.indexOf(habitData);
+    if (index > -1) {
+      habits.splice(index, 1);
+      card.remove();
+      updateStats();
+    }
+  });
+  
+  // Complete functionality
+  const completeBtn = card.querySelector(".complete-btn");
+  if (!habitData.completedToday) {
+    completeBtn.addEventListener("click", () => {
+      habitData.completedToday = true;
+      habitData.streak++;
+      completedToday++;
+      
+      // Update button
+      completeBtn.style.background = "#9E9E9E";
+      completeBtn.textContent = "Completed ✓";
+      completeBtn.disabled = true;
+      
+      // Update streak display
+      const streakEl = card.querySelector("strong");
+      streakEl.textContent = habitData.streak + " days";
+      streakEl.style.color = "#4CAF50";
+      
+      // Celebration animation
+      card.style.transform = "scale(1.05)";
+      card.style.borderColor = "#4CAF50";
+      setTimeout(() => {
+        card.style.transform = "scale(1)";
+        card.style.borderColor = "#e0e0e0";
+      }, 300);
+      
+      updateStats();
+    });
+  }
+  
+  return card;
+}
+
+// Add habit handler
+addButton.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const category = categorySelect.value;
+  
+  if (name) {
+    const habitData = {
+      id: Date.now(),
+      name: name,
+      category: category,
+      streak: 0,
+      completedToday: false
+    };
+    
+    habits.push(habitData);
+    const card = createHabitCard(habitData);
+    habitsList.appendChild(card);
+    
+    nameInput.value = "";
+    nameInput.focus();
+    updateStats();
+  }
+});
+
+// Enter key support
+nameInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    addButton.click();
+  }
+});
+
+// Add sample habits
+const sampleHabits = [
+  { id: 1, name: "Drink 8 glasses of water", category: "health", streak: 5, completedToday: false },
+  { id: 2, name: "Read for 30 minutes", category: "learning", streak: 3, completedToday: true }
+];
+
+sampleHabits.forEach(habit => {
+  habits.push(habit);
+  habitsList.appendChild(createHabitCard(habit));
+  if (habit.completedToday) completedToday++;
+});
+
+updateStats();
+```
+  </File>
+  <Tests>
+    
+```javascript
+// Test: Check implementation
+describe('Habit Tracker UI', () => {
+  it('should add habit when button clicked', () => {
+    const habitsList = document.querySelector("#habitsList");
+    expect(habitsList.children).to.have.lengthOf.at.least(1);
+  });
+  
+  it('should display habit name correctly', () => {
+    const habitName = document.querySelector(".habit-name");
+    expect(habitName.textContent).to.equal("Morning Run");
+  });
+});
+```
+
+```javascript
+// Test: Basic form handling
+describe('Basic Habit Form', () => {
+  it('should create habit element', () => {
+    expect(habitsList.children).to.have.lengthOf(1);
+  });
+  
+  it('should display habit details', () => {
+    const habit = habitsList.querySelector(".habit-item");
+    expect(habit.querySelector(".habit-name").textContent).to.equal("Morning Run");
+    expect(habit.querySelector(".habit-category").textContent).to.equal("health");
+  });
+  
+  it('should clear input after adding', () => {
+    expect(nameInput.value).to.equal("");
+  });
+});
+```
+
+```javascript
+// Test: Enhanced cards
+describe('Enhanced Habit Cards', () => {
+  it('should create styled habit card', () => {
+    const card = habitsList.querySelector(".habit-card");
+    expect(card).to.exist;
+    expect(card.id).to.equal("habit-1");
+  });
+  
+  it('should have correct category styling', () => {
+    const badge = habitsList.querySelector(".category-badge");
+    expect(badge.textContent).to.equal("HEALTH");
+    expect(badge.classList.contains("category-health")).to.be.true;
+  });
+  
+  it('should track completions', () => {
+    const completeBtn = habitsList.querySelector(".complete-btn");
+    const streakCount = habitsList.querySelector("strong");
+    
+    completeBtn.click();
+    expect(streakCount.textContent).to.equal("1");
+    expect(completeBtn.disabled).to.be.true;
+    expect(completeBtn.textContent).to.equal("Completed ✓");
+  });
+});
+```
+
+```javascript
+// Test: Complete habit management
+describe('Complete Habit System', () => {
+  it('should display initial stats', () => {
+    expect(totalHabitsEl.textContent).to.equal("2");
+    expect(completedTodayEl.textContent).to.equal("1");
+  });
+  
+  it('should have sample habits', () => {
+    expect(habits).to.have.lengthOf(2);
+    expect(habitsList.children).to.have.lengthOf(2);
+  });
+  
+  it('should show correct completion states', () => {
+    const buttons = habitsList.querySelectorAll(".complete-btn");
+    expect(buttons[0].disabled).to.be.false;
+    expect(buttons[1].disabled).to.be.true;
+    expect(buttons[1].textContent).to.equal("Completed ✓");
+  });
+  
+  it('should handle habit completion', () => {
+    const firstCompleteBtn = habitsList.querySelector(".complete-btn:not([disabled])");
+    firstCompleteBtn.click();
+    
+    expect(completedToday).to.equal(2);
+    expect(completedTodayEl.textContent).to.equal("2");
+    expect(habits[0].streak).to.equal(6);
+  });
+  
+  it('should support enter key', () => {
+    nameInput.value = "Test Habit";
+    const enterEvent = new KeyboardEvent("keypress", { key: "Enter" });
+    nameInput.dispatchEvent(enterEvent);
+    
+    expect(habits).to.have.lengthOf(3);
+    expect(habitsList.children).to.have.lengthOf(3);
+  });
+});
+```
+    
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>

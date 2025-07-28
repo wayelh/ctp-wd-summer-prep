@@ -1,0 +1,24 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Closure Benefits: Data Privacy
+
+**1. Data Privacy**
+Variables can't be accessed directly from outside
+
+```javascript
+function createSecret(value) {
+  let secret = value; // Private!
+  
+  return {
+    reveal: () => secret,
+    update: (newValue) => secret = newValue
+  };
+}
+
+const mySecret = createSecret("hidden");
+// No way to access 'secret' directly
+console.log(mySecret.reveal()); // "hidden"
+```
+</SlideLayout.Full>

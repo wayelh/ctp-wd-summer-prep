@@ -1,0 +1,27 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Summary
+
+### Key Concepts:
+- **createPortal** renders outside parent DOM
+- **Event bubbling** follows React tree
+- **Focus management** for accessibility
+- **Position calculation** for tooltips/dropdowns
+- **Cleanup** on unmount
+
+### When to Use Portals:
+- Modals and dialogs
+- Tooltips and popovers
+- Notification systems
+- Dropdown menus
+- Breaking out of overflow constraints
+
+### Remember:
+- Portals maintain **React context**
+- Events **bubble through React tree**
+- Always consider **accessibility**
+- Manage **z-index** carefully
+
+</SlideLayout.Full>

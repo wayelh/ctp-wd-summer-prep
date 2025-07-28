@@ -1,0 +1,30 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Understanding Function Enhancement Patterns
+
+```javascript
+function withLogging(fn) {
+  return function(...args) {
+    console.log(`Calling ${fn.name} with:`, args);
+    const result = fn(...args);
+    console.log(`Result:`, result);
+    return result;
+  };
+}
+
+// Usage
+const loggedCalculator = withLogging(calculatePoints);
+```
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Function Enhancement Patterns
+- Function Composition for Business Logic:
+- Start with simple base functions
+  - Layer on additional behaviors (bonuses, limits, multipliers)
+  - Combine functions to create complex calculations
+  - Each enhancement is testable in isolation
+
+**For the exercise**: Build a points system using function composition where each enhancement is a separate, reusable function.
+</SlideLayout.Full>

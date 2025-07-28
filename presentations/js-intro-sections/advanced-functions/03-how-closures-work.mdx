@@ -1,0 +1,31 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## How Closures Work
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// The outer function creates a scope
+function createHabitTracker(userName) {
+  // Private variable - not accessible outside
+  let totalPoints = 0;
+  
+  // Inner function has access to outer variables
+  return function(points) {
+    totalPoints += points;
+    return `${userName} has ${totalPoints} points`;
+  };
+}
+
+const tracker = createHabitTracker("Alice");
+console.log(tracker(10)); // "Alice has 10 points"
+console.log(tracker(5));  // "Alice has 15 points"
+
+// totalPoints persists between calls!
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,702 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+# React
+
+## Building Modern User Interfaces
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## What is React?
+
+- **JavaScript library** for building user interfaces
+- Created by Facebook (Meta) in 2013
+- **Component-based** architecture
+- **Declarative** programming style
+- **Virtual DOM** for efficient updates
+- **Unidirectional data flow**
+- Most popular frontend framework
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Why React?
+
+### Benefits:
+- **Reusable Components**: Build once, use everywhere
+- **Predictable**: Easy to understand data flow
+- **Fast**: Virtual DOM optimizations
+- **Large Ecosystem**: Vast library support
+- **Strong Community**: Extensive resources
+- **Job Market**: High demand for React developers
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## React Philosophy
+
+### Core Concepts:
+1. **Components**: Building blocks of UI
+2. **Props**: Data passed to components
+3. **State**: Dynamic component data
+4. **TSX**: JavaScript XML syntax
+5. **Virtual DOM**: Efficient rendering
+6. **One-way Data Flow**: Predictable updates
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Your First React Component
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First React Component</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Function Component with TypeScript
+function Welcome(): React.ReactNode {
+  return <h1>Hello, React!</h1>;
+}
+
+// Arrow Function Component
+const Greeting: React.FC = () => {
+  return (
+    <div>
+      <h2>Welcome to React</h2>
+      <p>Let's build something amazing!</p>
+    </div>
+  );
+};
+
+// Using the components
+function App(): React.ReactNode {
+  return (
+    <div>
+      <Welcome />
+      <Greeting />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## TSX - TypeScript + XML
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSX Examples</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./TSXExample.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="TSXExample.tsx">
+```tsx
+import React from 'react';
+
+// TSX is a syntax extension for JavaScript
+const element: React.ReactNode = <h1>Hello, world!</h1>;
+
+// TSX gets compiled to JavaScript
+// The above is equivalent to:
+const elementJS = React.createElement(
+  'h1',
+  null,
+  'Hello, world!'
+);
+
+// TSX with expressions
+const name: string = 'Sarah';
+const greeting: React.ReactNode = <h1>Hello, {name}!</h1>;
+
+// TSX with attributes
+const link: React.ReactNode = (
+  <a href="https://reactjs.org" target="_blank" rel="noopener noreferrer">
+    Learn React
+  </a>
+);
+
+// TSX must have one parent element
+const content: React.ReactNode = (
+  <div>
+    <h1>Title</h1>
+    <p>Paragraph</p>
+  </div>
+);
+
+// Component to display all examples
+function TSXExample(): React.ReactNode {
+  return (
+    <div>
+      {element}
+      {greeting}
+      {link}
+      {content}
+    </div>
+  );
+}
+
+// Render the app
+import ReactDOM from 'react-dom/client';
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<TSXExample />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## TSX Rules and Best Practices
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSX Rules</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./TSXRules.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="TSXRules.tsx">
+```tsx
+import React from 'react';
+
+// 1. Use camelCase for attributes
+const element: React.ReactNode = <div className="container" tabIndex={0} />;
+
+// 2. Close all tags
+const img: React.ReactNode = <img src="photo.jpg" alt="Description" />;
+
+// 3. Use curly braces for JavaScript expressions
+const isLoggedIn: boolean = true;
+const message: React.ReactNode = <p>{isLoggedIn ? 'Welcome back!' : 'Please log in'}</p>;
+
+// 4. Style objects use camelCase properties
+const style: React.CSSProperties = {
+  backgroundColor: 'blue',
+  fontSize: '16px',
+  padding: '10px'
+};
+const styled: React.ReactNode = <div style={style}>Styled content</div>;
+
+// 5. Comments in TSX
+const commented: React.ReactNode = (
+  <div>
+    {/* This is a TSX comment */}
+    <p>Visible content</p>
+  </div>
+);
+
+// 6. Fragment for multiple elements
+const items: React.ReactNode = (
+  <>
+    <li>Item 1</li>
+    <li>Item 2</li>
+  </>
+);
+
+// Component to display all examples
+function TSXRules(): React.ReactNode {
+  return (
+    <div>
+      {element}
+      {img}
+      {message}
+      {styled}
+      {commented}
+      <ul>{items}</ul>
+    </div>
+  );
+}
+
+// Render the app
+import ReactDOM from 'react-dom/client';
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<TSXRules />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Setting Up React
+
+<CodeDisplay>
+  <File name="setup.sh">
+```bash
+# Using Create React App (CRA)
+npx create-react-app my-app
+cd my-app
+npm start
+
+# Using Vite (Recommended - Faster)
+npm create vite@latest my-react-app -- --template react
+cd my-react-app
+npm install
+npm run dev
+
+# Manual Setup
+npm init -y
+npm install react react-dom
+npm install --save-dev @vitejs/plugin-react vite
+```
+  </File>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+```
+  </File>
+  <File name="main.tsx">
+```tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App'
+import './index.css'
+
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Failed to find the root element');
+
+ReactDOM.createRoot(rootElement).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## React DevTools
+
+### Essential Development Tool:
+- **Component Inspector**: View component tree
+- **Props Viewer**: Inspect component props
+- **State Editor**: Modify state in real-time
+- **Performance Profiler**: Identify bottlenecks
+- **Component Search**: Find components quickly
+
+### Installation:
+- Chrome/Firefox/Edge extension
+- Standalone app for Safari/React Native
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Exercise: Create Your First Component
+
+<CodeDisplay height="70vh">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Profile Card</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React from 'react';
+
+// TODO: Create a ProfileCard component that displays:
+// - A name (h2)
+// - A role/title (p)
+// - A bio (p)
+// - A "Contact" button
+
+function ProfileCard(): React.ReactNode {
+  // Your code here
+  return <div>Implement ProfileCard</div>;
+}
+
+// Use the ProfileCard in App
+function App(): React.ReactNode {
+  return (
+    <div className="app">
+      <h1>Team Members</h1>
+      {/* Use ProfileCard here */}
+    </div>
+  );
+}
+
+// Render the app
+import ReactDOM from 'react-dom/client';
+
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+
+```tsx
+// SOLUTION
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+function ProfileCard(): React.ReactNode {
+  return (
+    <div className="profile-card">
+      <h2>Jane Doe</h2>
+      <p className="role">Senior Developer</p>
+      <p className="bio">
+        Passionate about creating elegant solutions to complex problems.
+        10+ years of experience in web development.
+      </p>
+      <button className="contact-btn">Contact</button>
+    </div>
+  );
+}
+
+function App(): React.ReactNode {
+  return (
+    <div className="app">
+      <h1>Team Members</h1>
+      <ProfileCard />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.profile-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  background-color: #f9f9f9;
+}
+
+.profile-card h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.role {
+  color: #666;
+  font-style: italic;
+  margin: 5px 0;
+}
+
+.bio {
+  margin: 15px 0;
+  line-height: 1.6;
+}
+
+.contact-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.contact-btn:hover {
+  background-color: #0056b3;
+}
+```
+  </File>
+  <File name="tests.js">
+```typescript
+describe('ProfileCard Component', () => {
+  it('should render the profile card', () => {
+    const card = document.querySelector('.profile-card');
+    assert.exists(card, 'ProfileCard component should be rendered');
+  });
+
+  it('should display a name in h2', () => {
+    const name = document.querySelector('.profile-card h2');
+    assert.exists(name, 'Should have an h2 for the name');
+    assert.isNotEmpty(name.textContent, 'Name should not be empty');
+  });
+
+  it('should display a role', () => {
+    const role = document.querySelector('.profile-card .role');
+    assert.exists(role, 'Should have an element with class "role"');
+    assert.isNotEmpty(role.textContent, 'Role should not be empty');
+  });
+
+  it('should display a bio', () => {
+    const bio = document.querySelector('.profile-card .bio');
+    assert.exists(bio, 'Should have an element with class "bio"');
+    assert.isNotEmpty(bio.textContent, 'Bio should not be empty');
+  });
+
+  it('should have a contact button', () => {
+    const button = document.querySelector('.profile-card button');
+    assert.exists(button, 'Should have a button element');
+    assert.equal(button.textContent, 'Contact', 'Button should say "Contact"');
+  });
+});
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## React vs Traditional JavaScript
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React vs JavaScript</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./comparison.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="comparison.tsx">
+```typescript
+// Traditional JavaScript (Imperative)
+const button = document.createElement('button');
+button.textContent = 'Click me';
+button.addEventListener('click', () => {
+  const currentText = button.textContent || '';
+  const count = parseInt(currentText.split(' ')[1] || '0');
+  button.textContent = `Clicked ${count + 1} times`;
+});
+document.body.appendChild(button);
+```
+
+```tsx
+// React with TypeScript (Declarative)
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+function ClickCounter(): React.ReactNode {
+  const [count, setCount] = useState<number>(0);
+  
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Clicked {count} times
+    </button>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<ClickCounter />);
+```
+  </File>
+</CodeDisplay>
+
+### Key Differences:
+- **Declarative vs Imperative**
+- **Component-based structure**
+- **State management**
+- **Automatic UI updates**
+- **Better code organization**
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common Beginner Mistakes
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Common React Mistakes</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./mistakes.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="mistakes.tsx">
+```tsx
+import React from 'react';
+
+// ❌ Wrong: Multiple root elements (TypeScript will catch this!)
+// function Bad(): React.ReactNode {
+//   return (
+//     <h1>Title</h1>
+//     <p>Paragraph</p>  // Error: TSX expressions must have one parent
+//   );
+// }
+
+// ✅ Correct: Single root or Fragment
+function Good(): React.ReactNode {
+  return (
+    <>
+      <h1>Title</h1>
+      <p>Paragraph</p>
+    </>
+  );
+}
+
+// ❌ Wrong: Using 'class' instead of 'className'
+// const wrongDiv = <div class="container">Content</div>; // Error!
+
+// ✅ Correct: Use className
+const correctDiv = <div className="container">Content</div>;
+
+// ❌ Wrong: Not closing self-closing tags
+// const wrongImg = <img src="photo.jpg">; // Error!
+
+// ✅ Correct: Close all tags
+const correctImg = <img src="photo.jpg" alt="Description" />;
+
+// ❌ Wrong: onClick handler not typed
+// const wrongButton = <button onClick="handleClick">Click</button>; // Error!
+
+// ✅ Correct: Proper event handler
+const correctButton = (
+  <button onClick={() => console.log('clicked')}>
+    Click
+  </button>
+);
+
+function Mistakes(): React.ReactNode {
+  return (
+    <div>
+      <Good />
+      {correctDiv}
+      {correctImg}
+      {correctButton}
+    </div>
+  );
+}
+
+// Render the app
+import ReactDOM from 'react-dom/client';
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<Mistakes />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## React Ecosystem Overview
+
+### Core Libraries:
+- **React Router**: Client-side routing
+- **Redux/Zustand**: State management
+- **React Query/SWR**: Data fetching
+- **React Hook Form**: Form handling
+- **Styled Components/Emotion**: CSS-in-JS
+
+### Development Tools:
+- **Vite/Next.js**: Build tools
+- **ESLint**: Code linting
+- **Prettier**: Code formatting
+- **React Testing Library**: Testing
+- **Storybook**: Component development
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Next Steps
+
+### Continue Your React Journey:
+
+#### Core Concepts:
+1. **Components & Props** - Building reusable UI blocks
+2. **State & Hooks** - Managing dynamic data
+3. **Events & Forms** - Handling user interactions
+4. **Conditional Rendering** - Dynamic UI logic
+5. **Lists & Keys** - Rendering collections efficiently
+
+#### Advanced Topics:
+6. **Context API** - Global state management
+7. **Custom Hooks** - Reusable logic
+8. **Performance Optimization** - React.memo, useMemo, useCallback
+9. **React Router** - Client-side navigation
+10. **Testing** - Unit and integration tests
+
+#### Ecosystem:
+11. **State Management** - Redux, Zustand, MobX
+12. **Data Fetching** - React Query, SWR
+13. **Styling** - CSS-in-JS, Tailwind
+14. **Meta-frameworks** - Next.js, Remix
+15. **Best Practices** - Production-ready patterns
+
+</SlideLayout.Full>

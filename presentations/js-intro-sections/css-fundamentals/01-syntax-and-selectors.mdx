@@ -1,0 +1,87 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## CSS Syntax and Selectors
+
+<CodeDisplay >
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Selectors</title>
+</head>
+<body>
+    <h1>CSS Selectors Demo</h1>
+    
+    <p>This is a regular paragraph.</p>
+    <p class="highlight">This paragraph has a class.</p>
+    <p id="special">This paragraph has an ID.</p>
+    
+    <div class="container">
+        <h2>Nested Elements</h2>
+        <p>Paragraph inside a div.</p>
+        <ul>
+            <li>First item</li>
+            <li class="active">Active item</li>
+            <li>Third item</li>
+        </ul>
+    </div>
+    
+    <button>Normal Button</button>
+    <button class="primary">Primary Button</button>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Element Selector */
+h1 {
+    color: #333;
+    font-family: Arial, sans-serif;
+}
+
+/* Class Selector */
+.highlight {
+    background-color: yellow;
+    padding: 5px;
+}
+
+/* ID Selector */
+#special {
+    border: 2px solid red;
+    font-weight: bold;
+}
+
+/* Descendant Selector */
+.container p {
+    color: blue;
+}
+
+/* Multiple Classes */
+li.active {
+    background-color: #4CAF50;
+    color: white;
+    padding: 5px;
+}
+
+/* Pseudo-class */
+button:hover {
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+/* Attribute Selector */
+button.primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

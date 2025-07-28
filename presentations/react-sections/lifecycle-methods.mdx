@@ -1,0 +1,525 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+# Lifecycle Methods
+
+## Understanding Component Lifecycle in React
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## What are Lifecycle Methods?
+
+### In Class Components:
+- **Methods that run at specific times** in a component's life
+- **Three phases**: Mounting, Updating, Unmounting
+- **Built-in methods** you can override
+- **Replaced by hooks** in function components
+
+### Modern React:
+- **useEffect hook** handles most lifecycle needs
+- **Class components** still used in some codebases
+- **Error boundaries** require class components
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## useEffect: The Modern Approach
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>useEffect Example</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+
+function Timer() {
+  const [seconds, setSeconds] = useState(0);
+
+  // Similar to componentDidMount and componentDidUpdate
+  useEffect(() => {
+    console.log('Effect runs - component mounted or updated');
+    
+    const interval = setInterval(() => {
+      setSeconds(s => s + 1);
+    }, 1000);
+
+    // Cleanup function - similar to componentWillUnmount
+    return () => {
+      console.log('Cleanup - component unmounting');
+      clearInterval(interval);
+    };
+  }, []); // Empty array = run once on mount
+
+  return <div>Timer: {seconds} seconds</div>;
+}
+
+function App() {
+  const [showTimer, setShowTimer] = useState(true);
+
+  return (
+    <div>
+      <button onClick={() => setShowTimer(!showTimer)}>
+        {showTimer ? 'Hide' : 'Show'} Timer
+      </button>
+      {showTimer && <Timer />}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## useEffect Dependencies
+
+<CodeDisplay>
+  <File name="DependencyExample.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+
+function UserProfile({ userId }: { userId: number }) {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Effect with dependencies
+  useEffect(() => {
+    setLoading(true);
+    
+    // Simulate API call
+    const fetchUser = async () => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setUser({ id: userId, name: `User ${userId}` });
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, [userId]); // Re-run when userId changes
+
+  if (loading) return <div>Loading...</div>;
+  return <div>Welcome, {user?.name}!</div>;
+}
+
+function App() {
+  const [currentUserId, setCurrentUserId] = useState(1);
+
+  return (
+    <div>
+      <button onClick={() => setCurrentUserId(currentUserId + 1)}>
+        Next User
+      </button>
+      <UserProfile userId={currentUserId} />
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+  <Tests>
+```js
+import { renderHook, act } from '@testing-library/react-hooks';
+
+test('useEffect runs on dependency change', () => {
+  let renderCount = 0;
+  const { rerender } = renderHook(
+    ({ value }) => {
+      useEffect(() => {
+        renderCount++;
+      }, [value]);
+    },
+    { initialProps: { value: 1 } }
+  );
+
+  expect(renderCount).toBe(1);
+
+  rerender({ value: 2 });
+  expect(renderCount).toBe(2);
+
+  rerender({ value: 2 }); // Same value
+  expect(renderCount).toBe(2); // No re-run
+});
+```
+  </Tests>
+</CodeDisplay>
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Common useEffect Patterns
+
+<CodeDisplay>
+  <File name="EffectPatterns.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+
+function EffectPatterns() {
+  const [count, setCount] = useState(0);
+  const [name, setName] = useState('');
+
+  // 1. Run once on mount
+  useEffect(() => {
+    console.log('Component mounted');
+    return () => console.log('Component unmounted');
+  }, []);
+
+  // 2. Run on every render
+  useEffect(() => {
+    console.log('Component rendered');
+  });
+
+  // 3. Run when specific values change
+  useEffect(() => {
+    console.log('Count changed to:', count);
+  }, [count]);
+
+  // 4. Cleanup subscriptions
+  useEffect(() => {
+    const handleResize = () => console.log('Window resized');
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // 5. Debounced effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      console.log('Name settled:', name);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [name]);
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>
+        Count: {count}
+      </button>
+      <input 
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Type your name"
+      />
+    </div>
+  );
+}
+
+export default EffectPatterns;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Class Component Lifecycle
+
+<CodeDisplay>
+  <File name="ClassLifecycle.tsx">
+```tsx
+import React, { Component } from 'react';
+
+interface State {
+  count: number;
+  data: string | null;
+}
+
+class LifecycleDemo extends Component<{}, State> {
+  constructor(props: {}) {
+    super(props);
+    this.state = { count: 0, data: null };
+    console.log('1. Constructor');
+  }
+
+  componentDidMount() {
+    console.log('3. componentDidMount');
+    // Good for: API calls, subscriptions, timers
+    this.fetchData();
+  }
+
+  componentDidUpdate(prevProps: {}, prevState: State) {
+    console.log('4. componentDidUpdate');
+    if (prevState.count !== this.state.count) {
+      console.log('Count changed!');
+    }
+  }
+
+  componentWillUnmount() {
+    console.log('5. componentWillUnmount');
+    // Good for: Cleanup (timers, subscriptions)
+  }
+
+  fetchData = async () => {
+    // Simulate API call
+    setTimeout(() => {
+      this.setState({ data: 'Loaded data!' });
+    }, 1000);
+  };
+
+  render() {
+    console.log('2. Render');
+    return (
+      <div>
+        <h3>Count: {this.state.count}</h3>
+        <button onClick={() => this.setState({ count: this.state.count + 1 })}>
+          Increment
+        </button>
+        <p>{this.state.data || 'Loading...'}</p>
+      </div>
+    );
+  }
+}
+
+export default LifecycleDemo;
+```
+  </File>
+  <Tests>
+```js
+import { render, screen, fireEvent } from '@testing-library/react';
+import LifecycleDemo from './ClassLifecycle';
+
+test('lifecycle methods are called in order', () => {
+  const consoleSpy = jest.spyOn(console, 'log');
+  
+  const { unmount } = render(<LifecycleDemo />);
+  
+  expect(consoleSpy).toHaveBeenCalledWith('1. Constructor');
+  expect(consoleSpy).toHaveBeenCalledWith('2. Render');
+  expect(consoleSpy).toHaveBeenCalledWith('3. componentDidMount');
+  
+  fireEvent.click(screen.getByText('Increment'));
+  
+  expect(consoleSpy).toHaveBeenCalledWith('2. Render');
+  expect(consoleSpy).toHaveBeenCalledWith('4. componentDidUpdate');
+  
+  unmount();
+  expect(consoleSpy).toHaveBeenCalledWith('5. componentWillUnmount');
+  
+  consoleSpy.mockRestore();
+});
+```
+  </Tests>
+</CodeDisplay>
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## useLayoutEffect
+
+<CodeDisplay>
+  <File name="LayoutEffect.tsx">
+```tsx
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+
+function LayoutEffectDemo() {
+  const [show, setShow] = useState(false);
+  const divRef = useRef<HTMLDivElement>(null);
+
+  // useEffect runs after paint
+  useEffect(() => {
+    if (show && divRef.current) {
+      // This might cause a visual flicker
+      divRef.current.style.backgroundColor = 'lightblue';
+    }
+  }, [show]);
+
+  // useLayoutEffect runs before paint
+  useLayoutEffect(() => {
+    if (show && divRef.current) {
+      // This prevents flicker for DOM measurements
+      const width = divRef.current.offsetWidth;
+      console.log('Width before paint:', width);
+    }
+  }, [show]);
+
+  return (
+    <div>
+      <button onClick={() => setShow(!show)}>
+        Toggle Box
+      </button>
+      {show && (
+        <div 
+          ref={divRef}
+          style={{
+            width: '200px',
+            height: '200px',
+            backgroundColor: 'pink',
+            transition: 'all 0.3s'
+          }}
+        >
+          Box
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default LayoutEffectDemo;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Error Boundaries
+
+<CodeDisplay>
+  <File name="ErrorBoundary.tsx">
+```tsx
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    // Update state so next render shows fallback UI
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Log error to error reporting service
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback || (
+          <div style={{ padding: '20px', background: '#fee', border: '1px solid #fcc' }}>
+            <h2>Something went wrong!</h2>
+            <details style={{ whiteSpace: 'pre-wrap' }}>
+              {this.state.error?.toString()}
+            </details>
+          </div>
+        )
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// Component that might throw
+function BuggyComponent({ shouldError }: { shouldError: boolean }) {
+  if (shouldError) {
+    throw new Error('Oops! Something went wrong!');
+  }
+  return <div>Working fine!</div>;
+}
+
+// Usage
+function App() {
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div>
+      <ErrorBoundary>
+        <BuggyComponent shouldError={hasError} />
+      </ErrorBoundary>
+      <button onClick={() => setHasError(true)}>
+        Trigger Error
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Best Practices
+
+### useEffect Guidelines:
+- **Always specify dependencies** correctly
+- **Use cleanup functions** for subscriptions
+- **Split effects** by concern
+- **Avoid race conditions** with cleanup
+- **Use useLayoutEffect** for DOM measurements
+
+### Common Mistakes:
+```tsx
+// ❌ Missing dependency
+useEffect(() => {
+  doSomething(value); // 'value' should be in deps
+}, []);
+
+// ❌ Functions as dependencies
+useEffect(() => {
+  fetchData(); // This function might change
+}, [fetchData]); // Use useCallback or move inside
+
+// ✅ Correct usage
+useEffect(() => {
+  let cancelled = false;
+  
+  async function fetchData() {
+    const result = await api.getData();
+    if (!cancelled) {
+      setData(result);
+    }
+  }
+  
+  fetchData();
+  return () => { cancelled = true; };
+}, []);
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Summary
+
+### Key Concepts:
+- **useEffect** replaces most lifecycle methods
+- **Dependencies** control when effects run
+- **Cleanup functions** prevent memory leaks
+- **useLayoutEffect** for synchronous DOM updates
+- **Error boundaries** catch component errors
+
+### Modern Patterns:
+- Favor **hooks over classes**
+- Use **multiple effects** for separation of concerns
+- Handle **async operations** carefully
+- Test **effect behavior**, not implementation
+
+</SlideLayout.Full>

@@ -1,0 +1,47 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Best Practices
+
+### Server Component Guidelines:
+- **Default to Server Components** - Only use Client when needed
+- **Keep secrets on server** - API keys, database connections
+- **Compose carefully** - Server can render Client, not vice versa
+- **Cache strategically** - Use revalidate and tags
+- **Stream large content** - Use Suspense boundaries
+
+### Client Component Guidelines:
+- **Use for interactivity** - onClick, onChange, etc.
+- **Browser APIs** - window, localStorage, etc.
+- **State management** - useState, useReducer
+- **Third-party client libraries** - Many UI libraries
+- **Real-time features** - WebSockets, SSE
+
+### Common Patterns:
+```tsx
+// ✅ Good: Server fetches, Client interacts
+async function ServerParent() {
+  const data = await fetchData();
+  return <ClientChild data={data} />;
+}
+
+// ❌ Bad: Can't import Server in Client
+'use client';
+import ServerComponent from './server'; // Error!
+
+// ✅ Good: Progressive enhancement
+<ServerContent>
+  <ClientEnhancements />
+</ServerContent>
+
+// ✅ Good: Granular Suspense
+<Suspense fallback={<QuickSkeleton />}>
+  <FastData />
+</Suspense>
+<Suspense fallback={<SlowSkeleton />}>
+  <SlowData />
+</Suspense>
+```
+
+</SlideLayout.Full>

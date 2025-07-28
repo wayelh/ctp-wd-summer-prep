@@ -1,0 +1,153 @@
+import { SlideLayout } from 'spectacle'
+
+<SlideLayout.Full>
+## Time-Based & Streak Patterns
+
+### 1. **Time-Based Rendering**
+```tsx
+const timeOfDay = new Date().getHours();
+const morningHabits = habits.filter(h => h.timeOfDay === 'morning');
+const showMorningHabits = timeOfDay < 12;
+
+return showMorningHabits && morningHabits.length > 0 && (
+  <MorningRoutine habits={morningHabits} />
+);
+```
+
+### 2. **Streak-Based UI**
+```tsx
+return (
+  <div className={`habit ${
+    streak > 30 ? 'gold' : 
+    streak > 7 ? 'silver' : 
+    streak > 0 ? 'bronze' : ''
+  }`}>
+    {streak > 0 ? `🔥 ${streak} days` : 'Start today!'}
+  </div>
+);
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Progress & Frequency Patterns
+
+### 3. **Progress-Based Rendering**
+```tsx
+const completionRate = (completed / total) * 100;
+
+if (completionRate === 100) return <PerfectDay />;
+if (completionRate >= 80) return <GreatProgress />;
+if (completionRate >= 50) return <GoodStart />;
+return <KeepGoing />;
+```
+
+### 4. **Frequency-Specific Views**
+```tsx
+switch (habit.frequency) {
+  case 'daily': return <DailyHabitCard {...habit} />;
+  case 'weekly': return <WeeklyHabitCard {...habit} />;
+  case 'monthly': return <MonthlyGoal {...habit} />;
+}
+```
+
+### 5. **Smart Reminders**
+```tsx
+const shouldRemind = !completed && 
+  timeUntilDeadline < 2 * HOURS && 
+  !reminderDismissed;
+
+return shouldRemind && <UrgentReminder habit={habit} />;
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Performance Tips for Conditional Rendering
+
+### 1. **Memoize Complex Conditions**
+```tsx
+const visibleHabits = useMemo(() => {
+  return habits
+    .filter(h => showCompleted || !h.completed)
+    .filter(h => matchesTimeOfDay(h, currentTime))
+    .sort(sortByPriority);
+}, [habits, showCompleted, currentTime]);
+```
+
+### 2. **Lazy Load Heavy Components**
+```tsx
+const HabitAnalytics = lazy(() => import('./HabitAnalytics'));
+
+return showAnalytics ? (
+  <Suspense fallback={<AnalyticsLoader />}>
+    <HabitAnalytics />
+  </Suspense>
+) : null;
+```
+
+### 3. **Use CSS for Simple Toggles**
+```tsx
+// Instead of conditional rendering
+return showHabit ? <Habit /> : null;
+
+// Use CSS classes
+return <Habit className={showHabit ? 'visible' : 'hidden'} />;
+```
+
+### 4. **Extract Condition Logic**
+```tsx
+const useHabitVisibility = (habit, filters) => {
+  return useMemo(() => {
+    if (!matchesFrequency(habit, filters)) return false;
+    if (!matchesCategory(habit, filters)) return false;
+    if (!matchesTimeOfDay(habit, filters)) return false;
+    return true;
+  }, [habit, filters]);
+};
+```
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Summary - Key Takeaways
+
+### Core Concepts:
+- **Multiple techniques** for conditional rendering in habit tracking
+- **Time-based rendering** shows relevant habits when needed
+- **State-based UI** provides feedback on progress and streaks
+- **Empty states** guide new users to create habits
+- **Loading states** keep users informed during data fetching
+- **Celebrations** motivate continued habit completion
+
+### Best Practices:
+- Show the right habits at the right time
+- Provide clear visual feedback for completion status
+- Celebrate achievements to maintain motivation
+- Handle edge cases gracefully (loading, errors, empty)
+- Use progressive disclosure for complex features
+
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Next Steps & Building Your Tracker
+
+### Immediate Next Topics:
+1. **Lists and Keys** - Render dynamic habit lists efficiently
+2. **State Management** - Track habit completion and streaks
+3. **Forms** - Add and edit habits
+4. **Custom Hooks** - Extract habit logic
+
+### Building Your Habit Tracker:
+5. **Local Storage** - Persist habit data
+6. **Animations** - Celebrate completions
+7. **Charts** - Visualize progress
+8. **Notifications** - Remind users
+
+### Advanced Features:
+9. **Analytics** - Track success rates
+10. **Social Features** - Share progress
+11. **Gamification** - Levels and rewards
+12. **AI Insights** - Personalized recommendations
+
+</SlideLayout.Full>

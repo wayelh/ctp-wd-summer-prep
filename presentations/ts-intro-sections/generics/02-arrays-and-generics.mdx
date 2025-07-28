@@ -1,0 +1,24 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Arrays and Generics
+
+- Arrays can be typed in two ways
+- Generics allow types to be flexible but safe
+- Think of generics as "type functions" with argument types and a return type
+
+```typescript
+// Two ways to type arrays
+let numbers: number[] = [1, 2, 3];
+let strings: Array<string> = ["a", "b", "c"];
+
+// Generic function
+function identity<T>(value: T): T {
+  return value;
+}
+
+identity<string>("hello"); // Returns string
+identity<number>(42); // Returns number
+```
+</SlideLayout.Full>

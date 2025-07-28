@@ -1,0 +1,27 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Summary
+
+### Key Concepts:
+- **Suspense** handles async loading declaratively
+- **Error boundaries** catch and handle errors
+- **Lazy loading** splits code for performance
+- **Resource pattern** for data fetching
+- **Strategic placement** of boundaries
+
+### Use Cases:
+- Code splitting with lazy()
+- Route-based code splitting
+- Progressive loading of UI
+- Data fetching (experimental)
+- Error recovery flows
+
+### Remember:
+- Always **handle both loading and error** states
+- Error boundaries **only catch errors in render**
+- Suspense is **declarative** - let React handle timing
+- **Test both success and failure** paths
+
+</SlideLayout.Full>

@@ -1,0 +1,552 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests, Version } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Optimize a Slow App
+
+<CodeDisplay height="70vh">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Exercise</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// TODO: This app has several performance issues. 
+// Your task is to identify and fix them:
+// 1. Unnecessary re-renders
+// 2. Expensive calculations on every render
+// 3. Functions recreated on every render
+// 4. Large list rendering all items
+// 5. No memoization of components
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  inStock: boolean;
+}
+
+// Expensive calculation function
+function calculateStats(products: Product[]) {
+  console.log('Calculating stats...');
+  // Simulate expensive calculation
+  let total = 0;
+  for (let i = 0; i < 1000000; i++) {
+    total += products.reduce((sum, p) => sum + p.price, 0);
+  }
+  
+  return {
+    total: products.length,
+    averagePrice: products.reduce((sum, p) => sum + p.price, 0) / products.length,
+    inStock: products.filter(p => p.inStock).length,
+    categories: [...new Set(products.map(p => p.category))].length
+  };
+}
+
+// Product item component
+function ProductItem({ 
+  product, 
+  onUpdate 
+}: { 
+  product: Product; 
+  onUpdate: (id: number, updates: Partial<Product>) => void;
+}) {
+  console.log(`ProductItem ${product.id} rendered`);
+  
+  return (
+    <div className="product-item">
+      <h4>{product.name}</h4>
+      <p>${product.price}</p>
+      <p>{product.category}</p>
+      <label>
+        <input
+          type="checkbox"
+          checked={product.inStock}
+          onChange={(e) => onUpdate(product.id, { inStock: e.target.checked })}
+        />
+        In Stock
+      </label>
+    </div>
+  );
+}
+
+// Filter component
+function Filters({ 
+  onSearch,
+  onCategoryChange 
+}: {
+  onSearch: (term: string) => void;
+  onCategoryChange: (category: string) => void;
+}) {
+  console.log('Filters rendered');
+  
+  return (
+    <div className="filters">
+      <input
+        type="text"
+        placeholder="Search products..."
+        onChange={(e) => onSearch(e.target.value)}
+      />
+      <select onChange={(e) => onCategoryChange(e.target.value)}>
+        <option value="">All Categories</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Books">Books</option>
+      </select>
+    </div>
+  );
+}
+
+function SlowApp() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [count, setCount] = useState(0);
+
+  // Generate products
+  useEffect(() => {
+    const items = Array.from({ length: 1000 }, (_, i) => ({
+      id: i,
+      name: `Product ${i + 1}`,
+      price: Math.floor(Math.random() * 100) + 10,
+      category: ['Electronics', 'Clothing', 'Books'][Math.floor(Math.random() * 3)],
+      inStock: Math.random() > 0.3
+    }));
+    setProducts(items);
+  }, []);
+
+  // Problem 1: Expensive calculation on every render
+  const stats = calculateStats(products);
+
+  // Problem 2: Filtering on every render
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || product.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  // Problem 3: Function recreated on every render
+  const handleProductUpdate = (id: number, updates: Partial<Product>) => {
+    setProducts(prev => prev.map(p => 
+      p.id === id ? { ...p, ...updates } : p
+    ));
+  };
+
+  return (
+    <div className="app">
+      <h1>Slow Product Manager</h1>
+      
+      <button onClick={() => setCount(count + 1)}>
+        Trigger Re-render: {count}
+      </button>
+
+      <div className="stats">
+        <h3>Stats (Expensive Calculation)</h3>
+        <p>Total Products: {stats.total}</p>
+        <p>Average Price: ${stats.averagePrice.toFixed(2)}</p>
+        <p>In Stock: {stats.inStock}</p>
+        <p>Categories: {stats.categories}</p>
+      </div>
+
+      <Filters 
+        onSearch={setSearchTerm}
+        onCategoryChange={setSelectedCategory}
+      />
+
+      <div className="product-list">
+        <h3>Products ({filteredProducts.length})</h3>
+        {/* Problem 4: Rendering all items */}
+        {filteredProducts.map(product => (
+          <ProductItem
+            key={product.id}
+            product={product}
+            onUpdate={handleProductUpdate}
+          />
+        ))}
+      </div>
+
+      <p className="note">Check console for render logs</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<SlowApp />);
+```
+  </File>
+  <Version>
+```tsx
+// SOLUTION
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  inStock: boolean;
+}
+
+// Expensive calculation function
+function calculateStats(products: Product[]) {
+  console.log('Calculating stats...');
+  // Simulate expensive calculation
+  let total = 0;
+  for (let i = 0; i < 1000000; i++) {
+    total += products.reduce((sum, p) => sum + p.price, 0);
+  }
+  
+  return {
+    total: products.length,
+    averagePrice: products.reduce((sum, p) => sum + p.price, 0) / products.length,
+    inStock: products.filter(p => p.inStock).length,
+    categories: [...new Set(products.map(p => p.category))].length
+  };
+}
+
+// Fix 1: Memoize ProductItem component
+const ProductItem = memo(({ 
+  product, 
+  onUpdate 
+}: { 
+  product: Product; 
+  onUpdate: (id: number, updates: Partial<Product>) => void;
+}) => {
+  console.log(`ProductItem ${product.id} rendered`);
+  
+  return (
+    <div className="product-item">
+      <h4>{product.name}</h4>
+      <p>${product.price}</p>
+      <p>{product.category}</p>
+      <label>
+        <input
+          type="checkbox"
+          checked={product.inStock}
+          onChange={(e) => onUpdate(product.id, { inStock: e.target.checked })}
+        />
+        In Stock
+      </label>
+    </div>
+  );
+});
+
+// Fix 2: Memoize Filters component
+const Filters = memo(({ 
+  onSearch,
+  onCategoryChange 
+}: {
+  onSearch: (term: string) => void;
+  onCategoryChange: (category: string) => void;
+}) => {
+  console.log('Filters rendered');
+  
+  return (
+    <div className="filters">
+      <input
+        type="text"
+        placeholder="Search products..."
+        onChange={(e) => onSearch(e.target.value)}
+      />
+      <select onChange={(e) => onCategoryChange(e.target.value)}>
+        <option value="">All Categories</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Clothing">Clothing</option>
+        <option value="Books">Books</option>
+      </select>
+    </div>
+  );
+});
+
+// Fix 3: Virtualized list component
+const VirtualizedProductList = memo(({ 
+  products, 
+  onUpdate 
+}: { 
+  products: Product[];
+  onUpdate: (id: number, updates: Partial<Product>) => void;
+}) => {
+  const [scrollTop, setScrollTop] = useState(0);
+  const itemHeight = 100;
+  const containerHeight = 500;
+  const overscan = 3;
+
+  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+  const endIndex = Math.min(
+    products.length - 1,
+    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+  );
+
+  const visibleProducts = products.slice(startIndex, endIndex + 1);
+  const totalHeight = products.length * itemHeight;
+  const offsetY = startIndex * itemHeight;
+
+  return (
+    <div className="product-list">
+      <h3>Products ({products.length})</h3>
+      <div 
+        className="list-container"
+        style={{ height: containerHeight, overflow: 'auto' }}
+        onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+      >
+        <div style={{ height: totalHeight, position: 'relative' }}>
+          <div style={{ transform: `translateY(${offsetY}px)` }}>
+            {visibleProducts.map(product => (
+              <ProductItem
+                key={product.id}
+                product={product}
+                onUpdate={onUpdate}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+function OptimizedApp() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [count, setCount] = useState(0);
+
+  // Generate products
+  useEffect(() => {
+    const items = Array.from({ length: 1000 }, (_, i) => ({
+      id: i,
+      name: `Product ${i + 1}`,
+      price: Math.floor(Math.random() * 100) + 10,
+      category: ['Electronics', 'Clothing', 'Books'][Math.floor(Math.random() * 3)],
+      inStock: Math.random() > 0.3
+    }));
+    setProducts(items);
+  }, []);
+
+  // Fix 4: Memoize expensive calculation
+  const stats = useMemo(() => calculateStats(products), [products]);
+
+  // Fix 5: Memoize filtered products
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !selectedCategory || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, selectedCategory]);
+
+  // Fix 6: Memoize callback function
+  const handleProductUpdate = useCallback((id: number, updates: Partial<Product>) => {
+    setProducts(prev => prev.map(p => 
+      p.id === id ? { ...p, ...updates } : p
+    ));
+  }, []);
+
+  return (
+    <div className="app">
+      <h1>Optimized Product Manager</h1>
+      
+      <button onClick={() => setCount(count + 1)}>
+        Trigger Re-render: {count}
+      </button>
+
+      <div className="stats">
+        <h3>Stats (Memoized)</h3>
+        <p>Total Products: {stats.total}</p>
+        <p>Average Price: ${stats.averagePrice.toFixed(2)}</p>
+        <p>In Stock: {stats.inStock}</p>
+        <p>Categories: {stats.categories}</p>
+      </div>
+
+      <Filters 
+        onSearch={setSearchTerm}
+        onCategoryChange={setSelectedCategory}
+      />
+
+      <VirtualizedProductList
+        products={filteredProducts}
+        onUpdate={handleProductUpdate}
+      />
+
+      <p className="note">Check console - much fewer renders!</p>
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<OptimizedApp />);
+```
+  </Version>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.stats {
+  background-color: #e7f3ff;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.stats h3 {
+  margin-top: 0;
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+}
+
+.filters input,
+.filters select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.filters input {
+  flex: 1;
+}
+
+.product-list {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.product-list h3 {
+  margin-top: 0;
+}
+
+.list-container {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.product-item {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  height: 100px;
+  box-sizing: border-box;
+}
+
+.product-item:last-child {
+  border-bottom: none;
+}
+
+.product-item h4 {
+  margin: 0 0 5px 0;
+}
+
+.product-item p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.product-item label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.note {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #fffacd;
+  border-radius: 4px;
+}
+```
+  </File>
+  <Tests>
+```javascript
+describe('Performance Optimization', () => {
+  it('should render the app title', () => {
+    const title = document.querySelector('h1');
+    assert.exists(title, 'Should have h1 title');
+  });
+
+  it('should have re-render trigger button', () => {
+    const button = Array.from(document.querySelectorAll('button'))
+      .find(btn => btn.textContent?.includes('Trigger Re-render'));
+    assert.exists(button, 'Should have re-render trigger button');
+  });
+
+  it('should display stats', () => {
+    const stats = document.querySelector('.stats');
+    assert.exists(stats, 'Should have stats section');
+    
+    const statItems = stats?.querySelectorAll('p');
+    assert.isAtLeast(statItems?.length || 0, 4, 'Should show 4 stats');
+  });
+
+  it('should have filter controls', () => {
+    const filters = document.querySelector('.filters');
+    const searchInput = filters?.querySelector('input');
+    const categorySelect = filters?.querySelector('select');
+    
+    assert.exists(filters, 'Should have filters section');
+    assert.exists(searchInput, 'Should have search input');
+    assert.exists(categorySelect, 'Should have category select');
+  });
+
+  it('should have product list', () => {
+    const productList = document.querySelector('.product-list');
+    assert.exists(productList, 'Should have product list');
+  });
+
+  it('should show console note', () => {
+    const note = document.querySelector('.note');
+    assert.exists(note, 'Should have console note');
+    assert.include(note?.textContent || '', 'console', 'Note should mention console');
+  });
+});
+```
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>

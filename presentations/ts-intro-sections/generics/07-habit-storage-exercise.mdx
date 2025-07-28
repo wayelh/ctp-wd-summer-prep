@@ -1,0 +1,51 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Generic Habit Storage
+<CodeDisplay >
+  <File name="example.typescript">
+    
+```typescript
+// Exercise: Create a generic storage class for habits
+// TODO: Implement a type-safe storage system
+
+class Storage {
+  // TODO: Make this generic to work with any type
+  private items: any[] = [];
+  
+  add(item: any): void {
+    // Your code here
+  }
+  
+  getById(id: string): any {
+    // Your code here
+  }
+  
+  getAll(): any[] {
+    // Your code here
+  }
+  
+  update(id: string, updates: any): boolean {
+    // Your code here
+  }
+  
+  remove(id: string): boolean {
+    // Your code here
+  }
+}
+
+// Test with habits
+interface Habit {
+  id: string;
+  name: string;
+  streak: number;
+}
+
+const habitStorage = new Storage();
+habitStorage.add({ id: "1", name: "Exercise", streak: 5 });
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

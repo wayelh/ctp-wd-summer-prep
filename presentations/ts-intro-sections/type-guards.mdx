@@ -52,16 +52,16 @@ function getArea(shape: Shape) {
     case "circle": 
       return Math.PI * shape.radius ** 2;  // shape is Circle here
     case "square":
-      return shape.side ** 2;  // shape is Square here
+      return shape.side -  2;  // shape is Square here
   }
 }
 ```
 
-**Key Benefits:**
+**Key Benefits:
 - TypeScript knows exactly which properties are available
-- Exhaustive checking ensures you handle all cases
-- Compile-time safety for runtime decisions
-- Cleaner than traditional type checking
+  - Exhaustive checking ensures you handle all cases
+  - Compile-time safety for runtime decisions
+  - Cleaner than traditional type checking
 
 **For the exercise**: Use discriminated unions to safely calculate areas for different shapes.
 </SlideLayout.Full>

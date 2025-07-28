@@ -1,0 +1,65 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Two Types of Components
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker Components</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Function Component (Recommended)
+function HabitStreak(props: { days: number }): JSX.Element {
+  return <div className="streak">🔥 {props.days} day streak!</div>;
+}
+
+// Arrow Function Component
+const HabitProgress: React.FC<{ completed: number; total: number }> = ({ completed, total }) => {
+  const percentage = Math.round((completed / total) * 100);
+  return <div className="progress">Progress: {percentage}%</div>;
+};
+
+// Class Component (Legacy - still supported)
+class ClassHabitStreak extends React.Component<{ days: number }> {
+  render() {
+    return <div className="streak">🎯 {this.props.days} days strong!</div>;
+  }
+}
+
+// Using the components
+function App(): JSX.Element {
+  return (
+    <div className="habit-tracker">
+      <h1>My Habit Tracker</h1>
+      <HabitStreak days={15} />
+      <HabitProgress completed={5} total={7} />
+      <ClassHabitStreak days={30} />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

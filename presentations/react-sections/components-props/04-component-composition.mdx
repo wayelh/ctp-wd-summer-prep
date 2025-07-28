@@ -1,0 +1,261 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Component Composition
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker Composition</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Small, focused components
+interface ProgressBarProps {
+  percentage: number;
+  color?: string;
+}
+
+function ProgressBar({ percentage, color = '#22c55e' }: ProgressBarProps): JSX.Element {
+  return (
+    <div className="progress-bar">
+      <div 
+        className="progress-fill"
+        style={{
+          width: `${percentage}%`,
+          backgroundColor: color
+        }}
+      />
+    </div>
+  );
+}
+
+interface HabitIconProps {
+  icon: string;
+  completed: boolean;
+}
+
+function HabitIcon({ icon, completed }: HabitIconProps): JSX.Element {
+  return (
+    <div className={`habit-icon ${completed ? 'completed' : ''}`}>
+      {icon}
+    </div>
+  );
+}
+
+interface CompletionButtonProps {
+  completed: boolean;
+  onClick: () => void;
+}
+
+function CompletionButton({ completed, onClick }: CompletionButtonProps): JSX.Element {
+  return (
+    <button 
+      className={`completion-btn ${completed ? 'completed' : ''}`}
+      onClick={onClick}
+    >
+      {completed ? '✓' : '○'}
+    </button>
+  );
+}
+
+// Compose smaller components into larger ones
+interface HabitItemProps {
+  habit: {
+    id: number;
+    name: string;
+    icon: string;
+    completedDays: number;
+    targetDays: number;
+    completedToday: boolean;
+  };
+  onToggle: (id: number) => void;
+}
+
+function HabitItem({ habit, onToggle }: HabitItemProps): JSX.Element {
+  const percentage = (habit.completedDays / habit.targetDays) * 100;
+  
+  return (
+    <div className="habit-item">
+      <div className="habit-header">
+        <HabitIcon icon={habit.icon} completed={habit.completedToday} />
+        <div className="habit-info">
+          <h3>{habit.name}</h3>
+          <p>{habit.completedDays} / {habit.targetDays} days</p>
+        </div>
+        <CompletionButton 
+          completed={habit.completedToday}
+          onClick={() => onToggle(habit.id)}
+        />
+      </div>
+      <ProgressBar percentage={percentage} />
+    </div>
+  );
+}
+
+// Even larger composition
+function HabitList(): JSX.Element {
+  const [habits, setHabits] = React.useState([
+    { id: 1, name: 'Morning Meditation', icon: '🧘', completedDays: 15, targetDays: 30, completedToday: true },
+    { id: 2, name: 'Read for 30 mins', icon: '📚', completedDays: 10, targetDays: 30, completedToday: false },
+    { id: 3, name: 'Exercise', icon: '🏃', completedDays: 20, targetDays: 30, completedToday: true },
+    { id: 4, name: 'Drink Water', icon: '💧', completedDays: 25, targetDays: 30, completedToday: false }
+  ]);
+
+  const handleToggle = (id: number) => {
+    setHabits(habits.map(habit => 
+      habit.id === id 
+        ? { ...habit, completedToday: !habit.completedToday }
+        : habit
+    ));
+  };
+
+  const completedToday = habits.filter(h => h.completedToday).length;
+
+  return (
+    <div className="habit-list">
+      <div className="summary">
+        <h2>Today's Progress</h2>
+        <p>{completedToday} of {habits.length} habits completed</p>
+      </div>
+      <div className="habits">
+        {habits.map(habit => (
+          <HabitItem 
+            key={habit.id}
+            habit={habit} 
+            onToggle={handleToggle}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  return <HabitList />;
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.habit-list {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.summary {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.summary h2 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.summary p {
+  color: #6b7280;
+  margin-top: 8px;
+}
+
+.habit-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.habit-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.habit-icon {
+  font-size: 32px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 12px;
+  margin-right: 12px;
+  transition: all 0.3s;
+}
+
+.habit-icon.completed {
+  background: #d1fae5;
+}
+
+.habit-info {
+  flex: 1;
+}
+
+.habit-info h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: #1f2937;
+}
+
+.habit-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.completion-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #e5e7eb;
+  border-radius: 50%;
+  background: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.completion-btn.completed {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

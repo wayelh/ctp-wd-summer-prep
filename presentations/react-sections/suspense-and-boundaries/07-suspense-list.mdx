@@ -1,0 +1,101 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## SuspenseList (Experimental)
+
+<CodeDisplay>
+  <File name="SuspenseList.tsx">
+```tsx
+import React, { Suspense, SuspenseList, useState } from 'react';
+
+// Note: SuspenseList is experimental and may not be available
+// This example shows the concept
+
+function createDelayedComponent(name: string, delay: number) {
+  return React.lazy(() => 
+    new Promise<{ default: React.ComponentType }>(resolve => {
+      setTimeout(() => {
+        resolve({
+          default: () => (
+            <div style={{ 
+              padding: '20px', 
+              margin: '10px 0',
+              background: '#e8eaf6',
+              borderRadius: '8px',
+              animation: 'fadeIn 0.3s'
+            }}>
+              <h3>{name}</h3>
+              <p>Loaded after {delay}ms</p>
+            </div>
+          )
+        });
+      }, delay);
+    })
+  );
+}
+
+const ComponentA = createDelayedComponent('Component A', 1000);
+const ComponentB = createDelayedComponent('Component B', 2000);
+const ComponentC = createDelayedComponent('Component C', 1500);
+
+function SuspenseListDemo() {
+  const [revealOrder, setRevealOrder] = useState<'forwards' | 'backwards' | 'together'>('forwards');
+
+  return (
+    <div>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
+      <h2>SuspenseList Demo (Concept)</h2>
+      
+      <div style={{ marginBottom: '20px' }}>
+        <label>Reveal Order: </label>
+        <select 
+          value={revealOrder} 
+          onChange={(e) => setRevealOrder(e.target.value as any)}
+        >
+          <option value="forwards">Forwards</option>
+          <option value="backwards">Backwards</option>
+          <option value="together">Together</option>
+        </select>
+      </div>
+
+      {/* This is a conceptual example - actual SuspenseList API may differ */}
+      <div style={{ border: '2px dashed #ccc', padding: '20px' }}>
+        <p>Components will load in {revealOrder} order:</p>
+        
+        {/* Simulated behavior - real SuspenseList would handle this */}
+        <Suspense fallback={<div>Loading A...</div>}>
+          <ComponentA />
+        </Suspense>
+        <Suspense fallback={<div>Loading B...</div>}>
+          <ComponentB />
+        </Suspense>
+        <Suspense fallback={<div>Loading C...</div>}>
+          <ComponentC />
+        </Suspense>
+      </div>
+
+      <div style={{ marginTop: '20px', padding: '15px', background: '#fff3e0' }}>
+        <strong>Note:</strong> SuspenseList coordinates the reveal order of multiple Suspense boundaries.
+        <ul>
+          <li><strong>forwards:</strong> Reveal in order (A → B → C)</li>
+          <li><strong>backwards:</strong> Reveal in reverse (C → B → A)</li>
+          <li><strong>together:</strong> Wait for all, then reveal together</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+export default SuspenseListDemo;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

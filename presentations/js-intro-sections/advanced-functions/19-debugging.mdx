@@ -1,0 +1,41 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Debugging Closures & HOFs
+
+**Pro debugging tips:**
+
+1. **Use console.dir() to inspect closures**
+```javascript
+function outer(x) {
+  return function inner(y) {
+    return x + y;
+  };
+}
+
+const addFive = outer(5);
+console.dir(addFive); // Shows [[Scopes]] with closure
+```
+
+2. **Trace function composition**
+```javascript
+const compose = (...fns) => x => {
+  return fns.reduceRight((acc, fn) => {
+    console.log(`Applying ${fn.name} to`, acc);
+    return fn(acc);
+  }, x);
+};
+```
+
+3. **Name your functions for better stack traces**
+```javascript
+// Instead of:
+array.map(x => x * 2).filter(x => x > 10);
+
+// Use:
+array
+  .map(function double(x) { return x * 2; })
+  .filter(function greaterThan10(x) { return x > 10; });
+```
+</SlideLayout.Full>

@@ -1,0 +1,39 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Array Processing Pattern
+
+**The Pattern**: Start with data → process it → get results
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Processing Pipeline Example
+
+```javascript
+const dailyHabits = [
+  { name: 'Exercise', completed: true, points: 10 },
+  { name: 'Reading', completed: false, points: 5 },
+  { name: 'Meditation', completed: true, points: 8 },
+  { name: 'Water', completed: true, points: 3 }
+];
+
+// Process: filter completed → extract points → sum total
+const totalPoints = dailyHabits
+  .filter(habit => habit.completed)     // [Exercise, Meditation, Water]
+  .map(habit => habit.points)           // [10, 8, 3]
+  .reduce((sum, points) => sum + points, 0); // 21
+
+console.log(`Today's points: ${totalPoints}`);
+```
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+## Key Processing Insight
+
+Chain methods to create powerful data processing pipelines
+
+- Each method transforms the data
+- Results flow from one method to the next
+- Final result is clean and readable
+</SlideLayout.Full>

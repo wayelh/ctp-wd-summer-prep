@@ -1,0 +1,519 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Daily Routine Tracker
+
+Build a daily routine tracker that persists to localStorage with time-based habits.
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Routine Tracker</title>
+    <style>
+      .routine-app { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .routine-item { display: flex; align-items: center; padding: 15px; border: 1px solid #ddd; margin-bottom: 8px; border-radius: 8px; }
+      .routine-item.completed { background-color: #e8f5e9; }
+      .routine-item.completed span { color: #2e7d32; }
+      .time-badge { background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px; }
+      .filters { display: flex; gap: 10px; margin: 20px 0; }
+      .filter-btn { padding: 8px 16px; cursor: pointer; border: 1px solid #ddd; background: white; border-radius: 4px; }
+      .filter-btn.active { background: #2196f3; color: white; border-color: #2196f3; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface Routine {
+  id: number;
+  name: string;
+  timeOfDay: 'morning' | 'afternoon' | 'evening';
+  completed: boolean;
+  duration: number; // minutes
+}
+
+type FilterType = 'all' | 'morning' | 'afternoon' | 'evening' | 'completed';
+
+function RoutineTracker() {
+  // TODO: Initialize state with localStorage data
+  const [routines, setRoutines] = useState<Routine[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [timeOfDay, setTimeOfDay] = useState<Routine['timeOfDay']>('morning');
+  const [duration, setDuration] = useState(30);
+  const [filter, setFilter] = useState<FilterType>('all');
+
+  // TODO: Load routines from localStorage on mount
+  useEffect(() => {
+    // Load from localStorage
+  }, []);
+
+  // TODO: Save routines to localStorage whenever they change
+  useEffect(() => {
+    // Save to localStorage
+  }, [routines]);
+
+  // TODO: Add a new routine
+  const addRoutine = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Implement adding routine
+  };
+
+  // TODO: Toggle routine completion
+  const toggleRoutine = (id: number) => {
+    // Implement toggling
+  };
+
+  // TODO: Delete a routine
+  const deleteRoutine = (id: number) => {
+    // Implement deletion
+  };
+
+  // TODO: Reset all routines for new day
+  const resetDay = () => {
+    // Implement daily reset
+  };
+
+  // TODO: Filter routines based on filter state
+  const filteredRoutines = routines; // Apply filtering
+
+  // TODO: Calculate statistics
+  const completedCount = 0; // Calculate completed
+  const totalMinutes = 0; // Calculate total duration
+
+  return (
+    <div className="routine-app">
+      <h1>Daily Routine Tracker</h1>
+      
+      <form onSubmit={addRoutine}>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Add a routine..."
+        />
+        <select value={timeOfDay} onChange={(e) => setTimeOfDay(e.target.value as any)}>
+          <option value="morning">Morning</option>
+          <option value="afternoon">Afternoon</option>
+          <option value="evening">Evening</option>
+        </select>
+        <input
+          type="number"
+          value={duration}
+          onChange={(e) => setDuration(Number(e.target.value))}
+          min="5"
+          max="180"
+          placeholder="Minutes"
+        />
+        <button type="submit">Add</button>
+      </form>
+
+      <div className="filters">
+        <button 
+          className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+          onClick={() => setFilter('all')}
+        >
+          All
+        </button>
+        <button 
+          className={`filter-btn ${filter === 'morning' ? 'active' : ''}`}
+          onClick={() => setFilter('morning')}
+        >
+          Morning
+        </button>
+        <button 
+          className={`filter-btn ${filter === 'afternoon' ? 'active' : ''}`}
+          onClick={() => setFilter('afternoon')}
+        >
+          Afternoon
+        </button>
+        <button 
+          className={`filter-btn ${filter === 'evening' ? 'active' : ''}`}
+          onClick={() => setFilter('evening')}
+        >
+          Evening
+        </button>
+        <button 
+          className={`filter-btn ${filter === 'completed' ? 'active' : ''}`}
+          onClick={() => setFilter('completed')}
+        >
+          Completed
+        </button>
+      </div>
+
+      <div>
+        {filteredRoutines.map(routine => (
+          <div key={routine.id} className={`routine-item ${routine.completed ? 'completed' : ''}`}>
+            <input
+              type="checkbox"
+              checked={routine.completed}
+              onChange={() => toggleRoutine(routine.id)}
+            />
+            <span>{routine.name}</span>
+            <span className="time-badge">{routine.timeOfDay} - {routine.duration}min</span>
+            <button onClick={() => deleteRoutine(routine.id)}>Delete</button>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <span>{completedCount} completed - {totalMinutes} minutes today</span>
+        <button onClick={resetDay}>New Day</button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<RoutineTracker />);
+```
+    <Version>
+```tsx
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+
+interface Routine {
+  id: number;
+  name: string;
+  timeOfDay: 'morning' | 'afternoon' | 'evening';
+  completed: boolean;
+  duration: number; // minutes
+}
+
+type FilterType = 'all' | 'morning' | 'afternoon' | 'evening' | 'completed';
+
+function RoutineTracker() {
+  // Initialize state with localStorage data
+  const [routines, setRoutines] = useState<Routine[]>(() => {
+    const saved = localStorage.getItem('routines');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [inputValue, setInputValue] = useState('');
+  const [timeOfDay, setTimeOfDay] = useState<Routine['timeOfDay']>('morning');
+  const [duration, setDuration] = useState(30);
+  const [filter, setFilter] = useState<FilterType>('all');
+
+  // Save routines to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('routines', JSON.stringify(routines));
+  }, [routines]);
+
+  // Check for new day and reset
+  useEffect(() => {
+    const checkNewDay = () => {
+      const lastReset = localStorage.getItem('lastRoutineReset');
+      const today = new Date().toDateString();
+      
+      if (lastReset !== today) {
+        setRoutines(prev => prev.map(r => ({ ...r, completed: false })));
+        localStorage.setItem('lastRoutineReset', today);
+      }
+    };
+    
+    checkNewDay();
+    const interval = setInterval(checkNewDay, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  // Add a new routine
+  const addRoutine = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      setRoutines([...routines, {
+        id: Date.now(),
+        name: inputValue.trim(),
+        timeOfDay,
+        duration,
+        completed: false
+      }]);
+      setInputValue('');
+    }
+  };
+
+  // Toggle routine completion
+  const toggleRoutine = (id: number) => {
+    setRoutines(routines.map(routine =>
+      routine.id === id ? { ...routine, completed: !routine.completed } : routine
+    ));
+  };
+
+  // Delete a routine
+  const deleteRoutine = (id: number) => {
+    setRoutines(routines.filter(routine => routine.id !== id));
+  };
+
+  // Reset all routines for new day
+  const resetDay = () => {
+    setRoutines(routines.map(routine => ({ ...routine, completed: false })));
+    localStorage.setItem('lastRoutineReset', new Date().toDateString());
+  };
+
+  // Filter routines based on filter state
+  const filteredRoutines = routines.filter(routine => {
+    if (filter === 'completed') return routine.completed;
+    if (filter === 'morning' || filter === 'afternoon' || filter === 'evening') {
+      return routine.timeOfDay === filter;
+    }
+    return true;
+  });
+
+  // Calculate statistics
+  const completedCount = routines.filter(r => r.completed).length;
+  const totalMinutes = routines
+    .filter(r => r.completed)
+    .reduce((sum, r) => sum + r.duration, 0);
+
+  // Get current time period
+  const getCurrentPeriod = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
+  };
+
+  const currentPeriod = getCurrentPeriod();
+  const currentPeriodRoutines = routines.filter(r => r.timeOfDay === currentPeriod);
+
+  return (
+    <div className="routine-app">
+      <h1>Daily Routine Tracker</h1>
+      <p>Current time: {currentPeriod}</p>
+      
+      <form onSubmit={addRoutine}>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Add a routine..."
+          autoFocus
+        />
+        <select value={timeOfDay} onChange={(e) => setTimeOfDay(e.target.value as any)}>
+          <option value="morning">Morning</option>
+          <option value="afternoon">Afternoon</option>
+          <option value="evening">Evening</option>
+        </select>
+        <input
+          type="number"
+          value={duration}
+          onChange={(e) => setDuration(Number(e.target.value))}
+          min="5"
+          max="180"
+          style={{ width: '80px' }}
+        />
+        <span>min</span>
+        <button type="submit">Add</button>
+      </form>
+
+      <div className="filters">
+        <button 
+          className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+          onClick={() => setFilter('all')}
+        >
+          All ({routines.length})
+        </button>
+        <button 
+          className={`filter-btn ${filter === 'morning' ? 'active' : ''}`}
+          onClick={() => setFilter('morning')}
+        >
+          Morning
+        </button>
+        <button 
+          className={`filter-btn ${filter === 'afternoon' ? 'active' : ''}`}
+          onClick={() => setFilter('afternoon')}
+        >
+          Afternoon
+        </button>
+        <button 
+          className={`filter-btn ${filter === 'evening' ? 'active' : ''}`}
+          onClick={() => setFilter('evening')}
+        >
+          Evening
+        </button>
+        <button 
+          className={`filter-btn ${filter === 'completed' ? 'active' : ''}`}
+          onClick={() => setFilter('completed')}
+        >
+          Completed ({completedCount})
+        </button>
+      </div>
+
+      {currentPeriodRoutines.length > 0 && filter === 'all' && (
+        <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: '#e3f2fd' }}>
+          <strong>Current {currentPeriod} routines:</strong> 
+          {currentPeriodRoutines.filter(r => !r.completed).length} remaining
+        </div>
+      )}
+
+      <div>
+        {filteredRoutines.map(routine => (
+          <div key={routine.id} className={`routine-item ${routine.completed ? 'completed' : ''}`}>
+            <input
+              type="checkbox"
+              checked={routine.completed}
+              onChange={() => toggleRoutine(routine.id)}
+              aria-label={`Mark ${routine.name} as ${routine.completed ? 'incomplete' : 'complete'}`}
+            />
+            <span style={{ flex: 1 }}>{routine.name}</span>
+            <span className="time-badge">
+              {routine.timeOfDay} - {routine.duration}min
+            </span>
+            <button 
+              onClick={() => deleteRoutine(routine.id)}
+              aria-label={`Delete ${routine.name}`}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {routines.length > 0 && (
+        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+          <span>{completedCount}/{routines.length} completed - {totalMinutes} minutes today</span>
+          <button onClick={resetDay}>Start New Day</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<RoutineTracker />);
+```
+    </Version>
+  </File>
+  <Tests>
+```javascript
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+describe('RoutineTracker', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  test('adds a new routine', async () => {
+    const user = userEvent.setup();
+    render(<RoutineTracker />);
+    
+    const input = screen.getByPlaceholderText('Add a routine...');
+    const timeSelect = screen.getByRole('combobox', { name: /time/i });
+    const addButton = screen.getByText('Add');
+    
+    await user.type(input, 'Morning Yoga');
+    await user.selectOptions(timeSelect, 'morning');
+    await user.click(addButton);
+    
+    expect(screen.getByText('Morning Yoga')).toBeInTheDocument();
+    expect(input.value).toBe('');
+  });
+
+  test('toggles routine completion', async () => {
+    const user = userEvent.setup();
+    render(<RoutineTracker />);
+    
+    // Add a routine
+    const input = screen.getByPlaceholderText('Add a routine...');
+    await user.type(input, 'Test routine');
+    await user.click(screen.getByText('Add'));
+    
+    // Toggle completion
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).not.toBeChecked();
+    
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+    
+    const routineItem = screen.getByText('Test routine').parentElement;
+    expect(routineItem).toHaveClass('completed');
+  });
+
+  test('filters routines by time of day', async () => {
+    const user = userEvent.setup();
+    render(<RoutineTracker />);
+    
+    // Add routines for different times
+    const input = screen.getByPlaceholderText('Add a routine...');
+    const timeSelect = screen.getByRole('combobox');
+    
+    await user.type(input, 'Morning routine');
+    await user.selectOptions(timeSelect, 'morning');
+    await user.click(screen.getByText('Add'));
+    
+    await user.type(input, 'Evening routine');
+    await user.selectOptions(timeSelect, 'evening');
+    await user.click(screen.getByText('Add'));
+    
+    // Test filters
+    await user.click(screen.getByText('Morning'));
+    expect(screen.getByText('Morning routine')).toBeInTheDocument();
+    expect(screen.queryByText('Evening routine')).not.toBeInTheDocument();
+    
+    await user.click(screen.getByText('Evening'));
+    expect(screen.queryByText('Morning routine')).not.toBeInTheDocument();
+    expect(screen.getByText('Evening routine')).toBeInTheDocument();
+  });
+
+  test('persists routines to localStorage', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<RoutineTracker />);
+    
+    // Add a routine
+    await user.type(screen.getByPlaceholderText('Add a routine...'), 'Persistent routine');
+    await user.click(screen.getByText('Add'));
+    
+    // Verify it's saved to localStorage
+    const saved = JSON.parse(localStorage.getItem('routines') || '[]');
+    expect(saved).toHaveLength(1);
+    expect(saved[0].name).toBe('Persistent routine');
+    
+    // Unmount and remount
+    unmount();
+    render(<RoutineTracker />);
+    
+    // Verify routine is restored
+    expect(screen.getByText('Persistent routine')).toBeInTheDocument();
+  });
+
+  test('tracks completion time', async () => {
+    const user = userEvent.setup();
+    render(<RoutineTracker />);
+    
+    // Add routines with different durations
+    const input = screen.getByPlaceholderText('Add a routine...');
+    const durationInput = screen.getByRole('spinbutton');
+    
+    await user.type(input, 'Quick routine');
+    await user.clear(durationInput);
+    await user.type(durationInput, '15');
+    await user.click(screen.getByText('Add'));
+    
+    await user.type(input, 'Long routine');
+    await user.clear(durationInput);
+    await user.type(durationInput, '45');
+    await user.click(screen.getByText('Add'));
+    
+    // Complete one routine
+    const checkboxes = screen.getAllByRole('checkbox');
+    await user.click(checkboxes[0]);
+    
+    // Check that total time is shown
+    expect(screen.getByText(/15 minutes today/)).toBeInTheDocument();
+  });
+});
+```
+  </Tests>
+</CodeDisplay>
+
+</SlideLayout.Full>

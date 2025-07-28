@@ -3,12 +3,12 @@ import { SlideLayout, Image, FlexBox, Box} from 'spectacle'
 <SlideLayout.Full>
 ## Understanding Union Types
 
-**Union types represent "either/or" scenarios:**
+- Union types represent "either/or" scenarios:
 - A value that can be one of several types
-- Use the `|` operator (pipe) to combine types
-- TypeScript ensures you handle all possibilities
+  - Use the `|` operator (pipe) to combine types
+  - TypeScript ensures you handle all possibilities
 
-**Common Use Cases:**
+**Common Use Cases:- 
 ```typescript
 // API response states
 type Status = "loading" | "success" | "error";
@@ -20,10 +20,10 @@ type ID = string | number;
 type MaybeUser = User | null;
 ```
 
-**Why unions are powerful:**
+**Why unions are powerful:
 - Model real-world data accurately
-- Force exhaustive handling
-- Prevent invalid states
+  - Force exhaustive handling
+  - Prevent invalid states
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -56,10 +56,10 @@ function getStatusIcon(status: Status): string {
 
 Result types are a powerful pattern for handling success/failure scenarios:
 
-**The Problem with Exceptions:**
+- The Problem with Exceptions:
 - Functions can throw at any time
-- Callers might forget to handle errors
-- Hard to track which functions can fail
+  - Callers might forget to handle errors
+  - Hard to track which functions can fail
 
 **The Solution with Result Types:**
 ```typescript
@@ -68,11 +68,11 @@ type Result<T> =
   | { success: false; error: string };
 ```
 
-**Benefits:**
+- Benefits:
 - Explicit error handling in the type system
-- Callers must handle both success and failure
-- Clear indication of what can go wrong
-- Composable and chainable operations
+  - Callers must handle both success and failure
+  - Clear indication of what can go wrong
+  - Composable and chainable operations
 
 **For the exercise**: Build a Result type that forces explicit error handling.
 </SlideLayout.Full>

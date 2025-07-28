@@ -1,0 +1,34 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Understanding Generic Functions for Data Processing
+
+Generic functions are powerful for data transformation:
+
+**Generic Function Patterns:**
+```typescript
+// Transform array elements
+function map<T, U>(items: T[], transform: (item: T) => U): U[] {
+  return items.map(transform);
+}
+
+// Group items by a property
+function groupBy<T, K extends keyof T>(items: T[], key: K): Record<string, T[]> {
+  // Implementation here
+}
+
+// Filter with type safety
+function filter<T>(items: T[], predicate: (item: T) => boolean): T[] {
+  return items.filter(predicate);
+}
+```
+
+- Benefits:
+- Type safety for input and output
+  - Reusable with any data type
+  - IntelliSense support for properties
+  - Compile-time error checking
+
+**For the exercise**: Build generic utilities that work with habit data while preserving all type information.
+</SlideLayout.Full>

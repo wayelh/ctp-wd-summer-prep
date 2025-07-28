@@ -1,0 +1,58 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Callback Refs
+
+<CodeDisplay>
+  <File name="CallbackRefs.tsx">
+```tsx
+import React, { useState, useCallback } from 'react';
+
+function MeasuredList() {
+  const [heights, setHeights] = useState<Record<string, number>>({});
+  const items = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'];
+
+  // Callback ref that measures element height
+  const measureRef = useCallback((node: HTMLLIElement | null, id: string) => {
+    if (node) {
+      const height = node.getBoundingClientRect().height;
+      setHeights(prev => ({ ...prev, [id]: height }));
+    }
+  }, []);
+
+  return (
+    <div>
+      <h3>Measured List Items</h3>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {items.map((item, index) => (
+          <li
+            key={item}
+            ref={(node) => measureRef(node, item)}
+            style={{
+              padding: `${10 + index * 5}px`,
+              margin: '5px',
+              backgroundColor: '#f0f0f0',
+              borderRadius: '4px'
+            }}
+          >
+            {item}
+            {heights[item] && (
+              <span style={{ float: 'right', color: '#666' }}>
+                {Math.round(heights[item])}px
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+      <p>Total height: {Object.values(heights).reduce((a, b) => a + b, 0).toFixed(0)}px</p>
+    </div>
+  );
+}
+
+export default MeasuredList;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

@@ -1,0 +1,358 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Advanced Form Patterns
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Forms</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useRef, FormEvent } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Form validation example
+interface FormErrors {
+  [key: string]: string;
+}
+
+function ValidatedForm(): JSX.Element {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Set<string>>(new Set());
+
+  // Validate individual field
+  const validateField = (name: string, value: string): string => {
+    switch (name) {
+      case 'email':
+        if (!value) return 'Email is required';
+        if (!/\S+@\S+\.\S+/.test(value)) return 'Email is invalid';
+        return '';
+      
+      case 'password':
+        if (!value) return 'Password is required';
+        if (value.length < 6) return 'Password must be at least 6 characters';
+        if (!/[A-Z]/.test(value)) return 'Password must contain uppercase letter';
+        if (!/[0-9]/.test(value)) return 'Password must contain a number';
+        return '';
+      
+      case 'confirmPassword':
+        if (!value) return 'Please confirm password';
+        if (value !== formData.password) return 'Passwords do not match';
+        return '';
+      
+      default:
+        return '';
+    }
+  };
+
+  // Handle field change
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Validate on change if field was touched
+    if (touched.has(name)) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: validateField(name, value)
+      }));
+    }
+  };
+
+  // Handle field blur
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    setTouched(prev => new Set(prev).add(name));
+    setErrors(prev => ({
+      ...prev,
+      [name]: validateField(name, value)
+    }));
+  };
+
+  // Validate all fields
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    
+    Object.keys(formData).forEach(key => {
+      const error = validateField(key, formData[key as keyof typeof formData]);
+      if (error) newErrors[key] = error;
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    
+    if (validateForm()) {
+      console.log('Form is valid:', formData);
+      alert('Registration successful!');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="validated-form">
+      <h2>Registration Form</h2>
+      
+      <div className="form-field">
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={errors.email && touched.has('email') ? 'error' : ''}
+        />
+        {errors.email && touched.has('email') && (
+          <span className="error-message">{errors.email}</span>
+        )}
+      </div>
+
+      <div className="form-field">
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={errors.password && touched.has('password') ? 'error' : ''}
+        />
+        {errors.password && touched.has('password') && (
+          <span className="error-message">{errors.password}</span>
+        )}
+      </div>
+
+      <div className="form-field">
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          className={errors.confirmPassword && touched.has('confirmPassword') ? 'error' : ''}
+        />
+        {errors.confirmPassword && touched.has('confirmPassword') && (
+          <span className="error-message">{errors.confirmPassword}</span>
+        )}
+      </div>
+
+      <button type="submit">Register</button>
+    </form>
+  );
+}
+
+// Uncontrolled form with refs
+function UncontrolledForm(): JSX.Element {
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    
+    console.log('Name:', nameRef.current?.value);
+    console.log('Email:', emailRef.current?.value);
+    console.log('File:', fileRef.current?.files?.[0]);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="uncontrolled-form">
+      <h2>Uncontrolled Form (Using Refs)</h2>
+      
+      <input
+        ref={nameRef}
+        type="text"
+        placeholder="Name"
+        defaultValue="John Doe"
+      />
+      
+      <input
+        ref={emailRef}
+        type="email"
+        placeholder="Email"
+      />
+      
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+      />
+      
+      <button type="submit">Submit</button>
+    </form>
+  );
+}
+
+// Dynamic form fields
+function DynamicForm(): JSX.Element {
+  const [fields, setFields] = useState([{ id: 1, value: '' }]);
+
+  const addField = () => {
+    setFields([...fields, { id: Date.now(), value: '' }]);
+  };
+
+  const removeField = (id: number) => {
+    setFields(fields.filter(field => field.id !== id));
+  };
+
+  const updateField = (id: number, value: string) => {
+    setFields(fields.map(field =>
+      field.id === id ? { ...field, value } : field
+    ));
+  };
+
+  return (
+    <div className="dynamic-form">
+      <h2>Dynamic Form Fields</h2>
+      
+      {fields.map(field => (
+        <div key={field.id} className="dynamic-field">
+          <input
+            type="text"
+            value={field.value}
+            onChange={(e) => updateField(field.id, e.target.value)}
+            placeholder="Enter value"
+          />
+          <button
+            type="button"
+            onClick={() => removeField(field.id)}
+            disabled={fields.length === 1}
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+      
+      <button type="button" onClick={addField}>Add Field</button>
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  return (
+    <div className="container">
+      <ValidatedForm />
+      <hr />
+      <UncontrolledForm />
+      <hr />
+      <DynamicForm />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.validated-form,
+.uncontrolled-form,
+.dynamic-form {
+  margin-bottom: 40px;
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+input.error {
+  border-color: #dc3545;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 5px;
+  display: block;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.dynamic-field {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dynamic-field input {
+  flex: 1;
+}
+
+.dynamic-field button {
+  padding: 10px 15px;
+  background-color: #dc3545;
+}
+
+hr {
+  margin: 40px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

@@ -1,0 +1,40 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Array Transformation
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Exercise: Transform habit points data
+// TODO: Given an array of daily habit points,
+// 1. Add 20% bonus to each
+// 2. Format as strings with "pts" suffix
+// 3. Filter to show only days with 50+ points
+
+const dailyPoints = [30, 45, 60, 20, 75, 40, 90];
+const BONUS_RATE = 0.20;
+
+// Goal: ["72 pts", "90 pts", "108 pts"]
+// Your code here...
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Combining Objects and Arrays
+    **Most real applications use both:**
+    - Arrays of objects (list of habits)
+    - Objects containing arrays (habit with completion dates)
+    - Nested structures for complex data
+    
+    **Example: Habit Tracker Data Structure**
+    - User object contains array of habits
+    - Each habit is an object with properties
+    - Completion history is array of dates
+  </FlexBox>
+</SlideLayout.Full>

@@ -1,0 +1,36 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Callbacks: The Traditional Way
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Callbacks - functions passed as arguments
+function loadHabitData(habitId, callback) {
+  // Simulate network request
+  setTimeout(() => {
+    const data = { id: habitId, name: "Exercise", streak: 5 };
+    callback(data);
+  }, 1000);
+}
+
+// Usage - provide function to call when done
+loadHabitData(123, (habitData) => {
+  console.log("Got habit:", habitData.name);
+});
+
+// Problem: Callback hell with multiple operations
+loadHabitData(123, (habitData) => {
+  updateHabitStreak(habitData.id, (result) => {
+    saveToDatabase(result, (saved) => {
+      console.log("All done!"); // Nested callbacks get messy
+    });
+  });
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

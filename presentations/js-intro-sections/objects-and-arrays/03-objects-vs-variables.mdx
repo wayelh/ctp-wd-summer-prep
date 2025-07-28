@@ -1,0 +1,22 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Objects vs. Separate Variables
+
+```javascript
+// Without objects - scattered data
+let habitName = "Morning Exercise";
+let habitCategory = "health";
+let habitStreak = 5;
+let habitActive = true;
+
+// With objects - organized data
+const habit = {
+  name: "Morning Exercise",
+  category: "health",
+  streak: 5,
+  isActive: true
+};
+```
+</SlideLayout.Full>

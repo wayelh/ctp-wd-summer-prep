@@ -53,15 +53,21 @@ type UserRoles = Record<string, 'admin' | 'user' | 'guest'>;
 <SlideLayout.Full>
 ## Understanding Utility Types for API Design
 
-Utility types help create consistent, type-safe APIs:
+Utility types help create consistent, type-safe APIs
+</SlideLayout.Full>
 
-**CRUD Operations Need Different Types:**
+<SlideLayout.Full>
+## CRUD Operations Need Different Types
+
 - **Create**: Exclude system-generated fields (id, timestamps)
 - **Read**: Full object with all properties
 - **Update**: Partial updates with optional fields
 - **Delete**: Just the identifier
+</SlideLayout.Full>
 
-**Utility Type Patterns:**
+<SlideLayout.Full>
+## Utility Type Patterns
+
 ```typescript
 interface User {
   id: string;
@@ -79,8 +85,12 @@ type UpdateUserInput = Partial<Pick<User, 'email' | 'name'>> & { id: string };
 // Public: hide sensitive fields
 type PublicUser = Omit<User, 'password'>;
 ```
+</SlideLayout.Full>
 
-**For the exercise**: Build a complete CRUD type system using utility types.
+<SlideLayout.Full>
+## Exercise Goal
+
+Build a complete CRUD type system using utility types
 </SlideLayout.Full>
 
 <SlideLayout.Full>

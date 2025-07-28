@@ -1,0 +1,29 @@
+import Overview from './testing/00-overview.mdx';
+import BuildingReliableComponents from './testing/01-building-reliable-components.mdx';
+import WhyTestComponents from './testing/02-why-test-components.mdx';
+import ReactTestingLibrary from './testing/03-react-testing-library.mdx';
+import TestingUserInteractions from './testing/04-testing-user-interactions.mdx';
+import TestingAsyncBehavior from './testing/05-testing-async-behavior.mdx';
+import TestingCustomHooks from './testing/06-testing-custom-hooks.mdx';
+import TestingContext from './testing/07-testing-context.mdx';
+import IntegrationTesting from './testing/08-integration-testing.mdx';
+import TestingBestPractices from './testing/09-testing-best-practices.mdx';
+import Summary from './testing/10-summary.mdx';
+
+export default function Testing(props) {
+  return (
+    <>
+      <Overview {...props} />
+      <BuildingReliableComponents {...props} />
+      <WhyTestComponents {...props} />
+      <ReactTestingLibrary {...props} />
+      <TestingUserInteractions {...props} />
+      <TestingAsyncBehavior {...props} />
+      <TestingCustomHooks {...props} />
+      <TestingContext {...props} />
+      <IntegrationTesting {...props} />
+      <TestingBestPractices {...props} />
+      <Summary {...props} />
+    </>
+  );
+}

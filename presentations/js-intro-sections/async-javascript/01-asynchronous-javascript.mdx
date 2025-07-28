@@ -1,0 +1,16 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## Why Asynchronous?
+        
+    - JavaScript is single-threaded
+    - Can't block while waiting for slow operations
+    - Network requests, file I/O, timers need async
+    - Enables responsive user interfaces
+    - Real-world analogy:
+      - Restaurant kitchen - take orders while cooking
+      - Don't wait for one meal before starting next
+  </FlexBox>
+</SlideLayout.Full>

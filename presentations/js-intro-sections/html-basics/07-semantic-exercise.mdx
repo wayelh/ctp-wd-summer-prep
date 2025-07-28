@@ -1,0 +1,182 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Semantic HTML Exercise
+<CodeDisplay height="70vh">
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blog Website</title>
+</head>
+<body>
+    <!-- Fix this non-semantic HTML! -->
+     <!--
+     **Fix these issues:**
+    - Replace generic `<div>` elements with semantic HTML5 elements
+    - Convert clickable `<span>` elements to proper interactive elements
+    - Add proper heading hierarchy
+    - Include accessibility attributes where needed
+    - Ensure proper document metadata
+    !-->
+    <div class="top-section">
+        <div class="site-title">Tech Blog</div>
+        <div class="menu">
+            <div><span onclick="navigate('home')">Home</span></div>
+            <div><span onclick="navigate('about')">About</span></div>
+            <div><span onclick="navigate('contact')">Contact</span></div>
+        </div>
+    </div>
+    
+    <div class="content">
+        <div class="post">
+            <div class="post-title">Understanding Web Components</div>
+            <div class="post-date">January 15, 2024</div>
+            <div class="post-content">
+                <div>Web components are a set of standards...</div>
+                <div>They allow you to create reusable elements...</div>
+            </div>
+            <div class="post-actions">
+                <span onclick="share()">Share</span>
+                <span onclick="comment()">Comment</span>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="widget">
+                <div class="widget-title">Categories</div>
+                <div>JavaScript</div>
+                <div>CSS</div>
+                <div>HTML</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bottom">
+        <div>Copyright 2024</div>
+    </div>
+</body>
+</html>
+```
+
+```html
+<!-- SOLUTION -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Blog - Understanding Web Development</title>
+</head>
+<body>
+    <header>
+        <h1>Tech Blog</h1>
+        <nav>
+            <ul>
+                <li><a href="/home">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <article>
+            <header>
+                <h2>Understanding Web Components</h2>
+                <time datetime="2024-01-15">January 15, 2024</time>
+            </header>
+            <section>
+                <p>Web components are a set of standards...</p>
+                <p>They allow you to create reusable elements...</p>
+            </section>
+            <footer>
+                <button type="button">Share</button>
+                <button type="button">Comment</button>
+            </footer>
+        </article>
+        
+        <aside>
+            <section>
+                <h3>Categories</h3>
+                <nav>
+                    <ul>
+                        <li><a href="/category/javascript">JavaScript</a></li>
+                        <li><a href="/category/css">CSS</a></li>
+                        <li><a href="/category/html">HTML</a></li>
+                    </ul>
+                </nav>
+            </section>
+        </aside>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Tech Blog. All rights reserved.</p>
+    </footer>
+</body>
+</html>
+```
+  </File>
+  <File name="tests.js">
+```javascript
+// Test the semantic HTML structure
+describe('Semantic HTML Tests', () => {
+    it('should use header element for site header', () => {
+        const header = document.querySelector('header');
+        assert.exists(header, 'Page should have a <header> element');
+        assert.exists(header.querySelector('h1'), 'Header should contain an h1');
+    });
+    
+    it('should use nav element for navigation', () => {
+        const nav = document.querySelector('nav');
+        assert.exists(nav, 'Page should have a <nav> element');
+        assert.exists(nav.querySelector('ul'), 'Nav should contain a list');
+        assert.isAtLeast(nav.querySelectorAll('a').length, 3, 'Nav should have proper links');
+    });
+    
+    it('should use main element for primary content', () => {
+        const main = document.querySelector('main');
+        assert.exists(main, 'Page should have a <main> element');
+    });
+    
+    it('should use article element for blog post', () => {
+        const article = document.querySelector('article');
+        assert.exists(article, 'Blog post should use <article> element');
+        assert.exists(article.querySelector('h2'), 'Article should have a heading');
+    });
+    
+    it('should use time element with datetime', () => {
+        const time = document.querySelector('time');
+        assert.exists(time, 'Should use <time> element for dates');
+        assert.exists(time.getAttribute('datetime'), 'Time element should have datetime attribute');
+    });
+    
+    it('should use aside for sidebar content', () => {
+        const aside = document.querySelector('aside');
+        assert.exists(aside, 'Sidebar should use <aside> element');
+    });
+    
+    it('should use semantic buttons instead of spans', () => {
+        const buttons = document.querySelectorAll('button');
+        assert.isAtLeast(buttons.length, 2, 'Interactive elements should be buttons');
+        
+        const clickableSpans = document.querySelectorAll('span[onclick]');
+        assert.equal(clickableSpans.length, 0, 'Should not use spans with onclick');
+    });
+    
+    it('should use footer element', () => {
+        const footer = document.querySelector('footer');
+        assert.exists(footer, 'Page should have a <footer> element');
+    });
+    
+    it('should have proper document structure', () => {
+        assert.exists(document.querySelector('html[lang]'), 'HTML should have lang attribute');
+        assert.exists(document.querySelector('meta[charset]'), 'Should have charset meta tag');
+    });
+});
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

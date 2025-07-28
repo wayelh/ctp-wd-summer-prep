@@ -1,0 +1,25 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Closure Benefits: Factory Pattern
+```javascript
+function createHabitTracker(name) {
+  let completions = 0;
+  let streak = 0;
+  return {
+    complete() {
+      completions++;
+      streak++;
+      return `${name}: ${streak} day streak!`;
+    },
+    reset() {
+      streak = 0;
+    },
+    getStats() {
+      return { completions, streak };
+    }
+  };
+}
+```
+</SlideLayout.Full>

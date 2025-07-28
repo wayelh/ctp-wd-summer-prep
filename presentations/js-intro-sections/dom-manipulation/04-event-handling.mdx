@@ -1,0 +1,54 @@
+import { SlideLayout, FlexBox, Box } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Event Handling
+<CodeDisplay >
+  <File name="example.js">
+    
+```javascript
+// Events make pages interactive!
+
+// Common events:
+// - click: user clicks an element
+// - submit: form is submitted
+// - keypress: key is pressed
+// - mouseover: mouse enters element
+// - change: input value changes
+
+// Adding event listeners:
+button.addEventListener('click', function(event) {
+  console.log('Button clicked!');
+  // event object contains details about the event
+});
+
+// Event delegation - handle events on parent:
+habitsList.addEventListener('click', (e) => {
+  if (e.target.classList.contains('complete-btn')) {
+    // Handle complete button click
+  }
+});
+```
+    
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## DOM Best Practices
+    <Box width="80%">
+      - Cache DOM selections (don't query repeatedly)
+      - Use event delegation for dynamic content
+      - Batch DOM updates to minimize reflows
+      - Prefer textContent over innerHTML for text
+      - Always validate user input
+      
+      **Performance Tip:**
+      DOM operations are expensive. Minimize them by:
+      - Building elements before adding to DOM
+      - Using document fragments for multiple additions
+      - Updating classes instead of individual styles
+    </Box>
+  </FlexBox>
+</SlideLayout.Full>

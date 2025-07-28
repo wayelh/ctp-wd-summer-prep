@@ -1,0 +1,37 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Functional Programming: Immutability
+
+**Immutability**
+- Don't modify, create new
+- Safer and more predictable
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Why Immutability Matters
+- Prevents unintended side effects
+- Easier to reason about state
+- Enables functional programming patterns
+- Enhances performance in some cases
+</SlideLayout.Full>
+<SlideLayout.Full>
+## Example of Immutability in Action
+```javascript
+// Mutable approach (avoid)
+function addHabit(habits, newHabit) {
+  habits.push(newHabit); // Modifies original array
+  return habits;
+}
+
+// Immutable approach (prefer)
+function addHabitImmutable(habits, newHabit) {
+  return [...habits, newHabit]; // Creates new array
+}
+
+// Object immutability
+function updateHabitStreak(habit, newStreak) {
+  return { ...habit, streak: newStreak }; // New object
+}
+```
+</SlideLayout.Full>

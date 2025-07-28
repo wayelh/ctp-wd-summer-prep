@@ -1,0 +1,99 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## forwardRef
+
+<CodeDisplay>
+  <File name="ForwardRef.tsx">
+```tsx
+import React, { forwardRef, useRef, useImperativeHandle, useState } from 'react';
+
+// Custom input with imperative API
+interface CustomInputHandle {
+  focus: () => void;
+  clear: () => void;
+  shake: () => void;
+}
+
+const CustomInput = forwardRef<CustomInputHandle, { label: string }>(
+  ({ label }, ref) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [value, setValue] = useState('');
+
+    useImperativeHandle(ref, () => ({
+      focus: () => {
+        inputRef.current?.focus();
+      },
+      clear: () => {
+        setValue('');
+      },
+      shake: () => {
+        inputRef.current?.animate([
+          { transform: 'translateX(0)' },
+          { transform: 'translateX(10px)' },
+          { transform: 'translateX(-10px)' },
+          { transform: 'translateX(10px)' },
+          { transform: 'translateX(0)' }
+        ], {
+          duration: 300,
+          iterations: 1
+        });
+      }
+    }));
+
+    return (
+      <div>
+        <label>{label}</label>
+        <input
+          ref={inputRef}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          style={{ 
+            padding: '8px',
+            border: '2px solid #ccc',
+            borderRadius: '4px'
+          }}
+        />
+      </div>
+    );
+  }
+);
+
+CustomInput.displayName = 'CustomInput';
+
+// Parent component using the ref
+function LoginForm() {
+  const usernameRef = useRef<CustomInputHandle>(null);
+  const passwordRef = useRef<CustomInputHandle>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validate and shake empty fields
+    usernameRef.current?.shake();
+    passwordRef.current?.focus();
+  };
+
+  const handleReset = () => {
+    usernameRef.current?.clear();
+    passwordRef.current?.clear();
+    usernameRef.current?.focus();
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <CustomInput ref={usernameRef} label="Username" />
+      <CustomInput ref={passwordRef} label="Password" />
+      
+      <button type="submit">Login</button>
+      <button type="button" onClick={handleReset}>Reset</button>
+    </form>
+  );
+}
+
+export default LoginForm;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

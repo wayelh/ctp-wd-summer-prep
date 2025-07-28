@@ -1,0 +1,360 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## The Importance of Keys
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Keys</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Example showing why keys matter
+function KeysExample(): JSX.Element {
+  const [habits, setHabits] = useState([
+    { id: 1, text: 'Morning meditation', color: '#ff6b6b' },
+    { id: 2, text: 'Exercise routine', color: '#4ecdc4' },
+    { id: 3, text: 'Healthy breakfast', color: '#45b7d1' }
+  ]);
+
+  // Add habit at beginning
+  const addHabitAtStart = () => {
+    const newHabit = {
+      id: Date.now(),
+      text: `New habit ${habits.length + 1}`,
+      color: '#' + Math.floor(Math.random()*16777215).toString(16)
+    };
+    setHabits([newHabit, ...habits]);
+  };
+
+  // Remove first habit
+  const removeFirstHabit = () => {
+    setHabits(habits.slice(1));
+  };
+
+  // Shuffle habits
+  const shuffleHabits = () => {
+    const shuffled = [...habits].sort(() => Math.random() - 0.5);
+    setHabits(shuffled);
+  };
+
+  return (
+    <div>
+      <h2>Keys Help React Track Habits</h2>
+      
+      <div className="controls">
+        <button onClick={addHabitAtStart}>Add Habit</button>
+        <button onClick={removeFirstHabit}>Remove First</button>
+        <button onClick={shuffleHabits}>Shuffle</button>
+      </div>
+
+      <div className="comparison">
+        <div>
+          <h3>❌ Using Index as Key (Bad)</h3>
+          <p className="warning">Habit progress gets mixed up!</p>
+          <ul className="bad-example">
+            {habits.map((habit, index) => (
+              <li key={index} style={{ backgroundColor: habit.color }}>
+                <span>{habit.text}</span>
+                <input 
+                  type="checkbox" 
+                  defaultChecked={index === 0}
+                />
+                <span>Completed</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h3>✅ Using Stable ID as Key (Good)</h3>
+          <p className="success">Habit progress stays correct!</p>
+          <ul className="good-example">
+            {habits.map((habit) => (
+              <li key={habit.id} style={{ backgroundColor: habit.color }}>
+                <span>{habit.text}</span>
+                <input 
+                  type="checkbox" 
+                  defaultChecked={habit.id === 1}
+                />
+                <span>Completed</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Component to show habit lifecycle
+function HabitWithLifecycle({ 
+  id, 
+  text 
+}: { 
+  id: number; 
+  text: string;
+}): JSX.Element {
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    console.log(`Habit ${id} mounted`);
+    setMounted(true);
+    
+    return () => {
+      console.log(`Habit ${id} unmounted`);
+    };
+  }, [id]);
+
+  return (
+    <div className={`lifecycle-habit ${mounted ? 'mounted' : ''}`}>
+      {text}
+    </div>
+  );
+}
+
+// Example with component state
+function StatefulHabitList(): JSX.Element {
+  const [habits, setHabits] = useState([
+    { id: 1, text: 'Morning meditation', expanded: false, streak: 15 },
+    { id: 2, text: 'Exercise 30 mins', expanded: false, streak: 7 },
+    { id: 3, text: 'Read before bed', expanded: false, streak: 23 }
+  ]);
+
+  const toggleExpanded = (id: number) => {
+    setHabits(habits.map(habit =>
+      habit.id === id ? { ...habit, expanded: !habit.expanded } : habit
+    ));
+  };
+
+  const removeHabit = (id: number) => {
+    setHabits(habits.filter(habit => habit.id !== id));
+  };
+
+  return (
+    <div>
+      <h2>Habit Details View</h2>
+      <p>Click habits to see details</p>
+      
+      <div className="habit-list">
+        {habits.map(habit => (
+          <div key={habit.id} className="habit-item">
+            <div 
+              className="habit-header"
+              onClick={() => toggleExpanded(habit.id)}
+            >
+              <span>{habit.expanded ? '▼' : '▶'}</span>
+              <span>{habit.text}</span>
+              <span className="streak-badge">🔥 {habit.streak}</span>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeHabit(habit.id);
+                }}
+              >
+                Remove
+              </button>
+            </div>
+            {habit.expanded && (
+              <div className="habit-details">
+                <p>Habit ID: {habit.id}</p>
+                <p>Current Streak: {habit.streak} days</p>
+                <p>Started: {new Date(Date.now() - habit.streak * 86400000).toLocaleDateString()}</p>
+                <p>Frequency: Daily</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function App(): JSX.Element {
+  return (
+    <div className="app">
+      <h1>Understanding Keys in Habit Tracking</h1>
+      <KeysExample />
+      <hr />
+      <StatefulHabitList />
+    </div>
+  );
+}
+
+// Render the app
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);
+```
+  </File>
+  <File name="styles.css">
+```css
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.controls {
+  margin: 20px 0;
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.comparison > div {
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.warning {
+  color: #dc3545;
+  font-size: 14px;
+  margin: 10px 0;
+}
+
+.success {
+  color: #28a745;
+  font-size: 14px;
+  margin: 10px 0;
+}
+
+.comparison ul {
+  list-style: none;
+  padding: 0;
+}
+
+.comparison li {
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.comparison input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+.comparison span {
+  color: white;
+  font-size: 14px;
+}
+
+.streak-badge {
+  margin-left: auto;
+  margin-right: 10px;
+  padding: 4px 8px;
+  background-color: #fff3e0;
+  color: #e65100;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.lifecycle-habit {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.lifecycle-habit.mounted {
+  opacity: 1;
+}
+
+.habit-list {
+  margin-top: 20px;
+}
+
+.habit-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.habit-header {
+  padding: 15px;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.habit-header:hover {
+  background-color: #e9e9e9;
+}
+
+.habit-header button {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: 14px;
+  background-color: #dc3545;
+}
+
+.habit-header button:hover {
+  background-color: #c82333;
+}
+
+.habit-details {
+  padding: 15px;
+  background-color: white;
+  border-top: 1px solid #ddd;
+}
+
+.habit-details p {
+  margin: 5px 0;
+  color: #666;
+}
+
+hr {
+  margin: 40px 0;
+  border: none;
+  border-top: 1px solid #ddd;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>

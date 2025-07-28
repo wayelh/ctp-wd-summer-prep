@@ -1,0 +1,222 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Exercise: Building a Habit Tracker
+<CodeDisplay >
+  <File name="exercise.js">
+```javascript
+// Exercise: Build a habit tracker object
+// TODO: Create a habitTracker object with:
+// 1. habits array to store habit objects
+// 2. addHabit(name, category) method
+// 3. completeHabit(name) method that finds and marks habit complete
+// 4. getTotalPoints() method (each completion = 10 points)
+
+const habitTracker = {
+  habits: [],
+  
+  addHabit(name, category) {
+    // Your code here
+  },
+  
+  completeHabit(name) {
+    // Your code here
+  },
+  
+  getTotalPoints() {
+    // Your code here
+  }
+};
+
+// Test it
+habitTracker.addHabit("Drink Water", "health");
+habitTracker.addHabit("Read 30 mins", "learning");
+habitTracker.completeHabit("Drink Water");
+console.log(habitTracker.getTotalPoints()); // Should be 10
+```
+```javascript
+// Solution: Complete implementation
+const habitTracker = {
+  habits: [],
+  
+  addHabit(name, category) {
+    const habit = {
+      name: name,
+      category: category,
+      completions: 0,
+      lastCompleted: null
+    };
+    this.habits.push(habit);
+    return habit;
+  },
+  
+  completeHabit(name) {
+    const habit = this.habits.find(h => h.name === name);
+    if (habit) {
+      habit.completions++;
+      habit.lastCompleted = new Date();
+      return true;
+    }
+    return false;
+  },
+  
+  getTotalPoints() {
+    return this.habits.reduce((total, habit) => {
+      return total + (habit.completions * 10);
+    }, 0);
+  }
+};
+
+// Test the solution
+habitTracker.addHabit("Drink Water", "health");
+habitTracker.addHabit("Read 30 mins", "learning");
+habitTracker.completeHabit("Drink Water");
+console.log(habitTracker.getTotalPoints()); // 10
+habitTracker.completeHabit("Read 30 mins");
+console.log(habitTracker.getTotalPoints()); // 20
+```
+  </File>
+  <Tests>
+```javascript
+describe('Habit Tracker Object', () => {
+  beforeEach(() => {
+    // Reset the tracker before each test
+    habitTracker.habits = [];
+  });
+
+  describe('addHabit()', () => {
+    it('should add a new habit to the habits array', () => {
+      habitTracker.addHabit('Exercise', 'health');
+      expect(habitTracker.habits).to.have.length(1);
+      expect(habitTracker.habits[0]).to.have.property('name', 'Exercise');
+      expect(habitTracker.habits[0]).to.have.property('category', 'health');
+    });
+
+    it('should add multiple habits', () => {
+      habitTracker.addHabit('Exercise', 'health');
+      habitTracker.addHabit('Meditate', 'mindfulness');
+      habitTracker.addHabit('Read', 'learning');
+      expect(habitTracker.habits).to.have.length(3);
+    });
+
+    it('should initialize habits with proper structure', () => {
+      habitTracker.addHabit('Test Habit', 'test');
+      const habit = habitTracker.habits[0];
+      expect(habit).to.have.property('completions');
+      expect(habit.completions).to.be.a('number');
+    });
+  });
+
+  describe('completeHabit()', () => {
+    beforeEach(() => {
+      habitTracker.addHabit('Drink Water', 'health');
+      habitTracker.addHabit('Read 30 mins', 'learning');
+    });
+
+    it('should mark an existing habit as complete', () => {
+      const result = habitTracker.completeHabit('Drink Water');
+      expect(result).to.be.true;
+      const habit = habitTracker.habits.find(h => h.name === 'Drink Water');
+      expect(habit.completions).to.equal(1);
+    });
+
+    it('should increment completions on multiple calls', () => {
+      habitTracker.completeHabit('Read 30 mins');
+      habitTracker.completeHabit('Read 30 mins');
+      habitTracker.completeHabit('Read 30 mins');
+      const habit = habitTracker.habits.find(h => h.name === 'Read 30 mins');
+      expect(habit.completions).to.equal(3);
+    });
+
+    it('should return false for non-existent habits', () => {
+      const result = habitTracker.completeHabit('Non-existent');
+      expect(result).to.be.false;
+    });
+
+    it('should update lastCompleted date', () => {
+      const before = Date.now();
+      habitTracker.completeHabit('Drink Water');
+      const after = Date.now();
+      const habit = habitTracker.habits.find(h => h.name === 'Drink Water');
+      expect(habit.lastCompleted).to.exist;
+      expect(habit.lastCompleted.getTime()).to.be.at.least(before);
+      expect(habit.lastCompleted.getTime()).to.be.at.most(after);
+    });
+  });
+
+  describe('getTotalPoints()', () => {
+    it('should return 0 when no habits are completed', () => {
+      habitTracker.addHabit('Exercise', 'health');
+      habitTracker.addHabit('Meditate', 'mindfulness');
+      expect(habitTracker.getTotalPoints()).to.equal(0);
+    });
+
+    it('should calculate 10 points per completion', () => {
+      habitTracker.addHabit('Exercise', 'health');
+      habitTracker.completeHabit('Exercise');
+      expect(habitTracker.getTotalPoints()).to.equal(10);
+    });
+
+    it('should sum points across all habits', () => {
+      habitTracker.addHabit('Exercise', 'health');
+      habitTracker.addHabit('Meditate', 'mindfulness');
+      habitTracker.addHabit('Read', 'learning');
+      
+      habitTracker.completeHabit('Exercise'); // 10 points
+      habitTracker.completeHabit('Exercise'); // 20 points total
+      habitTracker.completeHabit('Meditate'); // 30 points total
+      habitTracker.completeHabit('Read'); // 40 points total
+      
+      expect(habitTracker.getTotalPoints()).to.equal(40);
+    });
+
+    it('should handle empty habits array', () => {
+      expect(habitTracker.getTotalPoints()).to.equal(0);
+    });
+  });
+
+  describe('Integration tests', () => {
+    it('should handle the example scenario correctly', () => {
+      habitTracker.addHabit("Drink Water", "health");
+      habitTracker.addHabit("Read 30 mins", "learning");
+      habitTracker.completeHabit("Drink Water");
+      expect(habitTracker.getTotalPoints()).to.equal(10);
+    });
+
+    it('should track multiple habits independently', () => {
+      habitTracker.addHabit("Morning Run", "health");
+      habitTracker.addHabit("Write Journal", "mindfulness");
+      
+      // Complete habits different number of times
+      habitTracker.completeHabit("Morning Run");
+      habitTracker.completeHabit("Morning Run");
+      habitTracker.completeHabit("Write Journal");
+      
+      const runHabit = habitTracker.habits.find(h => h.name === "Morning Run");
+      const journalHabit = habitTracker.habits.find(h => h.name === "Write Journal");
+      
+      expect(runHabit.completions).to.equal(2);
+      expect(journalHabit.completions).to.equal(1);
+      expect(habitTracker.getTotalPoints()).to.equal(30);
+    });
+  });
+});
+```
+  </Tests>
+</CodeDisplay>
+</SlideLayout.Full>
+
+<SlideLayout.Full>
+  <FlexBox alignItems="center" justifyContent="center" flexDirection="column">
+    ## What Are Arrays?
+    - Ordered collections of values
+    - Zero-indexed (first element is at index 0)
+    - Can hold any data type, including mixed types
+    - Dynamic size - can grow or shrink
+    
+    **Real-world analogy:**
+    - A list of daily habit completions
+    - Each day's data stored in order
+  </FlexBox>
+</SlideLayout.Full>

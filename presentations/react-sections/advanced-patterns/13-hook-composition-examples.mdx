@@ -1,0 +1,273 @@
+import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## Hook Composition Examples
+
+<CodeDisplay>
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hook Composition Example</title>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./App.tsx"></script>
+</body>
+</html>
+```
+  </File>
+  <File name="App.tsx">
+```tsx
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// Base hooks that can be composed
+function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(`Error loading ${key} from localStorage:`, error);
+      return initialValue;
+    }
+  });
+
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error(`Error saving ${key} to localStorage:`, error);
+    }
+  };
+
+  return [storedValue, setValue] as const;
+}
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+function useFetch<T>(url: string | null) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    if (!url) return;
+
+    const abortController = new AbortController();
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const response = await fetch(url, { signal: abortController.signal });
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          setError(err);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [url]);
+
+  return { data, loading, error };
+}
+
+// Composed hook: Search with debounce and persistence
+function useSearch<T>(
+  searchFn: (query: string) => Promise<T[]>,
+  delay = 300
+) {
+  const [query, setQuery] = useLocalStorage('searchQuery', '');
+  const [results, setResults] = useState<T[]>([]);
+  const [searching, setSearching] = useState(false);
+  const debouncedQuery = useDebounce(query, delay);
+
+  useEffect(() => {
+    if (!debouncedQuery) {
+      setResults([]);
+      return;
+    }
+
+    const performSearch = async () => {
+      setSearching(true);
+      try {
+        const searchResults = await searchFn(debouncedQuery);
+        setResults(searchResults);
+      } catch (error) {
+        console.error('Search error:', error);
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    };
+
+    performSearch();
+  }, [debouncedQuery, searchFn]);
+
+  return {
+    query,
+    setQuery,
+    results,
+    searching,
+    debouncedQuery
+  };
+}
+
+// Composed hook: Paginated data with caching
+interface PaginationOptions {
+  pageSize?: number;
+  cachePages?: boolean;
+}
+
+function usePaginatedData<T>(
+  fetchPage: (page: number, pageSize: number) => Promise<{ data: T[]; total: number }>,
+  options: PaginationOptions = {}
+) {
+  const { pageSize = 10, cachePages = true } = options;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [data, setData] = useState<T[]>([]);
+  const [loading, setLoading] = useState(false);
+  const cache = useRef<Map<number, T[]>>(new Map());
+
+  const loadPage = useCallback(async (page: number) => {
+    if (cachePages && cache.current.has(page)) {
+      setData(cache.current.get(page)!);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await fetchPage(page, pageSize);
+      setData(result.data);
+      setTotalPages(Math.ceil(result.total / pageSize));
+      
+      if (cachePages) {
+        cache.current.set(page, result.data);
+      }
+    } catch (error) {
+      console.error('Failed to load page:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchPage, pageSize, cachePages]);
+
+  useEffect(() => {
+    loadPage(currentPage);
+  }, [currentPage, loadPage]);
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const nextPage = () => goToPage(currentPage + 1);
+  const prevPage = () => goToPage(currentPage - 1);
+
+  return {
+    data,
+    loading,
+    currentPage,
+    totalPages,
+    goToPage,
+    nextPage,
+    prevPage,
+    hasNextPage: currentPage < totalPages,
+    hasPrevPage: currentPage > 1
+  };
+}
+
+// Usage Example
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function UserSearch() {
+  // Simulated search function
+  const searchUsers = async (query: string): Promise<User[]> => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Mock data
+    const allUsers = [
+      { id: 1, name: 'John Doe', email: 'john@example.com' },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+      { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
+    ];
+    
+    return allUsers.filter(user => 
+      user.name.toLowerCase().includes(query.toLowerCase())
+    );
+  };
+
+  const { query, setQuery, results, searching, debouncedQuery } = useSearch(searchUsers);
+
+  return (
+    <div>
+      <h3>User Search (Composed Hooks)</h3>
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search users..."
+      />
+      
+      {query && (
+        <p style={{ fontSize: '12px', color: '#666' }}>
+          Searching for: "{debouncedQuery}" {searching && '(searching...)'}
+        </p>
+      )}
+      
+      <ul>
+        {results.map(user => (
+          <li key={user.id}>
+            {user.name} - {user.email}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<UserSearch />);
+
+export default UserSearch;
+```
+  </File>
+</CodeDisplay>
+
+</SlideLayout.Full>

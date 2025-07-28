@@ -1,0 +1,99 @@
+import { SlideLayout } from 'spectacle'
+import { CodeDisplay, File } from '../../components/CodeDisplayWithSlideTracking'
+
+<SlideLayout.Full>
+## The Box Model
+
+<CodeDisplay >
+  <File name="index.html">
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Box Model</title>
+</head>
+<body>
+    <h2>Understanding the Box Model</h2>
+    
+    <div class="box-demo">
+        <p>Content</p>
+    </div>
+    
+    <div class="box-explained">
+        <h3>Box Model Properties:</h3>
+        <ul>
+            <li>Content: The actual content</li>
+            <li>Padding: Space inside the border</li>
+            <li>Border: The border around padding</li>
+            <li>Margin: Space outside the border</li>
+        </ul>
+    </div>
+    
+    <div class="box-sizing-demo">
+        <div class="content-box">Content Box</div>
+        <div class="border-box">Border Box</div>
+    </div>
+</body>
+</html>
+```
+  </File>
+  <File name="index.css">
+```css
+/* Visual demonstration of box model */
+.box-demo {
+    width: 300px;
+    height: 150px;
+    padding: 20px;
+    border: 5px solid #333;
+    margin: 20px;
+    background-color: #f0f0f0;
+    
+    /* Show the different parts */
+    box-shadow: 
+        0 0 0 20px rgba(255, 0, 0, 0.2),  /* margin visualization */
+        inset 0 0 0 20px rgba(0, 255, 0, 0.2); /* padding visualization */
+}
+
+.box-demo p {
+    background-color: #fff;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Box sizing comparison */
+.box-sizing-demo {
+    display: flex;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.content-box, .border-box {
+    width: 200px;
+    padding: 20px;
+    border: 10px solid #007bff;
+    background-color: #e3f2fd;
+}
+
+.content-box {
+    box-sizing: content-box;
+    /* Total width = 200px + 40px (padding) + 20px (border) = 260px */
+}
+
+.border-box {
+    box-sizing: border-box;
+    /* Total width = 200px (includes padding and border) */
+}
+
+/* Reset default margins */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+```
+  </File>
+</CodeDisplay>
+</SlideLayout.Full>
