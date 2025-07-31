@@ -357,7 +357,12 @@ function App() {
   const getInitialPresentation = () => {
     // Parse path like /js/advanced-functions or /react/components-props
     const pathname = window.location.pathname;
-    const pathSegments = pathname.split('/').filter(Boolean);
+    // Remove base path if present
+    const basePath = import.meta.env.BASE_URL;
+    const adjustedPath = pathname.startsWith(basePath) 
+      ? pathname.slice(basePath.length - 1) 
+      : pathname;
+    const pathSegments = adjustedPath.split('/').filter(Boolean);
 
     // Expected format: /category/presentation
     if (pathSegments.length >= 2) {
@@ -398,7 +403,8 @@ function App() {
 
     const updateUrl = () => {
       // Build the expected path
-      const expectedPath = `/${activePresentation.category}/${activePresentation.key}`;
+      const basePath = import.meta.env.BASE_URL;
+      const expectedPath = `${basePath}${activePresentation.category}/${activePresentation.key}`;
 
       // Only update if we're not already on the correct path
       if (window.location.pathname !== expectedPath) {
@@ -462,7 +468,8 @@ function App() {
     }
 
     // Build path-based URL: /category/presentation
-    const newPath = `/${category}/${key}`;
+    const basePath = import.meta.env.BASE_URL;
+    const newPath = `${basePath}${category}/${key}`;
 
     // Determine slide number
     let slideNumber = '0';
@@ -717,7 +724,7 @@ function App() {
             onClick={() => {
               setActivePresentation(null);
               setSidebarOpen(false);
-              window.location.href = '/';
+              window.location.href = import.meta.env.BASE_URL;
             }}
           >
             🏠 Home
