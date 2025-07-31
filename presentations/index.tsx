@@ -404,7 +404,7 @@ function App() {
     const updateUrl = () => {
       // Build the expected path
       const basePath = import.meta.env.BASE_URL;
-      const expectedPath = `${basePath}${activePresentation.category}/${activePresentation.key}`;
+      const expectedPath = `${basePath}${basePath.endsWith('/') ? '' : '/'}${activePresentation.category}/${activePresentation.key}`;
 
       // Only update if we're not already on the correct path
       if (window.location.pathname !== expectedPath) {
@@ -469,7 +469,7 @@ function App() {
 
     // Build path-based URL: /category/presentation
     const basePath = import.meta.env.BASE_URL;
-    const newPath = `${basePath}${category}/${key}`;
+    const newPath = `${basePath}${basePath.endsWith('/') ? '' : '/'}${category}/${key}`;
 
     // Determine slide number
     let slideNumber = '0';
