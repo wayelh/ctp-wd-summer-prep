@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text, Notes } from 'spectacle'
 import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
@@ -59,4 +59,13 @@ import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideT
 ```
   </File>
 </CodeDisplay>
+<Notes>
+This example showcases semantic HTML in action, demonstrating how proper element selection creates meaningful document structure. Every element tells a story about its content's purpose and relationships.
+
+The page structure uses landmark elements that assistive technologies recognize. The header element at the page level contains site-wide navigation and branding. Screen readers can jump directly to these landmarks, making navigation efficient. The nav element explicitly marks navigation, and using a list for navigation items indicates their relationship.
+
+The main element identifies the primary content, excluding repeated elements like headers and footers. Within main, we use article for the habit summary because it's self-contained content. Notice how article has its own header - semantic elements can nest, creating hierarchical relationships.
+
+The footer demonstrates how metadata can be presented semantically. The time element provides machine-readable dates while displaying user-friendly text. Small print (small element) indicates fine print or side comments. This semantic richness helps search engines understand your content, improves accessibility, and makes your HTML self-documenting. When you read semantic HTML, you understand the content's purpose without seeing the rendered page.
+</Notes>
 </SlideLayout.Full>

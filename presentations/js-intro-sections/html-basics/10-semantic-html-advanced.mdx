@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text, Notes } from 'spectacle'
 import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
@@ -59,4 +59,13 @@ import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideT
 ```
   </File>
 </CodeDisplay>
+<Notes>
+This advanced semantic HTML example demonstrates professional-level document structure. Every element choice reflects deep understanding of HTML's semantic vocabulary and its impact on accessibility, SEO, and maintainability.
+
+The nested structure shows how semantic elements work at multiple levels. The page has a header containing navigation, but the article also has its own header. This isn't redundancy - it's proper document hierarchy. Screen readers understand these relationships and can provide navigation shortcuts like "jump to main content" or "skip to article header".
+
+The navigation pattern deserves attention. Using nav with an unordered list isn't arbitrary - it indicates these links are related navigation options. Screen readers announce "navigation landmark" and can list all navigation regions on the page. The list structure tells users how many navigation options exist.
+
+Within the article, the semantic structure continues. The time element with datetime provides machine-readable temporal data. The footer with metadata shows that footers aren't just for page bottoms - they're for supplementary information at any structural level. This thoughtful HTML architecture makes your content portable, accessible, and future-proof. When HTML6 or new assistive technologies arrive, semantic HTML will adapt better than div-based layouts.
+</Notes>
 </SlideLayout.Full>

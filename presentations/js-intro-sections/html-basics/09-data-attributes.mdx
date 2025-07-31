@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text, Notes } from 'spectacle'
 import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
@@ -82,4 +82,13 @@ describe('Habit Card Structure', () => {
     
   </Tests>
 </CodeDisplay>
+<Notes>
+Data attributes are HTML5's solution for embedding custom data in elements without using non-standard attributes or cluttering class names. They provide a clean, standards-compliant way to store application data directly in your HTML.
+
+The data- prefix creates a namespace for custom attributes. You can add any attribute starting with data- and it will be valid HTML. This is perfect for storing IDs, state information, configuration values, or any data JavaScript needs to access. The browser ignores these attributes for rendering, but they're easily accessible via JavaScript.
+
+In JavaScript, data attributes are accessible through the dataset property, which automatically converts kebab-case to camelCase. So data-habit-id becomes dataset.habitId. This API makes working with data attributes intuitive and consistent.
+
+Data attributes excel at maintaining the connection between HTML elements and application data. Instead of maintaining separate JavaScript objects that mirror your DOM structure, you can store relevant data right where it's used. This pattern is especially powerful for dynamically generated content where each element needs unique identifiers or metadata. Modern frameworks use similar patterns internally, making this knowledge transferable.
+</Notes>
 </SlideLayout.Full>

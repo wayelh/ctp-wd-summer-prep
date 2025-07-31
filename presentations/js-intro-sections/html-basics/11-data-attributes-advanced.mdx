@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text, Notes } from 'spectacle'
 import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
@@ -80,4 +80,13 @@ document.querySelectorAll('.complete-btn').forEach(btn => {
 ```
   </File>
 </CodeDisplay>
+<Notes>
+This comprehensive example demonstrates the power of data attributes in real-world applications. The pattern shown here - storing state in HTML and syncing it with JavaScript - is fundamental to modern web development.
+
+Notice how data attributes serve multiple purposes: they store the application state (habit ID, category, streak count), track UI state (completed status), and provide hooks for JavaScript without relying on classes or IDs. This separation of concerns keeps styling classes separate from behavioral hooks.
+
+The JavaScript demonstrates best practices for working with data attributes. The dataset API automatically converts kebab-case to camelCase, making the code more JavaScript-like. Type conversion is important - data attributes are always strings, so numeric values need parsing. The boolean conversion pattern (=== 'true') is a common idiom.
+
+The bidirectional sync between data attributes and UI is powerful. When a habit is completed, we update both the data attribute and the visual display. This ensures the DOM remains the source of truth, which simplifies debugging and makes the application state inspectable in DevTools. This pattern scales well and forms the conceptual foundation for state management in modern frameworks. Understanding it deeply prepares you for more advanced patterns.
+</Notes>
 </SlideLayout.Full>

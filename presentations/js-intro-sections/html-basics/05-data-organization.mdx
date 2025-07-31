@@ -1,4 +1,4 @@
-import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text, Notes } from 'spectacle'
 import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
@@ -19,4 +19,15 @@ import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideT
 </article>
 ```
 
+<Notes>
+This example demonstrates professional HTML structure for a reusable component. Notice how every element choice is deliberate and meaningful, creating a solid foundation for styling and interactivity.
+
+The article element establishes this as self-contained content. The data-habit-id attribute stores the unique identifier needed for JavaScript interactions without polluting the global namespace. This pattern of using data attributes for application state is crucial for maintainable code.
+
+Inside the article, we use header, main, and footer to organize content semantically. These aren't just for page-level structure - they work within components too. The header contains identifying information, main holds the primary content, and footer contains actions. This consistent structure makes components predictable and easier to style.
+
+The time element with datetime attribute provides machine-readable date information while displaying human-friendly text. This dual approach serves both users and machines (search engines, screen readers, scripts). The button element for actions is superior to clickable divs because it's keyboard accessible by default and announces its purpose to assistive technologies.
+
+This thoughtful structure pays dividends: CSS selectors become intuitive, JavaScript has clear hooks for interaction, accessibility is built-in, and the component is reusable across different contexts.
+</Notes>
 </SlideLayout.Full>

@@ -1,10 +1,19 @@
-import { SlideLayout, Image, FlexBox, Box, Text} from 'spectacle'
+import { SlideLayout, Image, FlexBox, Box, Text, Notes } from 'spectacle'
 import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideTracking'
 
 <SlideLayout.Full>
 ## Overview: Semantic HTML Structure
 
 Before building the habit card, plan your HTML foundation:
+<Notes>
+Semantic HTML is about choosing elements based on their meaning, not their appearance. This approach creates more maintainable, accessible, and SEO-friendly websites. Before writing any HTML, take time to plan your structure thoughtfully.
+
+Think about your content's meaning and relationships. A habit card isn't just a div with some text - it's a self-contained piece of content that could stand alone, making article the perfect element. The habit name isn't just big text - it's a heading that describes the content below.
+
+This planning phase is crucial for complex applications. Consider how screen readers will navigate your content. Think about how search engines will understand your page structure. Plan for keyboard navigation from the start. Good semantic HTML makes CSS and JavaScript easier because elements are predictable and meaningful.
+
+The habit card example we'll build demonstrates these principles in practice. Every element choice has a reason based on meaning, not just visual design.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -14,6 +23,15 @@ Before building the habit card, plan your HTML foundation:
 - `<article>` for self-contained content like habit cards
 - `<time>` elements for dates with proper datetime attributes
 - Proper heading hierarchy (h1, h2, h3) for screen readers
+<Notes>
+Semantic elements are HTML's built-in vocabulary for describing content meaning. Unlike generic divs and spans, semantic elements tell browsers, developers, and assistive technologies what content represents.
+
+The article element is perfect for self-contained content that makes sense independently - blog posts, news articles, or in our case, habit cards. Each habit card could theoretically be syndicated or displayed elsewhere and still make sense.
+
+The time element might seem unnecessary when you can just use a span, but it provides machine-readable date information. Screen readers can announce dates properly, and search engines can understand temporal information. Always include the datetime attribute with ISO format dates.
+
+Heading hierarchy is crucial for accessibility. Screen reader users often navigate by headings, building a mental model of the page structure. Never skip levels (h1 to h3) or use headings for visual styling - use them to create logical document outlines. CSS can make any element look like a heading, but only actual heading elements provide semantic structure.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -23,4 +41,13 @@ Before building the habit card, plan your HTML foundation:
 - Use `<label>` elements associated with form controls
 - Ensure interactive elements are keyboard accessible
 - Consider ARIA labels for dynamic content
+<Notes>
+Accessibility isn't an afterthought - it's a fundamental requirement for professional web development. When we build with accessibility in mind from the start, we create better experiences for everyone, not just users with disabilities.
+
+Alt attributes on images are the most basic accessibility feature, yet they're often overlooked. Good alt text describes the image's purpose, not just its contents. For a habit icon, "Running shoe icon" is less helpful than "Exercise habit icon". If an image is purely decorative, use an empty alt attribute (alt="") to tell screen readers to skip it.
+
+Form accessibility goes beyond labels. Every form control needs a label that clearly describes its purpose. The for attribute creates a programmatic connection - clicking the label focuses the input. For complex forms, fieldset and legend elements group related inputs. Error messages should be associated with their inputs using aria-describedby.
+
+Keyboard accessibility ensures users who can't or don't use mice can still use your site. All interactive elements should be reachable with Tab and activated with Enter or Space. Custom controls need tabindex and appropriate ARIA roles. Testing with just your keyboard reveals accessibility issues quickly.
+</Notes>
 </SlideLayout.Full>
