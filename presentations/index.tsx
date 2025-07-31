@@ -257,7 +257,8 @@ function App() {
     
     // Preserve the current hash (slide number)
     const currentHash = window.location.hash;
-    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}${currentHash}` : `${window.location.pathname}${currentHash}`;
+    // Use relative path to maintain GitHub Pages compatibility
+    const newUrl = params.toString() ? `?${params.toString()}${currentHash}` : currentHash;
     window.history.replaceState({}, '', newUrl);
   }, [activePresentation]);
 
@@ -278,7 +279,8 @@ function App() {
       hash = '#/0';
     }
     
-    const newUrl = `${window.location.pathname}?${params.toString()}${hash}`;
+    // Use relative URL to maintain GitHub Pages compatibility
+    const newUrl = `?${params.toString()}${hash}`;
     
     if (goToLastSlide) {
       // Store flag in sessionStorage to handle after deck loads

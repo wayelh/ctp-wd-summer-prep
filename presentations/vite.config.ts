@@ -24,6 +24,7 @@ const input = {
 };
 
 const viteConfig = defineConfig({
+  base: './', // Use relative paths for GitHub Pages
   plugins: [
     mdx(/* jsxImportSource: …, otherOptions… */)
   ],
