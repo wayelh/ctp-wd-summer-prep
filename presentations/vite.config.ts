@@ -45,7 +45,7 @@ const clientRouterPlugin = (): Plugin => {
 };
 
 const viteConfig = defineConfig({
-  base: './', // Use relative paths for GitHub Pages
+  base: process.env.PUBLIC_URL || '/', // Set base path for GitHub Pages subdirectory
   plugins: [
     mdx(/* jsxImportSource: …, otherOptions… */),
     clientRouterPlugin()

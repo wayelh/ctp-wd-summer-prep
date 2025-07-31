@@ -360,7 +360,7 @@ function App() {
     // Remove base path if present
     const basePath = import.meta.env.BASE_URL;
     const adjustedPath = pathname.startsWith(basePath) 
-      ? pathname.slice(basePath.length - 1) 
+      ? pathname.slice(basePath.length) 
       : pathname;
     const pathSegments = adjustedPath.split('/').filter(Boolean);
 
