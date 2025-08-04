@@ -211,6 +211,28 @@ describe('Variable Declarations', () => {
     
   </Tests>
 </CodeDisplay>
+<Notes>
+  This exercise introduces students to making the right choice between `const`, `let`, and `var` (never!). It's designed to reinforce the concepts we just covered through practical application.
+  
+  Let's break down each requirement:
+  
+  1. **User's name (can change)**: This uses `let` because a user might update their display name. We want to signal that reassignment is expected.
+  
+  2. **Current streak count (can change)**: Another `let` use case. The streak will increment as the user maintains their habit, so we need the ability to reassign.
+  
+  3. **Maximum habits allowed (constant)**: Perfect for `const`. This is a configuration value that shouldn't change during runtime. Using ALL_CAPS naming convention signals it's a true constant.
+  
+  4. **Habit object**: This is where students often get confused. We use `const` even though the object's properties will change. Remember: `const` prevents reassignment of the variable reference, not modification of the object's contents.
+  
+  The solution demonstrates mutation to reinforce the concept. Notice how we can change `currentStreak` (it's `let`) and `habit.streak` (modifying a property), but we cannot reassign `habit` itself (it's `const`).
+  
+  Common mistakes students make:
+  - Using `let` for everything "just to be safe"
+  - Using `const` for the habit object and thinking they can't modify its properties
+  - Still using `var` out of habit from old tutorials
+  
+  The tests verify not just that variables exist, but that they have the correct types and structure. This helps students catch errors early and understand the importance of proper variable declaration.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
