@@ -4,7 +4,9 @@ import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideT
 <SlideLayout.Full>
 ## Overview: Semantic HTML Structure
 
-Before building the habit card, plan your HTML foundation:
+<Image src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/HTML+Basics+-+visual+selection+(1).svg"
+    height="calc(100% - 6rem)"
+/>
 <Notes>
 Semantic HTML is about choosing elements based on their meaning, not their appearance. This approach creates more maintainable, accessible, and SEO-friendly websites. Before writing any HTML, take time to plan your structure thoughtfully.
 
@@ -19,35 +21,64 @@ The habit card example we'll build demonstrates these principles in practice. Ev
 <SlideLayout.Full>
 ## Semantic Elements
 
-- Use meaningful HTML elements that describe content purpose
-- `<article>` for self-contained content like habit cards
-- `<time>` elements for dates with proper datetime attributes
-- Proper heading hierarchy (h1, h2, h3) for screen readers
+
+```html
+<!-- Poor: Using divs for everything -->
+<div class="card">
+  <div class="big-text">Daily Exercise</div>
+  <div class="date">2024-03-15</div>
+  <div>Completed 5 times this week</div>
+</div>
+<!-- Better: Meaningful elements -->
+<article class="habit-card">
+  <h2>Daily Exercise</h2>
+  <time datetime="2024-03-15">March 15, 2024</time>
+  <p>Completed 5 times this week</p>
+</article>
+```
+
+
 <Notes>
-Semantic elements are HTML's built-in vocabulary for describing content meaning. Unlike generic divs and spans, semantic elements tell browsers, developers, and assistive technologies what content represents.
+Look at these two code examples side by side. The first uses generic divs for everything - it's like writing an entire essay using only the word "thing". The browser has no idea what any of this content means. Is "Daily Exercise" a title? A label? Just some text? The date is just another string of characters.
 
-The article element is perfect for self-contained content that makes sense independently - blog posts, news articles, or in our case, habit cards. Each habit card could theoretically be syndicated or displayed elsewhere and still make sense.
+Now look at the semantic version. The article element immediately tells us this is a self-contained piece of content. The h2 establishes "Daily Exercise" as a heading in the document hierarchy. The time element with its datetime attribute provides machine-readable date information - screen readers can announce "March 15, 2024" properly, and search engines understand this is temporal data.
 
-The time element might seem unnecessary when you can just use a span, but it provides machine-readable date information. Screen readers can announce dates properly, and search engines can understand temporal information. Always include the datetime attribute with ISO format dates.
+This isn't about being pedantic - it's about building a web that works for everyone. When a screen reader user navigates your page, they can jump between articles, scan headings, and understand the structure. Search engines can better index your content. Future developers (including yourself) can understand the intent behind each element.
 
-Heading hierarchy is crucial for accessibility. Screen reader users often navigate by headings, building a mental model of the page structure. Never skip levels (h1 to h3) or use headings for visual styling - use them to create logical document outlines. CSS can make any element look like a heading, but only actual heading elements provide semantic structure.
+The visual appearance stays the same - CSS handles that. But the underlying structure now has meaning, making your HTML a proper document rather than a collection of styled divs.
 </Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
 ## Accessibility First
 
-- Include proper `alt` attributes for images
-- Use `<label>` elements associated with form controls
-- Ensure interactive elements are keyboard accessible
-- Consider ARIA labels for dynamic content
+```html
+<!-- Poor: No labels, no alt text -->
+<img src="habit-icon.png">
+<input type="text" placeholder="Habit name">
+<div onclick="saveHabit()">Save</div>`
+
+<!-- Better: Proper labels and semantics -->
+<img src="habit-icon.png" alt="Exercise habit icon">
+<label for="habit-name">Habit Name:</label>
+<input type="text" id="habit-name" name="habit-name">
+<button type="submit">Save Habit</button>
+
+<!-- For complex interactions -->
+<div role="button" 
+     tabindex="0" 
+     aria-label="Mark habit as complete"
+     onkeypress="if(event.key === 'Enter') markComplete()">
+</div>
+```
+
 <Notes>
-Accessibility isn't an afterthought - it's a fundamental requirement for professional web development. When we build with accessibility in mind from the start, we create better experiences for everyone, not just users with disabilities.
+The difference between these two examples is stark. The first version creates multiple barriers: the image is invisible to screen readers, the input field has no accessible name (placeholders disappear when typing and aren't reliably announced), and the clickable div is completely inaccessible to keyboard users.
 
-Alt attributes on images are the most basic accessibility feature, yet they're often overlooked. Good alt text describes the image's purpose, not just its contents. For a habit icon, "Running shoe icon" is less helpful than "Exercise habit icon". If an image is purely decorative, use an empty alt attribute (alt="") to tell screen readers to skip it.
+The accessible version fixes each issue systematically. The alt text "Exercise habit icon" describes the image's purpose, not just its appearance. The label element creates a clear relationship with the input - clicking the label focuses the field, and screen readers announce "Habit Name" when the field receives focus. Using a real button element gives us keyboard accessibility, focus states, and proper semantics for free.
 
-Form accessibility goes beyond labels. Every form control needs a label that clearly describes its purpose. The for attribute creates a programmatic connection - clicking the label focuses the input. For complex forms, fieldset and legend elements group related inputs. Error messages should be associated with their inputs using aria-describedby.
+The ARIA example at the bottom shows how to make custom interactive elements accessible when semantic HTML isn't enough. The role="button" tells assistive technology this div acts as a button. The tabindex="0" makes it keyboard focusable. The aria-label provides an accessible name. The keypress handler ensures it works with keyboard navigation, not just mouse clicks.
 
-Keyboard accessibility ensures users who can't or don't use mice can still use your site. All interactive elements should be reachable with Tab and activated with Enter or Space. Custom controls need tabindex and appropriate ARIA roles. Testing with just your keyboard reveals accessibility issues quickly.
+Remember: semantic HTML elements like button, input, and label include accessibility features by default. Only reach for ARIA when you truly need custom behavior that semantic elements can't provide. The best accessibility is often the simplest - use the right element for the job.
 </Notes>
 </SlideLayout.Full>

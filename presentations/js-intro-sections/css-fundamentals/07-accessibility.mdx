@@ -1,9 +1,9 @@
-import { SlideLayout, Notes } from 'spectacle'
+import { SlideLayout, Notes, Image} from 'spectacle'
 
 <SlideLayout.Full>
 ## Accessibility and Usability
 
-Making the web work for everyone
+<Image height="calc(100% - 6em)" src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/Overview_+CSS+Design+Principles+-+visual+selection+(3).svg" />
 <Notes>
 Accessibility is about ensuring that everyone, regardless of ability, can use and understand your website. This includes people with visual, auditory, motor, or cognitive disabilities, as well as those using assistive technologies like screen readers or keyboard-only navigation.
 
@@ -16,10 +16,7 @@ Accessibility is also increasingly a legal requirement. Many countries have laws
 <SlideLayout.Full>
 ## Color Contrast
 
-- Text should have at least 4.5:1 contrast ratio with background (AA standard)
-- Large text (18pt+) needs 3:1 contrast ratio
-- Use tools like WebAIM contrast checker to verify
-- Don't rely on color alone to convey information
+<Image height="calc(100% - 6em)" src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/Overview_+CSS+Design+Principles+-+visual+selection+(2).svg" />
 <Notes>
 Color contrast is one of the most common accessibility failures on the web. Low contrast text might look stylish, but it's unreadable for many users. The WCAG guidelines provide specific ratios based on extensive research.
 
@@ -31,11 +28,7 @@ The "don't rely on color alone" principle is crucial. If you show errors in red 
 
 <SlideLayout.Full>
 ## Keyboard Navigation
-
-- All interactive elements must be keyboard accessible
-- Visible focus indicators (outline, border, or background change)
-- Logical tab order that follows visual flow
-- Skip links for repetitive navigation
+ <Image height="calc(100% - 6rem)" src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/Overview_+CSS+Design+Principles+-+visual+selection+(5).svg" />
 <Notes>
 Keyboard navigation is how many users interact with the web - not just those with motor disabilities, but also power users who find it faster than reaching for the mouse. Every interactive element must be reachable and usable with just the keyboard.
 
@@ -48,11 +41,7 @@ Tab order should follow the visual flow of your page. CSS positioning can create
 <SlideLayout.Full>
 ## Screen Reader Support
 
-- Use semantic HTML elements
-- Proper heading hierarchy (h1 → h2 → h3)
-- Alt text for images that convey information
-- ARIA labels for icon-only buttons
-- Hide decorative elements with `aria-hidden="true"`
+<Image height="calc(100% - 6rem)" src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/Overview_+CSS+Design+Principles+-+visual+selection+(6).svg" />
 <Notes>
 Screen readers convert visual interfaces into audio, reading content aloud for users who are blind or have low vision. Your CSS styling doesn't directly affect screen readers, but your HTML structure and ARIA attributes do.
 
@@ -65,9 +54,7 @@ ARIA (Accessible Rich Internet Applications) attributes bridge gaps when semanti
 <SlideLayout.Full>
 ## Motion and Animation
 
-- Respect `prefers-reduced-motion` for users with vestibular disorders
-- Provide pause/stop controls for auto-playing content
-- Avoid flashing content (can trigger seizures)
+<Image height="calc(100% - 6rem)" src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/Overview_+CSS+Design+Principles+-+visual+selection+(8).svg" />
 <Notes>
 Motion can enhance user experience, but for some users, it causes problems. People with vestibular disorders can experience nausea or dizziness from parallax scrolling or large animations. The prefers-reduced-motion media query lets users indicate they want minimal animation.
 
@@ -80,10 +67,7 @@ Flashing content is particularly dangerous as it can trigger photosensitive seiz
 <SlideLayout.Full>
 ## Form Accessibility
 
-- Labels associated with inputs using `for` attribute
-- Error messages linked to fields with `aria-describedby`
-- Required fields marked with `required` attribute
-- Clear, descriptive error messages
+<Image height="calc(100% - 6rem)" src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/Overview_+CSS+Design+Principles+-+visual+selection+(9).svg" />
 <Notes>
 Forms are often the most complex interactive elements on a page, and they're where accessibility issues compound. Every form control needs a label that clearly describes its purpose. The label should be programmatically associated using the for attribute, not just visually nearby.
 

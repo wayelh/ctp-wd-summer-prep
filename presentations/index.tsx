@@ -49,11 +49,18 @@ const presentations: Record<string, Record<string, PresentationConfig>> = {
       title: 'HTML Basics',
       component: lazy(() => import('./js-intro-sections/html-basics.mdx')),
       audio: {
-        url: 'https://example.com/audio/html-basics.mp3',
-        slideTimings: [0, 22, 53, 78, 111, 151, 199, 261, 305, 333, 359, 373, 376, 383, 395]
+        url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/html-basics.mp3',
+        slideTimings: [0, 38, 120, 210, 292, 356, 429, 492, 514],
+        transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/html-basics.vtt'
       }
     },
-    'css-fundamentals': { title: 'CSS Fundamentals', component: lazy(() => import('./js-intro-sections/css-fundamentals.mdx')) },
+    'css-fundamentals': { title: 'CSS Fundamentals', component: lazy(() => import('./js-intro-sections/css-fundamentals.mdx')),
+      audio: {
+        url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/css-fundementals.mp3',
+        slideTimings: [0, 32, 120, 191, 273, 350, 423, 508, 562, 616, 672, 726, 780, 836, 852, 869, 952],
+        transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/css-fundementals.vtt'
+      }
+    },
     'introduction': { title: 'Introduction to JavaScript', component: lazy(() => import('./js-intro-sections/introduction.mdx')) },
     'variables-and-types': { title: 'Variables and Types', component: lazy(() => import('./js-intro-sections/variables-and-types.mdx')) },
     'functions': { title: 'Functions', component: lazy(() => import('./js-intro-sections/functions.mdx')) },
