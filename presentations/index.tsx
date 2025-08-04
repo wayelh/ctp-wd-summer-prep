@@ -66,7 +66,7 @@ const presentations: Record<string, Record<string, PresentationConfig>> = {
       title: 'Variables and Types',
       component: lazy(() => import('./js-intro-sections/variables-and-types.mdx')),
       audio: {
-        url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/variables-and-types.mp3',
+        url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/variables-and-types.mp4',
         slideTimings: [0, 23, 73, 145, 211, 274, 358, 380, 456, 522, 620, 720, 814, 910, 980, 1066, 1124, 1162, 1236, 1306, 1376, 1448],
         transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/variables-and-types_otter_ai.vtt'
       }
