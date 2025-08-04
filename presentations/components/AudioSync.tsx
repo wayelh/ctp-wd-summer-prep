@@ -338,7 +338,7 @@ export function AudioSync({ audioUrl, slideTimings, onPlayStateChange, transcrip
         <div style={{
           position: 'relative',
           flex: 1,
-          height: '3.5rem',
+          height: '8rem',
           overflow: 'hidden',
           borderRadius: '8px',
           background: 'black'
@@ -346,6 +346,7 @@ export function AudioSync({ audioUrl, slideTimings, onPlayStateChange, transcrip
         <video
           ref={videoRef} 
           src={audioUrl}
+          controls
           crossOrigin="anonymous"
           style={{
             width: '100%',
