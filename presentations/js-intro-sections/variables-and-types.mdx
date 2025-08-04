@@ -328,6 +328,28 @@ describe('Variable Scoping', () => {
     
   </Tests>
 </CodeDisplay>
+<Notes>
+  This exercise demonstrates one of the most important differences between `var` and `let`/`const`: block scoping. It's a perfect example of why `var` can lead to bugs in real applications.
+  
+  The problem scenario is common in real code: you have a variable tracking status, and inside a conditional block, you want to temporarily use a different value. With `var`, this creates a serious bug because both declarations refer to the same variable!
+  
+  Walk through what happens with `var`:
+  1. `var habitStatus = "incomplete"` creates a function-scoped variable
+  2. Inside the if block, `var habitStatus = "complete"` doesn't create a new variable - it reassigns the existing one
+  3. After the block, the original value is lost forever
+  
+  The solution using `let` demonstrates proper block scoping:
+  1. `let habitStatus = "incomplete"` creates a block-scoped variable
+  2. Inside the if block, `let habitStatus = "complete"` creates a NEW variable that shadows the outer one
+  3. After the block, the inner variable disappears and we're back to the outer scope
+  
+  This pattern is crucial for loops, conditionals, and any situation where you need temporary variables. Common real-world scenarios:
+  - Temporary calculations inside conditionals
+  - Loop counters that shouldn't leak out
+  - Creating isolated scopes for specific operations
+  
+  The test verifies that students understand the fix - if `habitStatus` is still "complete" outside the block, they haven't properly fixed the scoping issue.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -663,6 +685,34 @@ describe('Habit Points Calculation', () => {
     
   </Tests>
 </CodeDisplay>
+<Notes>
+  This exercise addresses one of the most common bugs in JavaScript applications: string concatenation when you meant to do addition. It's especially relevant for the habit tracker since form inputs always return strings.
+  
+  The problem is deceptively simple but catches many developers off guard. When JavaScript sees the `+` operator with a string on either side, it chooses concatenation over addition. So "42" + 8 becomes "428" instead of 50.
+  
+  The exercise provides two solutions:
+  
+  **Solution 1: Number() constructor**
+  - Converts the entire string to a number
+  - Returns NaN if the string contains non-numeric characters
+  - Good for when you need strict conversion
+  
+  **Solution 2: parseInt() function**
+  - Parses integers from the beginning of a string
+  - Stops at the first non-digit character
+  - Always specify the radix (base 10) as the second parameter
+  - More forgiving but can hide errors
+  
+  The key difference: `parseInt("42abc", 10)` returns 42, while `Number("42abc")` returns NaN. This makes parseInt useful for messy user input but dangerous if you need validation.
+  
+  Common student mistakes:
+  - Forgetting that ALL form inputs are strings
+  - Using parseInt without the radix parameter
+  - Not checking for NaN after conversion
+  - Using the unary `+` operator (less readable: `+currentStreakInput`)
+  
+  The test helps students recognize both the problem (string concatenation) and verify their solution works correctly.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>

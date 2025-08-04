@@ -492,6 +492,34 @@ meditation.complete(20); // Complete with 20 minutes
     
   </File>
 </CodeDisplay>
+<Notes>
+  This exercise builds on the previous one by introducing constructor functions - the traditional way to create objects with shared behavior before ES6 classes. Understanding constructor functions is crucial because they're still widely used and help explain how classes work under the hood.
+  
+  **Key concepts to reinforce:**
+  
+  1. **Constructor Functions**: Regular functions that create and initialize objects when called with `new`. By convention, they start with capital letters.
+  
+  2. **The 'new' keyword**: Does four things:
+     - Creates a new empty object
+     - Sets the prototype of that object to the constructor's prototype
+     - Calls the constructor with 'this' bound to the new object
+     - Returns the new object (unless the constructor explicitly returns something else)
+  
+  3. **Prototype Methods**: Methods added to `Habit.prototype` are shared by all instances, saving memory compared to defining methods inside the constructor.
+  
+  4. **Inheritance Pattern**: The traditional way involves:
+     - Calling the parent constructor from the child: `Habit.call(this, name, category, points)`
+     - Setting up the prototype chain: `TimedHabit.prototype = Object.create(Habit.prototype)`
+     - Fixing the constructor property: `TimedHabit.prototype.constructor = TimedHabit`
+  
+  **Common mistakes to watch for:**
+  - Forgetting to use `new` when calling constructors
+  - Not properly setting up the prototype chain for inheritance
+  - Defining methods inside the constructor instead of on the prototype
+  - Forgetting to call the parent constructor with the correct context
+  
+  This exercise prepares students to understand ES6 classes by showing what's happening behind the syntactic sugar. When they see `class` and `extends`, they'll understand it's just a cleaner syntax for the same prototype-based inheritance.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>

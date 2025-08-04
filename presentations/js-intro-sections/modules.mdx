@@ -559,6 +559,36 @@ import { calculateStreak } from './services/analytics.js';
     
   </File>
 </CodeDisplay>
+<Notes>
+  This is the capstone exercise for the modules section - building a complete modular habit tracking system. This exercise demonstrates how real applications are structured and gives students practice with the architecture patterns they'll encounter in professional development.
+  
+  **Module breakdown and rationale:**
+  
+  1. **models/habit.js** - Data models define the structure of your application's data. This module might contain the Habit class or factory function that creates habit objects.
+  
+  2. **services/analytics.js** - Business logic separated from data models. Functions like calculateStreak and getPoints belong here because they perform calculations on data.
+  
+  3. **services/storage.js** - Persistence layer abstraction. This isolates all storage operations, making it easy to switch from localStorage to a database later.
+  
+  4. **utils/validators.js** - Reusable validation functions. These can be used across different modules to ensure data integrity.
+  
+  5. **index.js** - The orchestrator that brings everything together. This is where you import from other modules and expose your application's public API.
+  
+  **Key architectural principles:**
+  
+  - **Separation of Concerns**: Each module has a specific, focused responsibility
+  - **Dependency Direction**: Utils and models don't depend on services; services don't depend on the main module
+  - **Testability**: Each module can be tested in isolation
+  - **Reusability**: Well-designed modules can be reused in other projects
+  
+  **Common patterns to discuss:**
+  
+  - **Barrel exports**: index.js can re-export from multiple modules for convenience
+  - **Configuration modules**: Separate modules for constants and configuration
+  - **Error handling**: Centralized error types in their own module
+  
+  This exercise prepares students for real-world codebases where proper module organization is crucial for maintainability.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>

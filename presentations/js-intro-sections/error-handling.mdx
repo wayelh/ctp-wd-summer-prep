@@ -700,6 +700,37 @@ describe('Custom Error Classes', () => {
     
   </Tests>
 </CodeDisplay>
+<Notes>
+  This exercise teaches students how to create a hierarchical error system for their applications. It's a practical skill that separates junior developers from more experienced ones.
+  
+  **Why custom error classes?**
+  
+  Generic Error objects don't provide enough context. In a real application, different types of errors need different handling. By creating specific error classes, we can:
+  - Catch and handle specific error types differently
+  - Add contextual properties (like which field failed validation)
+  - Provide better debugging information
+  - Make our error handling more maintainable
+  
+  **The hierarchy pattern:**
+  1. **HabitError** - Base class for all habit-related errors
+  2. **HabitValidationError** - For invalid user input (includes which field failed)
+  3. **HabitStorageError** - For database/localStorage issues (includes operation type)
+  4. **HabitSyncError** - For network/API failures (includes status codes)
+  
+  **Key implementation details:**
+  - Always call `super(message)` to initialize the parent Error class
+  - Set a descriptive `name` property for easier debugging
+  - Add contextual properties specific to each error type
+  - Extend from your base error class for consistency
+  
+  **Common student mistakes:**
+  - Forgetting to call `super()` in the constructor
+  - Not setting the `name` property
+  - Creating too many error classes (keep it focused)
+  - Not adding useful contextual properties
+  
+  The tests verify that each error class has the correct inheritance chain and includes the expected properties. This ensures students understand both the syntax and the purpose of custom errors.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
