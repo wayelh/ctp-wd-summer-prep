@@ -1351,6 +1351,58 @@ for (let i = 0; i <= array.length; i++) {
   console.log(array[i]); // undefined on last iteration
 }
 ```
+
+<Notes>
+Off-by-one errors are among the most common programming mistakes, especially when working with loops and arrays. They're so common there's even a famous quote: "There are only two hard things in Computer Science: cache invalidation and off-by-one errors."
+
+**Understanding array indexing:**
+- Arrays start at index 0 (zero-based indexing)
+- An array with length 5 has indexes 0, 1, 2, 3, 4
+- The last valid index is always `length - 1`
+
+**Common off-by-one scenarios:**
+
+**1. Missing the last element (`i < array.length - 1`):**
+This happens when students think they need to subtract 1 from the length. The loop stops too early and misses the last element.
+
+**2. Going past the array end (`i <= array.length`):**
+Using `<=` instead of `<` causes the loop to run one extra time, trying to access `array[array.length]` which is undefined.
+
+**Habit tracker examples of these errors:**
+```javascript
+const habits = ["Exercise", "Read", "Meditate"]; // length = 3, indexes 0, 1, 2
+
+// ❌ Misses "Meditate" 
+for (let i = 0; i < habits.length - 1; i++) {
+  console.log(habits[i]); // Only logs "Exercise", "Read"
+}
+
+// ❌ Logs undefined at the end
+for (let i = 0; i <= habits.length; i++) {
+  console.log(habits[i]); // Logs "Exercise", "Read", "Meditate", undefined
+}
+```
+
+**Memory aids:**
+1. **Use `<` not `<=`** with `.length`
+2. **Remember: length is one more than the highest index**
+3. **When in doubt, use for...of loops** - they can't have off-by-one errors!
+
+**Debugging tips:**
+- Add console.log(i, array[i]) to see what's happening
+- Check if you're getting undefined values (sign you went too far)
+- Check if you're missing expected elements (sign you stopped too early)
+
+**Why for...of is safer:**
+```javascript
+// No chance of off-by-one errors!
+for (const habit of habits) {
+  console.log(habit);
+}
+```
+
+This is another great argument for using for...of loops when you don't need the index!
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -1374,6 +1426,73 @@ if (habit.streak > 0) {
 ```
 
 Remember: 0, "", null, undefined, false are all falsy!
+
+<Notes>
+Truthy and falsy values are one of JavaScript's most confusing features for beginners. Understanding this concept is crucial for writing correct conditional logic.
+
+**JavaScript's falsy values (there are only 6):**
+1. `false` - the boolean false
+2. `0` - the number zero
+3. `""` - empty string
+4. `null` - intentional absence of value
+5. `undefined` - unassigned or non-existent value
+6. `NaN` - "Not a Number"
+
+**Everything else is truthy!** Including:
+- `"0"` (string containing zero)
+- `[]` (empty array)
+- `{}` (empty object)
+- `"false"` (string containing "false")
+
+**The habit tracker problem:**
+In our example, if a habit has a streak of 0 days, the condition `if (habit.streak)` evaluates to false because 0 is falsy. This means we won't show "Has streak" even though the streak property exists and has a valid value!
+
+**Common scenarios where this trips up developers:**
+
+**1. Checking if a number exists:**
+```javascript
+const score = 0; // Valid score, but falsy
+if (score) {
+  console.log("User has a score"); // Never runs!
+}
+
+// Better approaches:
+if (score !== undefined) { /* runs */ }
+if (typeof score === 'number') { /* runs */ }
+if (score >= 0) { /* runs */ }
+```
+
+**2. Checking if a string has content:**
+```javascript
+const userInput = ""; // Empty but might be intentional
+if (userInput) {
+  processInput(userInput); // Never runs
+}
+
+// Better:
+if (userInput !== undefined) { /* check if provided */ }
+if (userInput.length > 0) { /* check if not empty */ }
+```
+
+**3. API responses with meaningful zeros:**
+```javascript
+const apiResponse = { completedHabits: 0 }; // Meaningful data!
+if (apiResponse.completedHabits) {
+  showProgress(); // Never runs, even though 0 is valid data
+}
+
+// Better:
+if (apiResponse.completedHabits !== undefined) { /* runs */ }
+```
+
+**Best practices:**
+1. **Be explicit** about what you're checking for
+2. **Use strict comparisons** (=== and !==) when possible
+3. **Consider whether 0 or empty string are valid values** in your context
+4. **Use specific checks** like `> 0` or `!== undefined` instead of relying on truthiness
+
+This is why many style guides recommend being explicit rather than relying on truthy/falsy coercion!
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -1393,6 +1512,59 @@ for (let i = 0; i < len; i++) {
 ```
 
 Most important for very large arrays
+
+<Notes>
+This performance tip is a classic optimization that's worth understanding, though modern JavaScript engines have made it less critical than it used to be.
+
+**The traditional concern:**
+In older JavaScript engines, accessing `array.length` was slower because it required a property lookup on the array object. When done thousands of times in a loop, this could add up to noticeable performance impact.
+
+**Modern reality:**
+Today's JavaScript engines (V8, SpiderMonkey, JavaScriptCore) are highly optimized and can usually optimize away the repeated length access. However, the pattern is still worth knowing because:
+
+1. **It's still technically faster** in some scenarios
+2. **It's a common pattern** you'll see in production code
+3. **It shows performance awareness** in code reviews
+4. **It's essential when length might change** during iteration
+
+**When this optimization matters most:**
+- **Very large arrays** (10,000+ elements)
+- **Performance-critical code** (real-time applications, games)
+- **Arrays that might grow during iteration** (though this is dangerous anyway)
+- **Older JavaScript environments** or embedded systems
+
+**Habit tracker context:**
+```javascript
+// For typical habit tracker data (< 100 habits), this won't matter much
+const userHabits = [...]; // Maybe 10-50 habits
+for (let i = 0; i < userHabits.length; i++) {
+  processHabit(userHabits[i]);
+}
+
+// But for processing large datasets, it could help
+const allUserData = [...]; // Maybe 100,000+ records
+const len = allUserData.length; // Cache it!
+for (let i = 0; i < len; i++) {
+  analyzeUserData(allUserData[i]);
+}
+```
+
+**Important caveat:**
+If you're modifying the array during iteration (adding/removing items), caching the length can cause bugs because the cached value becomes stale.
+
+**Alternative approaches:**
+```javascript
+// for...of doesn't have this concern at all
+for (const habit of habits) {
+  processHabit(habit);
+}
+
+// Array methods are usually optimized internally
+habits.forEach(processHabit);
+```
+
+**Bottom line:** Don't premature optimize, but be aware of this pattern. Profile your actual performance bottlenecks first!
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -1415,6 +1587,80 @@ const names = habits.map(h => h.name);
 // For filtering (functional)
 const active = habits.filter(h => h.isActive);
 ```
+
+<Notes>
+Choosing the right iteration method is more about code clarity and maintainability than performance, but there are some performance considerations worth understanding.
+
+**Performance hierarchy (generally):**
+
+1. **Traditional for loop** - Usually fastest for raw performance
+2. **for...of loop** - Very close to traditional for loop performance
+3. **Array methods** (map, filter, forEach) - Slightly slower due to function call overhead
+4. **for...in loop** - Slowest, avoid for arrays
+
+**But performance isn't the only consideration!**
+
+**Readability and maintainability often matter more:**
+
+**for...of - Best for simple iteration:**
+```javascript
+// Clear, readable, safe from off-by-one errors
+for (const habit of habits) {
+  if (habit.completed) {
+    showSuccessMessage(habit);
+  }
+}
+```
+
+**Traditional for loop - When you need index control:**
+```javascript
+// When position matters
+for (let i = 0; i < habits.length; i++) {
+  console.log(`${i + 1}. ${habits[i].name}`);
+}
+
+// When you need to iterate backwards
+for (let i = habits.length - 1; i >= 0; i--) {
+  processHabit(habits[i]);
+}
+```
+
+**Array methods - For functional transformations:**
+```javascript
+// Creating new data structures
+const habitNames = habits.map(h => h.name);
+const activeHabits = habits.filter(h => h.isActive);
+const totalPoints = habits.reduce((sum, h) => sum + h.points, 0);
+```
+
+**Real-world decision making:**
+
+For a habit tracker app with typical data sizes (< 1000 items), the performance difference is negligible. Choose based on:
+
+1. **Readability** - What's clearest to understand?
+2. **Purpose** - Are you transforming data or just iterating?
+3. **Team conventions** - What does your team prefer?
+4. **Error proneness** - for...of is safer than traditional for loops
+
+**When performance actually matters:**
+- Processing huge datasets (10,000+ items)
+- Real-time applications (games, animations)
+- Mobile devices with limited processing power
+- Code that runs very frequently (inside other loops)
+
+**Modern best practice:**
+Start with the most readable approach. Only optimize if profiling shows it's actually a bottleneck.
+
+**Habit tracker example:**
+```javascript
+// For 50 habits, all of these are fine:
+habits.forEach(processHabit);           // Functional
+for (const habit of habits) { ... }     // Iterative
+for (let i = 0; i < habits.length; i++) // Traditional
+```
+
+The difference in performance will be microseconds - not worth sacrificing readability!
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -1437,6 +1683,91 @@ for (const habit of habits) {
   }
 }
 ```
+
+<Notes>
+Breaking early is one of the most impactful performance optimizations you can make when searching through data. It's also a great example of algorithmic thinking.
+
+**The performance impact:**
+Without breaking early, you check EVERY item even after finding what you're looking for. With 1000 habits, if the target is the 2nd item, you still check 998 more items unnecessarily!
+
+**Real-world impact in a habit tracker:**
+
+```javascript
+// Searching for "Exercise" in a list of 100 habits
+const habits = [
+  { name: "Exercise", streak: 15 },
+  { name: "Read", streak: 8 },
+  // ... 98 more habits
+];
+
+// ❌ Always checks all 100 habits
+let found = null;
+for (const habit of habits) {
+  if (habit.name === "Exercise") {
+    found = habit; // Found it, but keeps going!
+  }
+}
+
+// ✅ Stops after checking just 1 habit
+for (const habit of habits) {
+  if (habit.name === "Exercise") {
+    found = habit;
+    break; // Done!
+  }
+}
+```
+
+**Best case vs worst case:**
+- **Best case:** Target is first item - 1 check vs 100 checks (100x faster!)
+- **Average case:** Target is in middle - 50 checks vs 100 checks (2x faster)
+- **Worst case:** Target is last item - no difference (but no penalty either)
+
+**When you can't use break:**
+Some built-in array methods don't support early termination:
+
+```javascript
+// ❌ Can't break early with forEach
+habits.forEach(habit => {
+  if (habit.name === searchName) {
+    found = habit;
+    // break; // This doesn't work in forEach!
+  }
+});
+
+// ✅ Use find() instead - it breaks early automatically!
+const found = habits.find(habit => habit.name === searchName);
+```
+
+**Other early exit strategies:**
+```javascript
+// Using return in functions
+function findHabit(habits, name) {
+  for (const habit of habits) {
+    if (habit.name === name) {
+      return habit; // Exits function and loop
+    }
+  }
+  return null; // Not found
+}
+
+// Multiple conditions
+for (const habit of habits) {
+  if (habit.completed && habit.category === "health") {
+    processHealthHabit(habit);
+    break; // Found what we needed
+  }
+}
+```
+
+**Array method alternatives:**
+- `find()` - finds first match, stops early
+- `some()` - checks if any match, stops early  
+- `every()` - checks if all match, stops on first false
+
+**Bottom line:** When searching for a single item, always break early. It's free performance that can make a huge difference with large datasets!
+
+This optimization applies to many other contexts too - database queries, API calls, file processing, etc.
+</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -1450,4 +1781,51 @@ for (const habit of habits) {
 
 ### Bridge to Objects & Arrays
 You can make decisions and repeat tasks. Now let's learn about the **data structures** that make JavaScript powerful!
+
+<Notes>
+This concluding slide ties together everything we've covered about control flow. Let's reinforce the key concepts:
+
+**1. Decision-making patterns:**
+- **if/else:** Perfect for binary choices and range checking (like streak milestones)
+- **switch:** Ideal for discrete categories (like habit types)
+- **Ternary:** Great for simple conditional assignments (active/inactive status)
+
+**2. Loop selection guide:**
+- **Traditional for:** When you need index control or non-standard iteration
+- **for...of:** When you just need values - cleaner and safer
+- **while:** When iteration count is unknown or condition-driven
+- **Array methods:** Functional approach for data transformation
+
+**3. Common patterns students should remember:**
+- Counting items that meet criteria
+- Accumulating totals
+- Finding maximum/minimum values
+- Building filtered or transformed collections
+- Searching with early exit
+
+**4. Critical debugging skills:**
+- Watch for missing break statements in switch
+- Avoid off-by-one errors in traditional for loops
+- Understand truthy/falsy behavior
+- Use explicit comparisons for clarity
+
+**5. Performance consciousness:**
+- Break early when searching
+- Choose readable code over micro-optimizations
+- Consider array methods for clarity
+- Profile before optimizing
+
+**Bridge to next section:**
+Now that students can make decisions and repeat tasks, they're ready to work with the data structures that hold their information. Objects and arrays are where control flow really shines - processing lists of habits, analyzing user data, and managing complex application state.
+
+The habit tracker examples throughout this lesson have shown glimpses of objects (habit.streak, habit.completed) and arrays (lists of habits, weekly data). The next section will formalize these concepts and show how control flow and data structures work together to build real applications.
+
+**Encourage students to:**
+- Practice identifying which control structure fits each problem
+- Start with readable code, then optimize if needed
+- Think about edge cases and error conditions
+- Connect these concepts to real-world application needs
+
+Control flow is the logic that brings applications to life!
+</Notes>
 </SlideLayout.Full>
