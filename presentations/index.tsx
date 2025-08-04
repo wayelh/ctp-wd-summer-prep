@@ -62,7 +62,15 @@ const presentations: Record<string, Record<string, PresentationConfig>> = {
       }
     },
     'introduction': { title: 'Introduction to JavaScript', component: lazy(() => import('./js-intro-sections/introduction.mdx')) },
-    'variables-and-types': { title: 'Variables and Types', component: lazy(() => import('./js-intro-sections/variables-and-types.mdx')) },
+    'variables-and-types': {
+      title: 'Variables and Types',
+      component: lazy(() => import('./js-intro-sections/variables-and-types.mdx')),
+      audio: {
+        url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/variables-and-types.mp3',
+        slideTimings: [0, 23, 73, 145, 211, 274, 358, 380, 456, 522, 620, 720, 814, 910, 980, 1066, 1124, 1162, 1236, 1306, 1376, 1448],
+        transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/variables-and-types_otter_ai.vtt'
+      }
+    },
     'functions': { title: 'Functions', component: lazy(() => import('./js-intro-sections/functions.mdx')) },
     'control-flow': { title: 'Control Flow', component: lazy(() => import('./js-intro-sections/control-flow.mdx')) },
     'objects-and-arrays': { title: 'Objects and Arrays', component: lazy(() => import('./js-intro-sections/objects-and-arrays.mdx')) },
