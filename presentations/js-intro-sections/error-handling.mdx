@@ -700,28 +700,6 @@ describe('Custom Error Classes', () => {
     
   </Tests>
 </CodeDisplay>
-
-<Notes>
-This exercise puts everything together - creating a complete error class hierarchy for our habit tracker application. Let's walk through the learning objectives and implementation details.
-
-**Exercise Structure**: Students start with the base HabitError class and need to implement three specific error types. This teaches inheritance patterns and the importance of structured error handling.
-
-**Base HabitError class**: Provides common functionality for all habit-related errors. The explicit `this.name = 'HabitError'` setting ensures proper error identification. All habit errors inherit from this base, making it easy to catch habit-specific errors with `instanceof HabitError`.
-
-**HabitValidationError**: Includes a 'field' property to identify which data field caused the validation failure. This enables targeted UI feedback - highlighting specific form fields and showing relevant error messages. Usage: `new HabitValidationError('Name is required', 'name')`.
-
-**HabitStorageError**: Includes an 'operation' property to identify what storage operation failed (save, load, delete, etc.). This helps with debugging and implementing operation-specific recovery strategies. Usage: `new HabitStorageError('Database connection failed', 'save')`.
-
-**HabitSyncError**: Includes a 'statusCode' property for HTTP status codes when syncing with remote services. This enables different handling for different types of network failures. Usage: `new HabitSyncError('Server unavailable', 503)`.
-
-**Teaching Points**:
-1. Each error type serves a specific purpose in the application architecture
-2. Additional properties provide context for both debugging and user experience
-3. The inheritance hierarchy allows both specific and general error handling
-4. Tests demonstrate how to verify error properties and behavior
-
-This pattern scales well - you can add new error types (like HabitPermissionError or HabitQuotaError) without changing existing code.
-</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -740,43 +718,6 @@ function validateHabit(habitData) {
   }
 }
 ```
-
-<Notes>
-Now we see our custom error classes in action! This validation function demonstrates how to use custom errors effectively to provide structured, actionable feedback.
-
-**Specific field identification**: Each HabitValidationError includes the exact field name that failed validation. This allows the calling code to:
-- Highlight the problematic form field in red
-- Show the error message next to the relevant input
-- Focus the user's attention on what needs to be fixed
-- Track which validations fail most often for UX improvements
-
-**Clear, actionable messages**: Instead of generic "Invalid input" messages, we provide specific guidance:
-- "Habit name is required" tells the user exactly what's missing
-- "Target days must be between 1 and 365" gives clear boundaries
-- Messages are written for end users, not developers
-
-**Consistent error handling**: All validation errors use the same pattern and error type, making the calling code predictable and maintainable.
-
-Best practices demonstrated:
-1. **One error per validation rule** - Don't combine multiple validation failures into one error
-2. **Field-specific errors** - Always include the field name for UI targeting
-3. **User-friendly messages** - Write for your users, not your debugging logs
-4. **Fail fast** - Validate in order of importance, stopping at the first failure
-
-Usage in the UI layer:
-```javascript
-try {
-  validateHabit(formData);
-} catch (error) {
-  if (error instanceof HabitValidationError) {
-    highlightField(error.field);
-    showFieldError(error.field, error.message);
-  }
-}
-```
-
-This approach transforms error handling from a debugging tool into a user experience feature.
-</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -800,36 +741,6 @@ function saveHabit(habitData) {
   }
 }
 ```
-
-<Notes>
-This function demonstrates a complete error handling pattern that combines validation with storage operations, showing how custom error classes enable sophisticated error management.
-
-**Multi-layered error handling**: The function handles errors from multiple sources:
-- Validation errors from the validateHabit() call
-- Storage errors from database operations (though not shown, they would be thrown by the storage layer)
-- Unexpected errors from any other source
-
-**Structured logging**: Each error type gets logged with specific context:
-- Validation errors include the field name for targeted debugging
-- Storage errors include the operation type to identify where failures occur
-- Unknown errors get generic logging to catch unexpected issues
-
-**Error re-throwing**: The `throw error` at the end is crucial - it allows higher-level code to handle the error appropriately for the user interface. This function handles logging and classification, but the UI layer handles user communication.
-
-This pattern creates a clear separation of concerns:
-1. **This function**: Validates data, attempts storage, logs errors with context
-2. **Calling function**: Handles user interface updates, retry logic, fallback behaviors
-
-**Best practices demonstrated**:
-- Log errors with as much context as possible
-- Use error properties (field, operation) to provide specific information
-- Always re-throw unless you're at the final handling layer
-- Handle expected error types explicitly, with fallback for unexpected ones
-
-In a complete implementation, the storage operations would also throw HabitStorageError when database operations fail, maintaining consistency throughout the error handling system.
-
-This layered approach makes debugging much easier - logs tell you exactly what failed and where, while the UI gets appropriate error information for user communication.
-</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -840,22 +751,6 @@ This layered approach makes debugging much easier - logs tell you exactly what f
 - Log errors with context for troubleshooting
 - Implement retry logic for transient failures
 - Show user-friendly messages
-
-<Notes>
-These are the fundamental principles that separate professional error handling from amateur approaches. Let's break down each best practice:
-
-**Use specific error types for different failures**: Instead of throwing generic Error objects, create custom error classes like ValidationError, NetworkError, or StorageError. This allows your error handling code to respond appropriately to different problems. In our habit tracker, a validation error might highlight form fields, while a network error might show a retry button.
-
-**Provide helpful error messages for debugging**: Error messages should include enough context for developers to understand what went wrong and why. "Failed to save habit 'Exercise' to database: connection timeout after 5000ms" is much more helpful than "Database error". Include relevant values, operation names, and specific failure reasons.
-
-**Log errors with context for troubleshooting**: When logging errors, include information about what the user was trying to do, their session state, browser information, and the sequence of events that led to the error. This context is invaluable when debugging production issues.
-
-**Implement retry logic for transient failures**: Many errors are temporary - network timeouts, server overload, or resource locks. Implement automatic retry with exponential backoff for these cases. In our habit tracker, if syncing fails due to a network error, retry after 1 second, then 2 seconds, then 4 seconds before giving up.
-
-**Show user-friendly messages**: Users shouldn't see technical error messages or stack traces. Translate technical errors into language users can understand and act upon. "Your internet connection seems unstable. We've saved your changes locally and will sync them when connection is restored."
-
-These practices work together to create robust applications that handle failures gracefully while providing excellent debugging information for developers.
-</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -865,29 +760,6 @@ These practices work together to create robust applications that handle failures
 - Don't expose sensitive info in error messages
 - Don't retry non-recoverable errors
 - Don't use generic catch-all handlers everywhere
-
-<Notes>
-These anti-patterns are common mistakes that can make debugging nightmarish and create security vulnerabilities. Let's examine each one:
-
-**Don't swallow errors silently**: Never write `try { riskyOperation(); } catch (error) { /* do nothing */ }`. Silent failures are debugging nightmares - something is broken but there's no indication what or where. At minimum, log the error. Better yet, handle it appropriately or let it bubble up to code that can handle it properly.
-
-**Don't expose sensitive info in error messages**: Error messages shown to users should never contain passwords, API keys, internal server paths, database schemas, or other sensitive information. In our habit tracker, don't show "Failed to connect to database at 192.168.1.100:3306 with user 'admin'" - show "Unable to save your data right now" instead.
-
-**Don't retry non-recoverable errors**: Some errors are permanent and retrying them is pointless or harmful. Don't retry authorization failures (the user needs to log in), validation errors (the data is fundamentally wrong), or quota exceeded errors (retrying will just hit the same limit). Only retry transient failures like network timeouts or server overload.
-
-**Don't use generic catch-all handlers everywhere**: While having a final catch-all is good practice, don't rely on them for normal error handling. `catch (error) { showGenericError(); }` everywhere means you're not providing specific, helpful error handling. Use specific error types and handle them appropriately before falling back to generic handlers.
-
-Common example of what NOT to do:
-```javascript
-try {
-  // complex operation
-} catch (error) {
-  // BAD: swallowing error silently
-}
-```
-
-These anti-patterns make applications unreliable, insecure, and difficult to maintain. Following the "do's" while avoiding these "don'ts" leads to robust, professional error handling.
-</Notes>
 </SlideLayout.Full>
 
 <SlideLayout.Full>
@@ -901,26 +773,4 @@ These anti-patterns make applications unreliable, insecure, and difficult to mai
 
 ### Coming Up Next: Advanced Functions
 Closures, higher-order functions, and functional programming!
-
-<Notes>
-Let's wrap up with the most important concepts from this error handling session. These five principles will serve you well in any JavaScript application:
-
-**1. Use try/catch/finally for error-prone operations**: Any operation that could fail - file I/O, network requests, JSON parsing, database operations - should be wrapped in try/catch blocks. Use finally for cleanup operations that must run regardless of success or failure.
-
-**2. Create custom error classes for different scenarios**: Don't rely on generic Error objects. Create specific error types like ValidationError, NetworkError, and StorageError. This enables sophisticated error handling that can respond appropriately to different failure modes.
-
-**3. Make errors recoverable when appropriate**: Not all errors are fatal. Network failures can be retried, validation errors can prompt user corrections, and storage failures might fall back to alternative storage methods. Design your applications to gracefully handle and recover from expected failures.
-
-**4. Log errors with context for debugging**: When errors occur, log comprehensive information including what the user was doing, the application state, and environmental factors. This context is invaluable for reproducing and fixing production issues.
-
-**5. Show user-friendly messages not technical details**: Users don't need to see stack traces or technical error codes. Translate technical errors into understandable language and provide actionable guidance when possible.
-
-In our habit tracker context, this means:
-- Graceful handling of invalid form inputs with specific field feedback
-- Offline functionality when network sync fails
-- Clear user communication about what went wrong and how to fix it
-- Comprehensive logging for production debugging
-
-**Coming up next**: We'll explore advanced functions including closures, higher-order functions, and functional programming patterns. These concepts build on the error handling foundation we've established and are essential for writing sophisticated JavaScript applications.
-</Notes>
 </SlideLayout.Full>
