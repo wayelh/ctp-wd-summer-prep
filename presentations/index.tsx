@@ -77,7 +77,7 @@ const presentations: Record<string, Record<string, PresentationConfig>> = {
       audio: {
         url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/functions.mp4',
         slideTimings: [0, 34, 180, 260, 348, 444, 540, 716, 813, 908, 999, 1080, 1260, 1332, 1428, 1516, ],
-        transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/functions.srt',
+        transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/functions.vtt',
       }
     },
     'control-flow': { title: 'Control Flow', component: lazy(() => import('./js-intro-sections/control-flow.mdx')) },
