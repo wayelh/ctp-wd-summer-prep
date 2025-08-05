@@ -76,11 +76,19 @@ const presentations: Record<string, Record<string, PresentationConfig>> = {
       component: lazy(() => import('./js-intro-sections/functions.mdx')),
       audio: {
         url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/functions.mp4',
-        slideTimings: [0, 34, 88, 180, 260, 348, 444, 540, 716, 813, 908, 999, 1080, 1260, 1332, 1428, 1516, ],
+        slideTimings: [0, 34, 88, 180, 260, 348, 444, 540, 716, 813, 908, 999, 1080, 1260, 1332, 1428, 1516],
         transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/functions.vtt',
       }
     },
-    'control-flow': { title: 'Control Flow', component: lazy(() => import('./js-intro-sections/control-flow.mdx')) },
+    'control-flow': { 
+      title: 'Control Flow', 
+      component: lazy(() => import('./js-intro-sections/control-flow.mdx')),
+      audio: {
+        url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/control-flow.mp4',
+        slideTimings: [40, 112, 168, 230, 296, 376, 418, 450, 536, 610, 680, 788, 846, 922, 986, 1080, 1140, 1172, 1270, 1328, 1408, 1508, 1595, 1672. 1776, ],
+        transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/control-flow.vtt'
+      }
+    },
     'objects-and-arrays': { title: 'Objects and Arrays', component: lazy(() => import('./js-intro-sections/objects-and-arrays.mdx')) },
     'dom-manipulation': { title: 'DOM Manipulation', component: lazy(() => import('./js-intro-sections/dom-manipulation.mdx')) },
     'async-javascript': { title: 'Async JavaScript', component: lazy(() => import('./js-intro-sections/async-javascript.mdx')) },
