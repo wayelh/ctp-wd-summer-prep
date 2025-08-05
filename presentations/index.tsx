@@ -71,7 +71,15 @@ const presentations: Record<string, Record<string, PresentationConfig>> = {
         transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/variables-and-types_otter_ai.vtt'
       }
     },
-    'functions': { title: 'Functions', component: lazy(() => import('./js-intro-sections/functions.mdx')) },
+    'functions': {
+      title: 'Functions',
+      component: lazy(() => import('./js-intro-sections/functions.mdx')),
+      audio: {
+        url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/functions.mp4',
+        slideTimings: [0, 34, 180, 260, 348, 444, 540, 716, 813, 908, 999, 1080, 1260, 1332, 1428, 1516, ],
+        transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/functions.srt',
+      }
+    },
     'control-flow': { title: 'Control Flow', component: lazy(() => import('./js-intro-sections/control-flow.mdx')) },
     'objects-and-arrays': { title: 'Objects and Arrays', component: lazy(() => import('./js-intro-sections/objects-and-arrays.mdx')) },
     'dom-manipulation': { title: 'DOM Manipulation', component: lazy(() => import('./js-intro-sections/dom-manipulation.mdx')) },
