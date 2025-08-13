@@ -4,19 +4,15 @@ import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideT
 <SlideLayout.Full>
 ## Async/Await Rules
 
-**Key concepts to remember:- 
-
-**The `async` keyword:
-- Makes a function return a Promise automatically
+- The `async` keyword:
+  - Makes a function return a Promise automatically
   - Allows use of `await` inside the function
-
 - The `await` keyword:
-- Can only be used inside `async` functions
+  - Can only be used inside `async` functions
   - Pauses execution until the Promise resolves
   - Returns the resolved value (not the Promise)
-
 - Error handling:
-- Use `try/catch` blocks with async/await
+  - Use `try/catch` blocks with async/await
   - Much cleaner than `.catch()` chains
 
 **Real benefit:** Write asynchronous code that reads like synchronous code!

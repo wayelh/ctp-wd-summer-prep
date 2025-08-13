@@ -4,17 +4,13 @@ import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideT
 <SlideLayout.Full>
 ## Understanding Promise Chains vs Async/Await
 
-**Promise Chains** (older style):
 ```javascript
 getData()
   .then(data => processData(data))
   .then(processed => saveData(processed))
   .then(result => console.log('Success:', result))
   .catch(error => console.error('Failed:', error));
-```
-
-**Async/Await** (modern style):
-```javascript
+// VS.
 async function handleData() {
   try {
     const data = await getData();

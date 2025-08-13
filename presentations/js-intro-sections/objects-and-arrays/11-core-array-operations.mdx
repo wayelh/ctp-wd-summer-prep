@@ -4,8 +4,9 @@ import { CodeDisplay, File, Tests } from '../../components/CodeDisplayWithSlideT
 <SlideLayout.Full>
 ## Core Array Operations
 
-Arrays are essential for managing collections of data
+<Image height="calc(100% - 7rem)" src="https://ctp-presentation-media.s3.us-east-2.amazonaws.com/Array+Processing+Pattern+-+visual+selection+(3).svg" />
 <Notes>
+
 Arrays are one of the most fundamental data structures in programming. While objects group related properties together, arrays organize data in ordered lists. This makes them perfect for collections of similar items - like a list of habits, user comments, or daily records.
 
 Think of arrays as containers for multiple values of the same type. In our habit tracker, we might have an array of habit names, an array of completion dates, or an array of daily point totals. Arrays maintain the order of items, which is crucial for time-series data like tracking progress over days.
@@ -13,17 +14,7 @@ Think of arrays as containers for multiple values of the same type. In our habit
 Understanding core array operations is essential because they form the foundation for all data manipulation in JavaScript. Whether you're displaying a list in the UI, calculating statistics, or storing user input, you'll use these four fundamental operations constantly.
 
 Most importantly, arrays in JavaScript are incredibly powerful - they come with built-in methods that make complex data operations simple and readable. Master these basics, and you'll be able to handle any data collection task.
-</Notes>
-</SlideLayout.Full>
 
-<SlideLayout.Full>
-## Four Main Array Operations
-
-- **Access**: Get elements by index
-- **Modify**: Change elements or add/remove items  
-- **Search**: Find elements that match criteria
-- **Transform**: Convert data from one format to another
-<Notes>
 These four operations represent everything you can do with array data. Every complex array manipulation ultimately breaks down into combinations of these basic operations.
 
 **Access** is the foundation - you need to get data before you can work with it. JavaScript arrays use zero-based indexing, so the first element is at index 0. This is a common source of off-by-one errors for beginners. Remember: arrays[0] is the first item, arrays[length-1] is the last.

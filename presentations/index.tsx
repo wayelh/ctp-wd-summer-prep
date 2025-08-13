@@ -85,14 +85,31 @@ const presentations: Record<string, Record<string, PresentationConfig>> = {
       component: lazy(() => import('./js-intro-sections/control-flow.mdx')),
       audio: {
         url: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/control-flow.mp4',
-        slideTimings: [40, 112, 168, 230, 296, 376, 418, 450, 536, 610, 680, 788, 846, 922, 986, 1080, 1140, 1172, 1270, 1328, 1408, 1508, 1595, 1672. 1776, ],
+        slideTimings: [40, 112, 168, 230, 296, 376, 418, 450, 536, 610, 680, 788, 846, 922, 986, 1080, 1140, 1172, 1270, 1328, 1408, 1508, 1595, 1672, 1776],
         transcript: 'https://ctp-presentation-media.s3.us-east-2.amazonaws.com/control-flow.vtt'
       }
     },
-    'objects-and-arrays': { title: 'Objects and Arrays', component: lazy(() => import('./js-intro-sections/objects-and-arrays.mdx')) },
-    'dom-manipulation': { title: 'DOM Manipulation', component: lazy(() => import('./js-intro-sections/dom-manipulation.mdx')) },
-    'async-javascript': { title: 'Async JavaScript', component: lazy(() => import('./js-intro-sections/async-javascript.mdx')) },
-    'error-handling': { title: 'Error Handling', component: lazy(() => import('./js-intro-sections/error-handling.mdx')) },
+    'objects-and-arrays': {
+      title: 'Objects and Arrays',
+      component: lazy(() => import('./js-intro-sections/objects-and-arrays.mdx')),
+      //audio: {
+        //url: '',
+        //slideTimings: [0, 46, 114, 182, 250, 320, 382, 468, 548, 710, 836, 886, 992, 1132, 1189, 1302, 1407, 1528, 1579, 1638, 1697, 1777, 1836, 1922, 2012, 2053, 2101, 2160, ],
+        //transcript: ''
+      //}
+    },
+    'dom-manipulation': {
+      title: 'DOM Manipulation',
+      component: lazy(() => import('./js-intro-sections/dom-manipulation.mdx'))
+    },
+    'async-javascript': {
+      title: 'Async JavaScript',
+      component: lazy(() => import('./js-intro-sections/async-javascript.mdx'))
+    },
+    'error-handling': {
+      title: 'Error Handling',
+      component: lazy(() => import('./js-intro-sections/error-handling.mdx'))
+    },
     'advanced-functions': {
       title: 'Advanced Functions',
       component: lazy(() => import('./js-intro-sections/advanced-functions.mdx')),

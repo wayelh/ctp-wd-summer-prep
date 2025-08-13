@@ -4,11 +4,6 @@ import EfficientDOMUpdatesExercise from '../dom-exercises/efficient-dom-updates.
 <SlideLayout.Full>
 ## DOM Performance: Batch Updates
 
-**1. Batch DOM Updates**
-- Build elements before adding to DOM
-- Use DocumentFragment for multiple additions
-- Update classes instead of individual styles
-
 ```javascript
 // Bad: Multiple DOM additions
 const list = document.getElementById('habits');
@@ -40,11 +35,6 @@ This pattern is essential for any dynamic list - search results, social media fe
 
 <SlideLayout.Full>
 ## DOM Performance: Cache Selections
-
-**2. Cache Selections**
-- Store frequently used elements in variables
-- Avoid repeated querySelector calls
-- Use event delegation for dynamic content
 
 ```javascript
 // Bad: Repeated queries
@@ -80,11 +70,6 @@ Event delegation takes this further by using a single listener on a parent eleme
 
 <SlideLayout.Full>
 ## DOM Performance: Minimize Reflows
-
-**3. Minimize Reflows**
-- Read DOM properties together
-- Write DOM changes together
-- Use CSS transforms for animations
 
 ```javascript
 // Bad: Mixed reads and writes
